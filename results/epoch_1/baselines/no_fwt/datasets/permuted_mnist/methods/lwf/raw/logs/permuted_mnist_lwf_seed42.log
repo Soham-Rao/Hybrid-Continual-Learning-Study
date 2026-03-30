@@ -1,0 +1,80 @@
+[16:28:33] Starting: permuted_mnist_lwf_seed42
+[16:28:33] Config: {'dataset': 'permuted_mnist', 'data_root': 'Project/data', 'model': 'resnet8', 'pretrained': False, 'method': 'lwf', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'seeds': [42, 123, 456, 789, 1024], 'checkpoint_dir': 'results/checkpoints', 'figure_dir': 'results/figures', 'log_dir': 'results/raw', 'run_name': 'permuted_mnist_lwf_seed42', 'seed': 42}
+[16:28:33] Device: cuda
+[16:28:33] Dataset: PermutedMNIST(tasks=10, classes_per_task=10, scenario=domain-il)
+[16:28:33] 
+============================================================
+ Task 1/10  | Classes (0, 10)
+============================================================
+[16:28:33] Task 0 baseline (before training): 0.00%
+[16:28:59] task=0  epoch=0  train_loss=0.3245
+[16:29:02] task=0  epoch=END  time_sec=26.1  acc_task0=94.59
+[16:29:02] 
+============================================================
+ Task 2/10  | Classes (0, 10)
+============================================================
+[16:29:05] Task 1 baseline (before training): 8.10%
+[16:29:36] task=1  epoch=0  train_loss=1.8115
+[16:29:42] task=1  epoch=END  time_sec=31.2  acc_task0=85.8  acc_task1=74.31
+[16:29:42] 
+============================================================
+ Task 3/10  | Classes (0, 10)
+============================================================
+[16:29:45] Task 2 baseline (before training): 8.96%
+[16:30:17] task=2  epoch=0  train_loss=1.5609
+[16:30:25] task=2  epoch=END  time_sec=32.0  acc_task0=58.4  acc_task1=53.8  acc_task2=82.2
+[16:30:25] 
+============================================================
+ Task 4/10  | Classes (0, 10)
+============================================================
+[16:30:28] Task 3 baseline (before training): 11.11%
+[16:31:01] task=3  epoch=0  train_loss=1.3403
+[16:31:14] task=3  epoch=END  time_sec=33.6  acc_task0=46.09  acc_task1=35.17  acc_task2=52.26  acc_task3=94.01
+[16:31:14] 
+============================================================
+ Task 5/10  | Classes (0, 10)
+============================================================
+[16:31:17] Task 4 baseline (before training): 9.31%
+[16:31:48] task=4  epoch=0  train_loss=1.3001
+[16:32:02] task=4  epoch=END  time_sec=31.2  acc_task0=26.26  acc_task1=23.43  acc_task2=40.28  acc_task3=73.28  acc_task4=94.89
+[16:32:02] 
+============================================================
+ Task 6/10  | Classes (0, 10)
+============================================================
+[16:32:05] Task 5 baseline (before training): 9.30%
+[16:32:37] task=5  epoch=0  train_loss=1.263
+[16:32:54] task=5  epoch=END  time_sec=32.5  acc_task0=24.89  acc_task1=18.53  acc_task2=27.92  acc_task3=42.23  acc_task4=77.34  acc_task5=95.22
+[16:32:54] 
+============================================================
+ Task 7/10  | Classes (0, 10)
+============================================================
+[16:32:57] Task 6 baseline (before training): 10.36%
+[16:33:49] task=6  epoch=0  train_loss=1.2699
+[16:34:19] task=6  epoch=END  time_sec=52.1  acc_task0=20.79  acc_task1=15.06  acc_task2=26.57  acc_task3=30.97  acc_task4=46.23  acc_task5=73.79  acc_task6=95.46
+[16:34:19] 
+============================================================
+ Task 8/10  | Classes (0, 10)
+============================================================
+[16:34:23] Task 7 baseline (before training): 9.25%
+[16:35:19] task=7  epoch=0  train_loss=1.234
+[16:35:56] task=7  epoch=END  time_sec=56.1  acc_task0=21.79  acc_task1=15.32  acc_task2=21.67  acc_task3=19.38  acc_task4=29.48  acc_task5=46.32  acc_task6=79.08  acc_task7=95.53
+[16:35:56] 
+============================================================
+ Task 9/10  | Classes (0, 10)
+============================================================
+[16:36:02] Task 8 baseline (before training): 10.87%
+[16:36:59] task=8  epoch=0  train_loss=1.2209
+[16:37:38] task=8  epoch=END  time_sec=56.9  acc_task0=16.03  acc_task1=12.97  acc_task2=11.88  acc_task3=19.69  acc_task4=19.18  acc_task5=33.87  acc_task6=41.58  acc_task7=69.77  acc_task8=95.78
+[16:37:38] 
+============================================================
+ Task 10/10  | Classes (0, 10)
+============================================================
+[16:37:43] Task 9 baseline (before training): 11.29%
+[16:38:37] task=9  epoch=0  train_loss=1.2135
+[16:39:21] task=9  epoch=END  time_sec=54.2  acc_task0=17.82  acc_task1=10.82  acc_task2=11.75  acc_task3=16.09  acc_task4=16.68  acc_task5=21.34  acc_task6=26.03  acc_task7=41.02  acc_task8=76.6  acc_task9=95.9
+[16:39:21] 
+Final Metrics:
+  avg_accuracy         +33.4050
+  forgetting           +64.8711
+  backward_transfer    -64.8711
+  forward_transfer     +0.0000

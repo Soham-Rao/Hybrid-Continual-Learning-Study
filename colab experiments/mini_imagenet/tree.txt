@@ -1,0 +1,19 @@
+NON-CODE UPLOADS (Mini-ImageNet)
+
+1) Mini-ImageNet dataset folder (required; not auto-downloadable without Kaggle creds)
+   Expected structure (place in Colab at /content/data/mini-imagenet or in Drive):
+
+   data/mini-imagenet/
+     train/
+       n01440764/  (class folder)
+       n01443537/
+       ...
+     test/         (optional; if missing we do an 80/20 split)
+       n01440764/
+       ...
+
+2) Optional: Google Drive folder for outputs
+   /content/drive/MyDrive/colab_results/mini_imagenet/
+
+If you store the dataset in Drive instead, use:
+  --data-root /content/drive/MyDrive/mini-imagenet

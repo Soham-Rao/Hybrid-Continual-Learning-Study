@@ -1,0 +1,19 @@
+dataset: split_cifar10
+model: slim_resnet18
+method: si_der
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: false
+buffer_size: 500
+si_lambda: 1.0
+si_xi: 0.1
+der_alpha: 0.5
+seeds:
+- 42
+- 123
+- 456
+- 789
+- 1024
+run_tag: buf500
+disable_plots: true

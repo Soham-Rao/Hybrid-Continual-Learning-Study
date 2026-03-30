@@ -1,0 +1,12 @@
+dataset: permuted_mnist
+model: resnet8
+method: agem_distill
+run_tag: nodistill
+seeds:
+- 42
+- 123
+- 456
+results_root: results_phase3_interactions_plots
+log_dir: results_phase3_interactions_plots/raw
+figure_dir: results_phase3_interactions_plots/figures
+distill_lambda: 0.0

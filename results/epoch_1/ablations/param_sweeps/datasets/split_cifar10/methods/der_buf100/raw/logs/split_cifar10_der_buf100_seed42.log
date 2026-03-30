@@ -1,0 +1,104 @@
+[11:56:22] Starting: split_cifar10_der_seed42
+[11:56:22] Config: {'dataset': 'split_cifar10', 'data_root': 'Project/data_local', 'model': 'slim_resnet18', 'pretrained': False, 'method': 'der', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 100, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': True, 'disable_plots': False, 'seeds': [42, 123, 456, 789, 1024], 'results_root': 'd:\\Catastrophic Forgetting\\results_phase3_ablations', 'checkpoint_dir': 'results/checkpoints', 'figure_dir': 'd:\\Catastrophic Forgetting\\results_phase3_ablations\\figures', 'log_dir': 'd:\\Catastrophic Forgetting\\results_phase3_ablations\\raw', 'run_name': 'split_cifar10_der_seed42', 'seed': 42}
+[11:56:22] Device: cuda
+[11:56:23] Dataset: SplitCIFAR10(tasks=5, classes_per_task=2, scenario=class-il)
+[11:56:23] 
+============================================================
+ Task 1/5  | Classes (0, 2)
+============================================================
+[11:56:23] Task 0 baseline (chance): 50.00%
+[11:56:46] task=0  epoch=0  train_loss=0.7896
+[11:56:47] task=0  epoch=END  time_sec=22.7  acc_task0=86.45
+[11:56:47] 
+============================================================
+ Task 2/5  | Classes (2, 4)
+============================================================
+[11:56:47] Task 1 baseline (chance): 25.00%
+[11:56:48] Task 1 zero-shot (pre-train): 0.00%
+[11:57:10] task=1  epoch=0  train_loss=0.754
+[11:57:11] task=1  epoch=END  time_sec=21.6  acc_task0=0.0  acc_task1=73.5
+[11:57:11] 
+============================================================
+ Task 3/5  | Classes (4, 6)
+============================================================
+[11:57:11] Task 2 baseline (chance): 16.67%
+[11:57:12] Task 2 zero-shot (pre-train): 0.00%
+[11:57:34] task=2  epoch=0  train_loss=0.7451
+[11:57:36] task=2  epoch=END  time_sec=21.4  acc_task0=0.0  acc_task1=0.0  acc_task2=79.1
+[11:57:36] 
+============================================================
+ Task 4/5  | Classes (6, 8)
+============================================================
+[11:57:36] Task 3 baseline (chance): 12.50%
+[11:57:37] Task 3 zero-shot (pre-train): 0.00%
+[11:57:59] task=3  epoch=0  train_loss=1.154
+[11:58:03] task=3  epoch=END  time_sec=21.6  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=83.0
+[11:58:03] 
+============================================================
+ Task 5/5  | Classes (8, 10)
+============================================================
+[11:58:03] Task 4 baseline (chance): 10.00%
+[11:58:03] Task 4 zero-shot (pre-train): 0.00%
+[11:58:25] task=4  epoch=0  train_loss=1.0143
+[11:58:30] task=4  epoch=END  time_sec=21.8  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=84.2
+[11:58:30] 
+Final Metrics:
+  avg_accuracy         +16.8400
+  forgetting           +80.5125
+  backward_transfer    -80.5125
+  forward_transfer     -16.0417
+[11:58:30] 
+Done - run: split_cifar10_der_seed42
+[11:58:30] Metrics: {'avg_accuracy': 16.84, 'forgetting': 80.5125, 'backward_transfer': -80.5125, 'forward_transfer': -16.0417}
+[12:08:42] Starting: split_cifar10_der_buf100_seed42
+[12:08:42] Config: {'dataset': 'split_cifar10', 'data_root': 'Project/data_local', 'model': 'slim_resnet18', 'pretrained': False, 'method': 'der', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 100, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': True, 'disable_plots': True, 'seeds': [42, 123, 456, 789, 1024], 'results_root': 'd:\\Catastrophic Forgetting\\results_phase3_ablations', 'checkpoint_dir': 'results/checkpoints', 'figure_dir': 'd:\\Catastrophic Forgetting\\results_phase3_ablations\\figures', 'log_dir': 'd:\\Catastrophic Forgetting\\results_phase3_ablations\\raw', 'run_tag': 'buf100', 'run_name': 'split_cifar10_der_buf100_seed42', 'seed': 42}
+[12:08:42] Device: cuda
+[12:08:43] Dataset: SplitCIFAR10(tasks=5, classes_per_task=2, scenario=class-il)
+[12:08:43] 
+============================================================
+ Task 1/5  | Classes (0, 2)
+============================================================
+[12:08:43] Task 0 baseline (chance): 50.00%
+[12:09:06] task=0  epoch=0  train_loss=0.7896
+[12:09:07] task=0  epoch=END  time_sec=22.3  acc_task0=86.45
+[12:09:07] 
+============================================================
+ Task 2/5  | Classes (2, 4)
+============================================================
+[12:09:07] Task 1 baseline (chance): 25.00%
+[12:09:08] Task 1 zero-shot (pre-train): 0.00%
+[12:09:29] task=1  epoch=0  train_loss=0.754
+[12:09:31] task=1  epoch=END  time_sec=21.7  acc_task0=0.0  acc_task1=73.5
+[12:09:31] 
+============================================================
+ Task 3/5  | Classes (4, 6)
+============================================================
+[12:09:31] Task 2 baseline (chance): 16.67%
+[12:09:32] Task 2 zero-shot (pre-train): 0.00%
+[12:09:54] task=2  epoch=0  train_loss=0.7451
+[12:09:57] task=2  epoch=END  time_sec=21.8  acc_task0=0.0  acc_task1=0.0  acc_task2=79.1
+[12:09:57] 
+============================================================
+ Task 4/5  | Classes (6, 8)
+============================================================
+[12:09:57] Task 3 baseline (chance): 12.50%
+[12:09:58] Task 3 zero-shot (pre-train): 0.00%
+[12:10:19] task=3  epoch=0  train_loss=1.154
+[12:10:23] task=3  epoch=END  time_sec=21.7  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=83.0
+[12:10:23] 
+============================================================
+ Task 5/5  | Classes (8, 10)
+============================================================
+[12:10:23] Task 4 baseline (chance): 10.00%
+[12:10:24] Task 4 zero-shot (pre-train): 0.00%
+[12:10:46] task=4  epoch=0  train_loss=1.0143
+[12:10:50] task=4  epoch=END  time_sec=21.7  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=84.2
+[12:10:50] 
+Final Metrics:
+  avg_accuracy         +16.8400
+  forgetting           +80.5125
+  backward_transfer    -80.5125
+  forward_transfer     -16.0417
+[12:10:50] 
+Done - run: split_cifar10_der_buf100_seed42
+[12:10:50] Metrics: {'avg_accuracy': 16.84, 'forgetting': 80.5125, 'backward_transfer': -80.5125, 'forward_transfer': -16.0417}

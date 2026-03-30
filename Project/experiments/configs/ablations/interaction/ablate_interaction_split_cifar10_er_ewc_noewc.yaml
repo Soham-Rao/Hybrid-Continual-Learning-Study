@@ -1,0 +1,12 @@
+dataset: split_cifar10
+model: slim_resnet18
+method: er_ewc
+run_tag: noewc
+seeds:
+- 42
+- 123
+- 456
+results_root: results_phase3_interactions_plots
+log_dir: results_phase3_interactions_plots/raw
+figure_dir: results_phase3_interactions_plots/figures
+ewc_lambda: 0.0

@@ -1,0 +1,12 @@
+# Split CIFAR-10 — PROGRESS COMPRESS (Phase 3 hybrid)
+dataset: split_cifar10
+model: slim_resnet18
+method: progress_compress
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: false
+pc_distill_w: 1.0
+pc_ewc_lambda: 100.0
+pc_compress_epochs: 3
+seeds: [42, 123, 456, 789, 1024]

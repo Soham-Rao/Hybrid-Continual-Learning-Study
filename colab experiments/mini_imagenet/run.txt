@@ -1,0 +1,23 @@
+COLAB RUN COMMANDS (Mini-ImageNet)
+
+A) Setup (upload code folder)
+- Upload the folder: colab experiments/mini_imagenet/code
+- In Colab it should sit at: /content/code
+
+B) (Optional) Mount Drive for persistent results
+from google.colab import drive
+
+drive.mount('/content/drive')
+
+C) Install dependencies
+!pip install -r /content/code/requirements.txt -q
+
+D) Run Slim ResNet-18 sweep (all baselines + hybrids)
+!python /content/code/colab_run_mini_imagenet.py   --model slim_resnet18   --run-tag resnet18   --data-root /content/data/mini-imagenet   --results-root /content/drive/MyDrive/colab_results/mini_imagenet/resnet18   --batch-size 32   --num-workers 4   --enable-plots   --enable-checkpoints   --skip-existing
+
+E) Run ViT-Small sweep (all baselines + hybrids)
+!python /content/code/colab_run_mini_imagenet.py   --model vit_small   --run-tag vit_small   --data-root /content/data/mini-imagenet   --results-root /content/drive/MyDrive/colab_results/mini_imagenet/vit_small   --image-size 224   --batch-size 16   --num-workers 4   --enable-plots   --enable-checkpoints   --skip-existing
+
+Notes:
+- TQDM progress with ETA is enabled by default.
+- If you keep results on /content (no Drive), change --results-root accordingly.

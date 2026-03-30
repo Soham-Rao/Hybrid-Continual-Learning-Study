@@ -1,0 +1,48 @@
+[23:40:09] Starting: split_cifar10_agem_seed42
+[23:40:09] Config: {'dataset': 'split_cifar10', 'data_root': 'Project/data_local', 'model': 'slim_resnet18', 'pretrained': False, 'method': 'agem', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'seeds': [42, 123, 456, 789, 1024], 'checkpoint_dir': 'results/checkpoints', 'figure_dir': 'results/figures', 'log_dir': 'results/raw', 'run_name': 'split_cifar10_agem_seed42', 'seed': 42}
+[23:40:09] Device: cuda
+[23:40:11] Dataset: SplitCIFAR10(tasks=5, classes_per_task=2, scenario=class-il)
+[23:40:11] 
+============================================================
+ Task 1/5  | Classes (0, 2)
+============================================================
+[23:40:11] Task 0 baseline (before training): 0.00%
+[23:40:22] task=0  epoch=0  train_loss=0.5556
+[23:40:23] task=0  epoch=END  time_sec=11.3  acc_task0=87.25
+[23:40:23] 
+============================================================
+ Task 2/5  | Classes (2, 4)
+============================================================
+[23:40:24] Task 1 baseline (before training): 0.00%
+[23:40:43] task=1  epoch=0  train_loss=15.5745
+[23:40:44] task=1  epoch=END  time_sec=18.8  acc_task0=85.8  acc_task1=0.0
+[23:40:44] 
+============================================================
+ Task 3/5  | Classes (4, 6)
+============================================================
+[23:40:45] Task 2 baseline (before training): 0.00%
+[23:41:04] task=2  epoch=0  train_loss=13.0926
+[23:41:06] task=2  epoch=END  time_sec=18.6  acc_task0=77.25  acc_task1=38.45  acc_task2=0.0
+[23:41:06] 
+============================================================
+ Task 4/5  | Classes (6, 8)
+============================================================
+[23:41:07] Task 3 baseline (before training): 0.00%
+[23:41:26] task=3  epoch=0  train_loss=11.7668
+[23:41:29] task=3  epoch=END  time_sec=18.6  acc_task0=66.8  acc_task1=22.8  acc_task2=26.45  acc_task3=0.0
+[23:41:29] 
+============================================================
+ Task 5/5  | Classes (8, 10)
+============================================================
+[23:41:29] Task 4 baseline (before training): 0.00%
+[23:41:48] task=4  epoch=0  train_loss=11.5883
+[23:41:52] task=4  epoch=END  time_sec=18.8  acc_task0=54.1  acc_task1=29.75  acc_task2=11.2  acc_task3=28.35  acc_task4=0.0
+[23:41:52] 
+Final Metrics:
+  avg_accuracy         +24.6800
+  forgetting           +14.2750
+  backward_transfer    +9.0375
+  forward_transfer     +0.0000
+[23:41:52] 
+Done - run: split_cifar10_agem_seed42
+[23:41:52] Metrics: {'avg_accuracy': 24.68, 'forgetting': 14.275, 'backward_transfer': 9.0375, 'forward_transfer': 0.0}

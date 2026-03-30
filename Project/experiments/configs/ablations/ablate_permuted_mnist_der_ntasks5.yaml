@@ -1,0 +1,17 @@
+dataset: permuted_mnist
+model: resnet8
+method: der
+buffer_size: 200
+der_alpha: 0.5
+n_epochs: 1
+batch_size: 32
+fp16: false
+seeds:
+- 42
+- 123
+- 456
+- 789
+- 1024
+n_tasks: 5
+run_tag: ntasks5
+disable_plots: true

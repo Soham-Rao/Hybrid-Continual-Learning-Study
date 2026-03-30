@@ -1,0 +1,153 @@
+[01:28:19] Starting: split_cifar100_agem_seed456
+[01:28:19] Config: {'dataset': 'split_cifar100', 'data_root': 'Project/data_local', 'model': 'slim_resnet18', 'pretrained': False, 'method': 'agem', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': True, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': True, 'seeds': [42, 123, 456, 789, 1024], 'checkpoint_dir': 'results/checkpoints', 'figure_dir': 'results/figures', 'log_dir': 'results/raw', 'run_name': 'split_cifar100_agem_seed456', 'seed': 456}
+[01:28:19] Device: cuda
+[01:28:20] Dataset: SplitCIFAR100(tasks=20, classes_per_task=5, scenario=class-il)
+[01:28:20] 
+============================================================
+ Task 1/20  | Classes (0, 5)
+============================================================
+[01:28:20] Task 0 baseline (before training): 0.00%
+[01:28:23] task=0  epoch=0  train_loss=1.3617
+[01:28:24] task=0  epoch=END  time_sec=3.2  acc_task0=52.2
+[01:28:24] 
+============================================================
+ Task 2/20  | Classes (5, 10)
+============================================================
+[01:28:24] Task 1 baseline (before training): 0.00%
+[01:28:29] task=1  epoch=0  train_loss=11.9051
+[01:28:29] task=1  epoch=END  time_sec=4.6  acc_task0=57.0  acc_task1=0.0
+[01:28:29] 
+============================================================
+ Task 3/20  | Classes (10, 15)
+============================================================
+[01:28:29] Task 2 baseline (before training): 0.00%
+[01:28:34] task=2  epoch=0  train_loss=9.2258
+[01:28:34] task=2  epoch=END  time_sec=4.7  acc_task0=47.6  acc_task1=18.0  acc_task2=0.0
+[01:28:34] 
+============================================================
+ Task 4/20  | Classes (15, 20)
+============================================================
+[01:28:35] Task 3 baseline (before training): 0.00%
+[01:28:39] task=3  epoch=0  train_loss=8.9794
+[01:28:40] task=3  epoch=END  time_sec=4.6  acc_task0=37.4  acc_task1=9.2  acc_task2=6.6  acc_task3=0.0
+[01:28:40] 
+============================================================
+ Task 5/20  | Classes (20, 25)
+============================================================
+[01:28:40] Task 4 baseline (before training): 0.00%
+[01:28:45] task=4  epoch=0  train_loss=8.5779
+[01:28:46] task=4  epoch=END  time_sec=4.7  acc_task0=41.8  acc_task1=8.4  acc_task2=5.4  acc_task3=13.0  acc_task4=0.0
+[01:28:46] 
+============================================================
+ Task 6/20  | Classes (25, 30)
+============================================================
+[01:28:46] Task 5 baseline (before training): 0.00%
+[01:28:50] task=5  epoch=0  train_loss=8.8135
+[01:28:51] task=5  epoch=END  time_sec=4.7  acc_task0=38.8  acc_task1=6.2  acc_task2=3.0  acc_task3=8.6  acc_task4=15.2  acc_task5=0.0
+[01:28:51] 
+============================================================
+ Task 7/20  | Classes (30, 35)
+============================================================
+[01:28:52] Task 6 baseline (before training): 0.00%
+[01:28:56] task=6  epoch=0  train_loss=8.9912
+[01:28:57] task=6  epoch=END  time_sec=4.7  acc_task0=37.8  acc_task1=5.2  acc_task2=2.6  acc_task3=6.6  acc_task4=7.8  acc_task5=10.2  acc_task6=0.0
+[01:28:57] 
+============================================================
+ Task 8/20  | Classes (35, 40)
+============================================================
+[01:28:58] Task 7 baseline (before training): 0.00%
+[01:29:02] task=7  epoch=0  train_loss=9.274
+[01:29:04] task=7  epoch=END  time_sec=4.7  acc_task0=33.2  acc_task1=6.6  acc_task2=2.2  acc_task3=3.4  acc_task4=8.2  acc_task5=7.0  acc_task6=9.2  acc_task7=0.0
+[01:29:04] 
+============================================================
+ Task 9/20  | Classes (40, 45)
+============================================================
+[01:29:04] Task 8 baseline (before training): 0.00%
+[01:29:08] task=8  epoch=0  train_loss=9.0416
+[01:29:10] task=8  epoch=END  time_sec=4.6  acc_task0=37.2  acc_task1=5.0  acc_task2=4.6  acc_task3=3.6  acc_task4=10.0  acc_task5=5.6  acc_task6=4.4  acc_task7=9.0  acc_task8=0.0
+[01:29:10] 
+============================================================
+ Task 10/20  | Classes (45, 50)
+============================================================
+[01:29:10] Task 9 baseline (before training): 0.00%
+[01:29:15] task=9  epoch=0  train_loss=8.9638
+[01:29:17] task=9  epoch=END  time_sec=4.7  acc_task0=33.2  acc_task1=4.8  acc_task2=1.6  acc_task3=1.8  acc_task4=9.8  acc_task5=2.8  acc_task6=4.6  acc_task7=6.4  acc_task8=12.2  acc_task9=0.0
+[01:29:17] 
+============================================================
+ Task 11/20  | Classes (50, 55)
+============================================================
+[01:29:17] Task 10 baseline (before training): 0.00%
+[01:29:21] task=10  epoch=0  train_loss=9.0149
+[01:29:23] task=10  epoch=END  time_sec=4.7  acc_task0=32.2  acc_task1=5.6  acc_task2=1.6  acc_task3=3.2  acc_task4=7.8  acc_task5=4.0  acc_task6=3.0  acc_task7=4.6  acc_task8=7.4  acc_task9=8.4  acc_task10=0.0
+[01:29:23] 
+============================================================
+ Task 12/20  | Classes (55, 60)
+============================================================
+[01:29:23] Task 11 baseline (before training): 0.00%
+[01:29:28] task=11  epoch=0  train_loss=8.7227
+[01:29:30] task=11  epoch=END  time_sec=4.6  acc_task0=29.6  acc_task1=4.2  acc_task2=0.8  acc_task3=1.8  acc_task4=11.0  acc_task5=2.6  acc_task6=2.2  acc_task7=2.4  acc_task8=6.2  acc_task9=4.2  acc_task10=9.8  acc_task11=0.0
+[01:29:30] 
+============================================================
+ Task 13/20  | Classes (60, 65)
+============================================================
+[01:29:30] Task 12 baseline (before training): 0.00%
+[01:29:35] task=12  epoch=0  train_loss=9.1012
+[01:29:37] task=12  epoch=END  time_sec=4.7  acc_task0=28.6  acc_task1=4.6  acc_task2=1.4  acc_task3=2.6  acc_task4=7.0  acc_task5=3.2  acc_task6=3.6  acc_task7=2.8  acc_task8=7.4  acc_task9=1.6  acc_task10=3.0  acc_task11=6.6  acc_task12=0.0
+[01:29:37] 
+============================================================
+ Task 14/20  | Classes (65, 70)
+============================================================
+[01:29:37] Task 13 baseline (before training): 0.00%
+[01:29:42] task=13  epoch=0  train_loss=8.9519
+[01:29:44] task=13  epoch=END  time_sec=4.7  acc_task0=32.8  acc_task1=3.6  acc_task2=1.4  acc_task3=2.4  acc_task4=3.4  acc_task5=2.0  acc_task6=3.2  acc_task7=1.6  acc_task8=2.8  acc_task9=1.0  acc_task10=0.4  acc_task11=3.8  acc_task12=20.0  acc_task13=0.0
+[01:29:44] 
+============================================================
+ Task 15/20  | Classes (70, 75)
+============================================================
+[01:29:45] Task 14 baseline (before training): 0.00%
+[01:29:49] task=14  epoch=0  train_loss=8.7909
+[01:29:52] task=14  epoch=END  time_sec=4.6  acc_task0=30.6  acc_task1=4.2  acc_task2=2.2  acc_task3=3.6  acc_task4=4.4  acc_task5=3.0  acc_task6=2.0  acc_task7=2.2  acc_task8=4.2  acc_task9=2.2  acc_task10=0.6  acc_task11=1.0  acc_task12=12.8  acc_task13=5.4  acc_task14=0.0
+[01:29:52] 
+============================================================
+ Task 16/20  | Classes (75, 80)
+============================================================
+[01:29:52] Task 15 baseline (before training): 0.00%
+[01:29:57] task=15  epoch=0  train_loss=8.4934
+[01:29:59] task=15  epoch=END  time_sec=4.6  acc_task0=28.8  acc_task1=5.0  acc_task2=2.4  acc_task3=2.2  acc_task4=5.0  acc_task5=2.4  acc_task6=1.4  acc_task7=1.6  acc_task8=5.4  acc_task9=1.0  acc_task10=0.4  acc_task11=1.0  acc_task12=22.4  acc_task13=3.4  acc_task14=10.8  acc_task15=0.0
+[01:29:59] 
+============================================================
+ Task 17/20  | Classes (80, 85)
+============================================================
+[01:29:59] Task 16 baseline (before training): 0.00%
+[01:30:04] task=16  epoch=0  train_loss=8.5308
+[01:30:07] task=16  epoch=END  time_sec=4.7  acc_task0=29.0  acc_task1=6.8  acc_task2=1.8  acc_task3=4.0  acc_task4=7.4  acc_task5=2.4  acc_task6=1.0  acc_task7=0.6  acc_task8=3.4  acc_task9=1.4  acc_task10=0.0  acc_task11=0.8  acc_task12=14.2  acc_task13=3.2  acc_task14=7.8  acc_task15=3.4  acc_task16=0.0
+[01:30:07] 
+============================================================
+ Task 18/20  | Classes (85, 90)
+============================================================
+[01:30:07] Task 17 baseline (before training): 0.00%
+[01:30:12] task=17  epoch=0  train_loss=8.7496
+[01:30:15] task=17  epoch=END  time_sec=4.7  acc_task0=27.8  acc_task1=3.8  acc_task2=1.6  acc_task3=0.8  acc_task4=6.4  acc_task5=1.8  acc_task6=1.4  acc_task7=0.4  acc_task8=3.2  acc_task9=1.0  acc_task10=0.2  acc_task11=1.0  acc_task12=15.2  acc_task13=2.6  acc_task14=8.6  acc_task15=1.8  acc_task16=3.4  acc_task17=0.0
+[01:30:15] 
+============================================================
+ Task 19/20  | Classes (90, 95)
+============================================================
+[01:30:15] Task 18 baseline (before training): 0.00%
+[01:30:20] task=18  epoch=0  train_loss=8.4546
+[01:30:23] task=18  epoch=END  time_sec=4.7  acc_task0=31.0  acc_task1=5.0  acc_task2=1.0  acc_task3=1.0  acc_task4=5.0  acc_task5=1.8  acc_task6=1.2  acc_task7=0.2  acc_task8=3.8  acc_task9=2.0  acc_task10=0.2  acc_task11=0.6  acc_task12=13.6  acc_task13=3.2  acc_task14=5.8  acc_task15=1.6  acc_task16=3.2  acc_task17=3.0  acc_task18=0.0
+[01:30:23] 
+============================================================
+ Task 20/20  | Classes (95, 100)
+============================================================
+[01:30:23] Task 19 baseline (before training): 0.00%
+[01:30:28] task=19  epoch=0  train_loss=8.8419
+[01:30:31] task=19  epoch=END  time_sec=4.7  acc_task0=26.8  acc_task1=6.4  acc_task2=1.6  acc_task3=1.0  acc_task4=5.8  acc_task5=1.2  acc_task6=1.8  acc_task7=0.2  acc_task8=3.8  acc_task9=1.4  acc_task10=0.4  acc_task11=0.6  acc_task12=14.6  acc_task13=1.8  acc_task14=5.8  acc_task15=0.8  acc_task16=3.2  acc_task17=1.6  acc_task18=5.0  acc_task19=0.0
+[01:30:31] 
+Final Metrics:
+  avg_accuracy         +4.1900
+  forgetting           +7.6211
+  backward_transfer    +1.6632
+  forward_transfer     +0.0000
+[01:30:32] 
+Done - run: split_cifar100_agem_seed456
+[01:30:32] Metrics: {'avg_accuracy': 4.19, 'forgetting': 7.6211, 'backward_transfer': 1.6632, 'forward_transfer': 0.0}

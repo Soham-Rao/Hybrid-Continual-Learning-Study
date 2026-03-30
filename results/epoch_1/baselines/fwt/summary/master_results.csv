@@ -1,0 +1,6 @@
+dataset,method,seed,avg_accuracy,forgetting,backward_transfer,forward_transfer
+split_cifar100,lwf,42,2.71,44.8842,-44.8842,-2.7345
+split_cifar100,lwf,123,2.17,39.2,-39.2,-2.7345
+split_cifar100,lwf,456,2.56,42.2211,-42.2211,-2.7345
+split_cifar100,lwf,789,2.38,33.7263,-33.7263,-2.7345
+split_cifar100,lwf,1024,2.54,43.6,-43.6,-2.7345

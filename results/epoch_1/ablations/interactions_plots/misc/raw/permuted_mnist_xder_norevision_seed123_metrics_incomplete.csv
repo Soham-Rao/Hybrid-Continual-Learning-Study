@@ -1,0 +1,5 @@
+task,epoch,train_loss
+0,0,0.43
+0,END,
+1,0,0.3378
+1,END,

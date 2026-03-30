@@ -1,0 +1,12 @@
+dataset: split_cifar10
+model: slim_resnet18
+method: xder
+run_tag: norevision
+seeds:
+- 42
+- 123
+- 456
+results_root: results_phase3_interactions_plots
+log_dir: results_phase3_interactions_plots/raw
+figure_dir: results_phase3_interactions_plots/figures
+xder_beta: 0.0

@@ -21,6 +21,8 @@ The ability to learn continuously from a stream of data while retaining previous
 
 This document provides a comprehensive overview of how transformers store information, why catastrophic forgetting occurs, and the cutting-edge research aimed at solving this fundamental problem in machine learning.
 
+**Note on benchmark scope**: The survey covers a broad landscape, while the empirical benchmark subset is intentionally compute-bound to free-tier GPU limits. Larger datasets and ViT experiments are assigned to Colab sessions; smaller datasets remain local to keep the study reproducible without paid hardware.
+
 ---
 
 ## How Transformers Remember: The Memory Mechanism

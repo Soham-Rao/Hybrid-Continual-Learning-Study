@@ -1,0 +1,19 @@
+dataset: split_cifar10
+model: slim_resnet18
+method: agem_distill
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: false
+buffer_size: 100
+agem_mem_batch: 64
+distill_lambda: 1.0
+distill_temp: 2.0
+seeds:
+- 42
+- 123
+- 456
+- 789
+- 1024
+run_tag: buf100
+disable_plots: true

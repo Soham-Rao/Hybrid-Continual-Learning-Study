@@ -1,0 +1,20 @@
+WHAT TO DOWNLOAD AFTER RUNS
+
+From the results_root you choose (e.g., /content/drive/MyDrive/colab_results/mini_imagenet/resnet18):
+
+1) master_results.csv
+   - Aggregated metrics across seeds and methods.
+
+2) raw/
+   - Per-run logs (*.log)
+   - Per-run metrics (*_metrics.csv)
+
+3) figures/
+   - summary_*.png (heatmap + curves + metrics)
+   - curves_*.png
+   - heatmap_*.png
+   - avg_accuracy_*.png, forgetting_*.png, backward_transfer_*.png, forward_transfer_*.png
+   - pareto_*.png
+
+4) checkpoints/ (optional)
+   - Per-task checkpoints for resuming interrupted runs.

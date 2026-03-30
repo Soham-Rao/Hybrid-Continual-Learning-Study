@@ -1,0 +1,5 @@
+dataset,method,seed,avg_accuracy,forgetting,backward_transfer,forward_transfer
+split_cifar100,si_der,123,3.04,47.0316,-47.0316,-2.7239
+split_cifar100,si_der,456,2.5,43.6421,-43.6421,-2.7239
+split_cifar100,si_der,789,2.82,47.0,-47.0,-2.6713
+split_cifar100,si_der,1024,2.71,42.8737,-42.8737,-2.7345

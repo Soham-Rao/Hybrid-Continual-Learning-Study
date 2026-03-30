@@ -1,0 +1,11 @@
+# Split CIFAR-100 — A-GEM
+dataset: split_cifar100
+model: slim_resnet18
+method: agem
+buffer_size: 200
+agem_mem_batch: 64
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: true
+seeds: [42, 123, 456, 789, 1024]

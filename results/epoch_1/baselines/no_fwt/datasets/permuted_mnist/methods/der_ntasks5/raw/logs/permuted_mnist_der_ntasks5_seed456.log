@@ -1,0 +1,52 @@
+[21:37:34] Starting: permuted_mnist_der_ntasks5_seed456
+[21:37:34] Config: {'dataset': 'permuted_mnist', 'data_root': 'Project/data_local', 'model': 'resnet8', 'pretrained': False, 'method': 'der', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': True, 'disable_plots': True, 'seeds': [42, 123, 456, 789, 1024], 'results_root': 'results', 'checkpoint_dir': 'results/checkpoints', 'figure_dir': 'results/figures', 'log_dir': 'results/raw', 'n_tasks': 5, 'run_tag': 'ntasks5', 'run_name': 'permuted_mnist_der_ntasks5_seed456', 'seed': 456}
+[21:37:34] Device: cuda
+[21:37:34] Dataset: PermutedMNIST(tasks=5, classes_per_task=10, scenario=domain-il)
+[21:37:34] 
+============================================================
+ Task 1/5  | Classes (0, 10)
+============================================================
+[21:37:34] Task 0 baseline (chance): 10.00%
+[21:38:56] task=0  epoch=0  train_loss=0.4333
+[21:39:01] task=0  epoch=END  time_sec=81.4  acc_task0=96.06
+[21:39:01] 
+============================================================
+ Task 2/5  | Classes (0, 10)
+============================================================
+[21:39:01] Task 1 baseline (chance): 10.00%
+[21:39:08] Task 1 zero-shot (pre-train): 7.70%
+[21:40:22] task=1  epoch=0  train_loss=0.3301
+[21:40:32] task=1  epoch=END  time_sec=73.9  acc_task0=84.97  acc_task1=95.58
+[21:40:32] 
+============================================================
+ Task 3/5  | Classes (0, 10)
+============================================================
+[21:40:32] Task 2 baseline (chance): 10.00%
+[21:40:38] Task 2 zero-shot (pre-train): 16.79%
+[21:41:51] task=2  epoch=0  train_loss=0.3292
+[21:42:08] task=2  epoch=END  time_sec=73.8  acc_task0=74.47  acc_task1=86.96  acc_task2=95.76
+[21:42:08] 
+============================================================
+ Task 4/5  | Classes (0, 10)
+============================================================
+[21:42:08] Task 3 baseline (chance): 10.00%
+[21:42:13] Task 3 zero-shot (pre-train): 9.02%
+[21:43:27] task=3  epoch=0  train_loss=0.3278
+[21:43:49] task=3  epoch=END  time_sec=73.8  acc_task0=65.25  acc_task1=79.85  acc_task2=87.94  acc_task3=96.14
+[21:43:49] 
+============================================================
+ Task 5/5  | Classes (0, 10)
+============================================================
+[21:43:49] Task 4 baseline (chance): 10.00%
+[21:43:54] Task 4 zero-shot (pre-train): 12.10%
+[21:45:08] task=4  epoch=0  train_loss=0.318
+[21:45:35] task=4  epoch=END  time_sec=73.6  acc_task0=63.57  acc_task1=74.75  acc_task2=76.21  acc_task3=87.49  acc_task4=96.45
+[21:45:35] 
+Final Metrics:
+  avg_accuracy         +79.6940
+  forgetting           +20.3800
+  backward_transfer    -20.3800
+  forward_transfer     +1.4025
+[21:45:35] 
+Done - run: permuted_mnist_der_ntasks5_seed456
+[21:45:35] Metrics: {'avg_accuracy': 79.694, 'forgetting': 20.38, 'backward_transfer': -20.38, 'forward_transfer': 1.4025}

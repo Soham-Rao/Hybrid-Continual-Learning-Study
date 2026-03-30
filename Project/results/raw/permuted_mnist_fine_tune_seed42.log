@@ -1,0 +1,8 @@
+[09:27:26] Starting: permuted_mnist_fine_tune_seed42
+[09:27:26] Config: {'dataset': 'permuted_mnist', 'data_root': 'data', 'model': 'resnet8', 'pretrained': False, 'method': 'fine_tune', 'n_epochs': 1, 'batch_size': 128, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'seeds': [42], 'checkpoint_dir': 'results/checkpoints', 'figure_dir': 'results/figures', 'log_dir': 'results/raw', 'n_tasks': 3, 'run_name': 'permuted_mnist_fine_tune_seed42', 'seed': 42}
+[09:27:26] Device: cpu
+[09:27:26] Dataset: PermutedMNIST(tasks=10, classes_per_task=10, scenario=domain-il)
+[09:27:26] 
+============================================================
+ Task 1/10  | Classes (0, 10)
+============================================================

@@ -1,0 +1,12 @@
+dataset: split_cifar10
+model: slim_resnet18
+method: icarl
+run_tag: nonmc
+seeds:
+- 42
+- 123
+- 456
+results_root: results_phase3_interactions_plots
+log_dir: results_phase3_interactions_plots/raw
+figure_dir: results_phase3_interactions_plots/figures
+use_nmc: false

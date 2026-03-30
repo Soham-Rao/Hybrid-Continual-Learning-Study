@@ -1,0 +1,3 @@
+dataset,method,seed,avg_accuracy,forgetting,backward_transfer,forward_transfer
+permuted_mnist,der,123,27.289,75.59,-75.59,2.8356
+permuted_mnist,der,456,28.467,74.5167,-74.5167,3.06

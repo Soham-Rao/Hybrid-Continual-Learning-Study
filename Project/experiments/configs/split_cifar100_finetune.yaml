@@ -1,0 +1,9 @@
+# Split CIFAR-100 — Fine-Tune (lower bound)
+dataset: split_cifar100
+model: slim_resnet18
+method: fine_tune
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: true        # enable FP16 for all CIFAR-100 runs
+seeds: [42, 123, 456, 789, 1024]

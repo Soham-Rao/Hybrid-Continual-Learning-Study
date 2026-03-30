@@ -1,0 +1,13 @@
+# Split CIFAR-100 — ICARL (Phase 3 hybrid)
+dataset: split_cifar100
+model: slim_resnet18
+method: icarl
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: true
+buffer_size: 500
+icarl_distill_w: 1.0
+icarl_temp: 2.0
+use_nmc: true
+seeds: [42, 123, 456, 789, 1024]

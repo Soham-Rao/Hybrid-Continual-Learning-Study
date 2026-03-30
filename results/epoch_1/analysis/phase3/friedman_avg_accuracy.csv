@@ -1,0 +1,4 @@
+dataset,n_blocks,n_methods,statistic,p_value,note
+permuted_mnist,0,12,,,insufficient common seeds or methods
+split_cifar10,5,12,48.38461538461539,1.2189756495306625e-06,
+split_cifar100,4,12,38.625,6.133393038876278e-05,
