@@ -48,3 +48,16 @@ def latest_checkpoint(checkpoint_dir: str, prefix: str) -> str | None:
     ckpt_dir = Path(checkpoint_dir)
     candidates = sorted(ckpt_dir.glob(f"{prefix}_task*.pt"))
     return str(candidates[-1]) if candidates else None
+
+
+def cleanup_checkpoints(checkpoint_dir: str, prefix: str) -> int:
+    """Delete all checkpoints matching ``{prefix}_task*.pt``.
+
+    Returns the number of deleted checkpoint files.
+    """
+    ckpt_dir = Path(checkpoint_dir)
+    deleted = 0
+    for path in ckpt_dir.glob(f"{prefix}_task*.pt"):
+        path.unlink(missing_ok=True)
+        deleted += 1
+    return deleted

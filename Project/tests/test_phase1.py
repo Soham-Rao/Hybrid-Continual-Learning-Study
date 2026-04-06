@@ -10,7 +10,7 @@ Tests cover:
   4. SplitCIFAR10 dataset (class-IL, per-task label correctness)
   5. ResNet8 + expandable head (shape, weight preservation)
   6. SlimResNet18 (shape and param count)
-  7. All 7 methods instantiate and observe() returns a float
+  7. All implemented methods instantiate and basic observe()/2-task flows work
   8. Replay buffer reservoir sampling (capacity enforcement)
   9. Visualization pipeline (file is actually written to disk)
  10. End-to-end mini-run (PermutedMNIST, FineTune, 3 tasks, CPU)
@@ -96,9 +96,7 @@ def test_metric_values():
     # AA: mean of last row [60, 75, 88] = 74.333...
     assert abs(m["avg_accuracy"] - 74.333) < 0.1, f"AA={m['avg_accuracy']}"
 
-    # FWT: ((A[0,1]-b1) + (A[1,2]-b2)) / 2
-    # A[0,1]=nan → taken as 0 in FWT, so only A[1,2]=88 valid
-    # FWT = (nan + (88-10)) / 1  or NaN-filtered = 78.0  but depends on impl
+    # FWT uses only non-NaN zero-shot entries in the current implementation.
     assert isinstance(m["forward_transfer"], float)
 
 
@@ -192,12 +190,15 @@ def test_slim_resnet18(cifar10_batch):
 
 METHODS_CFG = [
     ("fine_tune",       {}),
+    ("joint_training",  {"joint_replay_epochs": 1}),
     ("ewc",             {"ewc_lambda": 1.0, "fisher_samples": 10}),
     ("lwf",             {"lwf_lambda": 0.5, "lwf_temp": 2.0}),
     ("agem",            {"buffer_size": 20}),
     ("der",             {"buffer_size": 20, "der_alpha": 0.5}),
     ("xder",            {"buffer_size": 20, "der_alpha": 0.5, "xder_beta": 0.5}),
+    ("icarl",           {"buffer_size": 20, "icarl_temp": 2.0, "use_nmc": True}),
     ("er_ewc",          {"buffer_size": 20, "ewc_lambda": 1.0}),
+    ("progress_compress", {"pc_distill_w": 0.5, "pc_ewc_lambda": 1.0, "pc_compress_epochs": 1}),
     ("agem_distill",    {"buffer_size": 20, "distill_lambda": 0.5}),
     ("si_der",          {"buffer_size": 20, "der_alpha": 0.5, "si_lambda": 0.5}),
 ]

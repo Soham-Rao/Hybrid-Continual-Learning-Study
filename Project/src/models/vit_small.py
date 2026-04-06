@@ -1,12 +1,9 @@
-"""ViT-Small wrapper for Colab experiments.
+"""ViT-Small wrapper for higher-memory local or fallback cloud experiments.
 
 Uses the ``timm`` library.  Gradient checkpointing and FP16 (autocast) are
-enabled by default to fit within ~15 GB VRAM on a Colab T4.
+enabled by default to reduce activation memory.
 
-Intended usage: import this file in the Colab notebooks; do NOT run locally
-unless you have ≥ 8 GB VRAM free.
-
-Requirements (Colab cell)::
+Requirements::
 
     !pip install timm -q
 """

@@ -13,7 +13,8 @@
 
 ## Compute-Bound Decisions (Why We Chose Them)
 - Dataset selection differences are compute-bound, not conceptual inconsistency.
-- Local runs for MNIST/CIFAR; Colab for Mini-ImageNet and any ViT-Small runs.
+- Local runs are the default for MNIST/CIFAR and can also be used for Phase 4 Mini-ImageNet ResNet18 runs on the current machine (`my friend's laptop`, RTX 4050 Laptop GPU, 6 GB VRAM).
+- Cloud notebooks remain a fallback if local runs become unstable, but Phase 4 is now planned local-first on the RTX 4050 machine.
 - Tiny-ImageNet is reserved for top-method subsets only (cost heavy).
 - 1 epoch per task is used for all current experiments to keep compute consistent and comparable across methods.
 - A Phase 7 has been added to revisit higher-epoch training and stronger backbones for publishable convergence stability.
@@ -21,7 +22,7 @@
 ## Project Structure (Current)
 - Core code: `Project/src/`
 - Experiments: `Project/experiments/`
-- Colab scaffolding: `colab experiments/mini_imagenet/`
+- Phase 4 runnable scripts currently in repo: `Project/notebooks/local_mini_imagenet.py` and `Project/notebooks/local_tiny_imagenet.py`
 - Results (reorganized): `results/epoch_1/` (with empty `epoch_5/`, `epoch_10/`).
 
 ## Results Reorganization (Important)
@@ -49,19 +50,14 @@
 - Paper-ready summary tables generated in `results/epoch_1/analysis/phase3/`.
 - Deferred: Progress & Compress interaction ablations (explicitly marked in tasklist).
 
-## Phase 4 (In Progress) - Mini-ImageNet on Colab
-- Colab packaging created under `colab experiments/mini_imagenet/`:
-  - `code/` (full runnable code tree)
-  - `colab_cells.txt` (cell-by-cell commands)
-  - `run.txt` (concise run commands)
-  - `download.txt` (what to download after runs)
-- Two zips provided:
-  - `content_full.zip` (contains `content/` prefix)
-  - `drive_full.zip` (recommended for Drive, contains `code/` and `data/` at Drive root)
-- Resume support added in Colab code:
-  - `code/experiments/run_experiment.py` loads latest checkpoint if `resume=True`.
-  - `code/colab_run_mini_imagenet.py` supports `--resume`.
-- GPU usage: default `--device cuda`; falls back to CPU if no GPU.
+## Phase 4 (In Progress) - Mini-ImageNet / Larger-Scale Runs
+- Current preferred execution target is local Phase 4 Mini-ImageNet ResNet18 runs on this machine (`my friend's laptop`, RTX 4050 Laptop GPU, 6 GB VRAM), not the older 3050/Colab-only assumption.
+- Cloud execution is still available as fallback for interrupted local runs or for heavier ViT-Small / Tiny-ImageNet experiments.
+- In-repo Phase 4 entry points are:
+  - `Project/notebooks/local_mini_imagenet.py`
+  - `Project/notebooks/local_tiny_imagenet.py`
+- GPU usage is expected to default to CUDA and fall back to CPU if unavailable.
+- Resume is intended to work from the latest completed task-boundary checkpoint, and successful completed runs can delete their checkpoints automatically.
 
 ## Mini-ImageNet Dataset (Local and Drive)
 - Dataset downloaded from Kaggle into `Project/data_local/mini-imagenet/`.
@@ -69,12 +65,9 @@
 - Dataset extracted into `Project/data_local/mini-imagenet/train/` with class folders.
 - Drive-based workflow updated to avoid manual upload failures.
 
-## Colab Run Status (Latest)
-- ResNet18 full run was interrupted mid-run.
-- `fine_tune` completed all 5 seeds.
-- `joint_training` started at seed 42 and was interrupted; resume command is available.
-- Resume command example (for joint_training seed 42):
-  - In `colab_cells.txt` and `run.txt`, use `--resume` with `--methods joint_training --seeds 42`.
+## Phase 4 Local Run Status
+- No new local Mini-ImageNet reruns have been started after the AGEM/resume refactor.
+- Historical cloud-notebook notes are now superseded by the local Phase 4 scripts under `Project/notebooks/`.
 
 ## Storage Constraints (Drive)
 - Drive storage ran out; safe deletions recommended:
@@ -93,11 +86,10 @@
 - Phase 7 will revisit with 5–10 epochs for convergence stability.
 
 ## Immediate Next Steps (Recommended)
-- Resume Mini-ImageNet ResNet18 `joint_training` seed 42 from checkpoint.
-- Continue remaining seeds for `joint_training`, then proceed with remaining methods.
-- Ensure Drive storage by deleting dataset duplicates and old checkpoints after verifying outputs.
-- After ResNet18, run ViT-Small (batch 16, image size 224) if compute allows.
-- Download outputs per `colab experiments/mini_imagenet/download.txt`.
+- Start local Mini-ImageNet ResNet18 runs via `Project/notebooks/local_mini_imagenet.py`.
+- Use resume-enabled task-boundary checkpoints while runs are active.
+- Let successful completed runs clean up their own checkpoints to save disk space.
+- After local ResNet18 runs stabilize, evaluate whether local ViT-Small is feasible or should remain a fallback/cloud-only path.
 
 ## Phase 7 (Planned)
 - Rerun key baselines and hybrids with higher epochs (5/10) for convergence.
@@ -114,4 +106,4 @@
 - `Docs/tasklist.md` for phase status.
 - `results/epoch_1/analysis/phase3/summary_metrics.csv` for aggregated metrics.
 - `results/epoch_1/analysis/phase3/paper_ready_summary_pretty.csv` for mean ± std tables.
-- Colab results in Drive: `/content/drive/MyDrive/colab_results/mini_imagenet/`.
+- Local Phase 4 outputs should land under `results/phase4/local_mini/` and `results/phase4/local_tiny/`.

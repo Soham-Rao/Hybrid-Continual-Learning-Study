@@ -21,7 +21,7 @@ The ability to learn continuously from a stream of data while retaining previous
 
 This document provides a comprehensive overview of how transformers store information, why catastrophic forgetting occurs, and the cutting-edge research aimed at solving this fundamental problem in machine learning.
 
-**Note on benchmark scope**: The survey covers a broad landscape, while the empirical benchmark subset is intentionally compute-bound to free-tier GPU limits. Larger datasets and ViT experiments are assigned to Colab sessions; smaller datasets remain local to keep the study reproducible without paid hardware.
+**Note on benchmark scope**: The survey covers a broad landscape, while the empirical benchmark subset is intentionally compute-bound. The current plan is local-first on an RTX 4050 laptop for Mini-ImageNet ResNet18 and other feasible runs, with cloud notebooks kept only as fallback for heavier experiments.
 
 ---
 
@@ -567,13 +567,13 @@ While numerous methods have been proposed to address catastrophic forgetting, **
 
 **Compute Strategy**:
 
-Given resource constraints, we employ a multi-platform approach optimized for free-tier cloud compute:
+Given resource constraints, we employ a mixed local-plus-fallback-cloud strategy:
 
 | Platform | GPU | VRAM | Weekly Limit | Primary Use |
 |----------|-----|------|--------------|-------------|
-| **Kaggle Notebooks** | Tesla T4/P100 | 16GB | 30 hours | Main training runs |
-| **Google Colab** | Tesla T4 | 15GB | ~12 hrs/session | Development & debugging |
-| **Local RTX 4050** | RTX 4050 | 6GB | Unlimited | Hyperparameter sweeps on small datasets |
+| **Local RTX 4050** | RTX 4050 Laptop GPU | 6GB | Unlimited | Primary Phase 4 execution, local validation, and smaller sweeps |
+| **Kaggle Notebooks** | Tesla T4/P100 | 16GB | 30 hours | Optional fallback for heavier overflow runs |
+| **Google Colab** | Tesla T4 | 15GB | ~12 hrs/session | Optional fallback for heavier overflow runs |
 
 **Memory Optimization Techniques**:
 ```python

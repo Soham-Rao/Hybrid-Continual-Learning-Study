@@ -33,42 +33,32 @@ class AGEM(BaseCLMethod):
         self._task_id   = 0
 
     # ------------------------------------------------------------------
-    def _project_gradient(self) -> None:
+    def _project_gradient(self, g_cur: torch.Tensor) -> torch.Tensor:
         """Project current grad onto the constraint g̃ · g_mem ≥ 0."""
         if self.buffer.is_empty():
-            return
+            return g_cur
 
         mem = self.buffer.sample(self.mem_batch, self.device)
         mem_x, mem_y = mem["x"], mem["y"]
 
-        # Compute memory gradient g_mem.
-        self.model.zero_grad()
+        self.optimizer.zero_grad(set_to_none=True)
         with torch.cuda.amp.autocast(enabled=self.fp16):
             mem_logits = self.model(mem_x)
             mem_loss   = F.cross_entropy(mem_logits, mem_y)
-        mem_loss.backward()
-        g_mem = torch.cat([
-            p.grad.view(-1) for p in self.model.parameters()
-            if p.grad is not None
-        ])
+        self.scaler.scale(mem_loss).backward()
+        if self.fp16:
+            self.scaler.unscale_(self.optimizer)
+        g_mem = self._grad_vector().detach().clone()
 
-        # Collect current task gradient g_cur (already computed).
-        g_cur = torch.cat([
-            p.grad.view(-1) for p in self.model.parameters()
-            if p.grad is not None
-        ])
+        self.optimizer.zero_grad(set_to_none=True)
+        if g_mem.numel() == 0:
+            return g_cur
 
         dot = (g_cur * g_mem).sum()
-        if dot < 0:
-            # Violation: project g_cur onto the halfspace.
-            g_proj = g_cur - (dot / (g_mem * g_mem).sum()) * g_mem
-            # Write projected gradients back.
-            offset = 0
-            for p in self.model.parameters():
-                if p.grad is not None:
-                    n = p.grad.numel()
-                    p.grad.copy_(g_proj[offset: offset + n].view_as(p.grad))
-                    offset += n
+        mem_norm = (g_mem * g_mem).sum()
+        if dot < 0 and mem_norm > 0:
+            return g_cur - (dot / mem_norm) * g_mem
+        return g_cur
 
     # ------------------------------------------------------------------
     def observe(
@@ -85,13 +75,20 @@ class AGEM(BaseCLMethod):
         with torch.cuda.amp.autocast(enabled=self.fp16):
             logits = self.model(x)
             loss   = self._ce_loss(logits, y)
-        loss.backward()
+        self.scaler.scale(loss).backward()
+        if self.fp16:
+            self.scaler.unscale_(self.optimizer)
+
+        g_cur = self._grad_vector().detach().clone()
 
         # Project gradient if we have past memory.
         if not self.buffer.is_empty():
-            self._project_gradient()
+            g_cur = self._project_gradient(g_cur)
 
-        self.optimizer.step()
+        self._write_grad_vector(g_cur)
+
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
         return loss.item()
 
     # ------------------------------------------------------------------

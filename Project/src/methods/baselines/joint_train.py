@@ -56,9 +56,21 @@ class JointTraining(BaseCLMethod):
     def after_task(self, task_id: int, train_loader: DataLoader) -> None:
         """Collect this task's data and do a full-dataset replay pass."""
         # Gather new task data (CPU tensors).
+        max_samples = self.cfg.get("max_samples_per_task")
+        collected = 0
         for x, y in train_loader:
-            self._all_x.append(x.cpu())
-            self._all_y.append(y.cpu())
+            if max_samples is None:
+                self._all_x.append(x.cpu())
+                self._all_y.append(y.cpu())
+                continue
+
+            remaining = max_samples - collected
+            if remaining <= 0:
+                break
+            take = min(remaining, x.size(0))
+            self._all_x.append(x[:take].cpu())
+            self._all_y.append(y[:take].cpu())
+            collected += take
 
         # Rebuild a TensorDataset over all accumulated data.
         all_x = torch.cat(self._all_x, dim=0)
@@ -77,3 +89,13 @@ class JointTraining(BaseCLMethod):
                 x_b = x_b.to(self.device)
                 y_b = y_b.to(self.device)
                 self.observe(x_b, y_b, task_id)
+
+    def _method_state(self) -> Dict[str, Any]:
+        return {
+            "all_x": self._all_x,
+            "all_y": self._all_y,
+        }
+
+    def _load_method_state(self, state: Dict[str, Any]) -> None:
+        self._all_x = state.get("all_x", [])
+        self._all_y = state.get("all_y", [])

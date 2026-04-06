@@ -4,7 +4,7 @@
 A Data-Driven Comparative Analysis of Hybrid Continual Learning Methods: Mitigating Catastrophic Forgetting
 
 # Compute-Bound Dataset Rationale
-The dataset mix is intentionally driven by free-tier GPU constraints. Larger datasets (Mini-ImageNet, Tiny-ImageNet) and ViT runs are executed on Colab with checkpointing, while smaller datasets run locally. This keeps results reproducible without paid hardware while still covering increasing task complexity.
+The dataset mix is intentionally driven by limited hardware budgets. Smaller datasets already run locally, and Mini-ImageNet ResNet18 is now also intended to run locally on the RTX 4050 laptop with resumable checkpoints. Heavier ViT/Tiny-ImageNet work can still use a fallback cloud path if local memory becomes a bottleneck.
 
 # About the Data Set
 The project utilizes a suite of standard computer vision benchmark datasets designed to simulate a continuous stream of learning tasks:

@@ -78,7 +78,9 @@ def forward_transfer(
 
     Equation: FWT = (1/(T-1)) Σ_{i=1}^{T-1} (A[i-1,i] − b_i)
 
-    where b_i is the task i accuracy BEFORE learning starts (random init baseline).
+    where b_i is the reference baseline for task i before learning starts.
+    In the current project pipeline, the trainer supplies a chance-level
+    baseline term for this comparison.
 
     Positive FWT → prior knowledge gives a head-start on new tasks.
     """

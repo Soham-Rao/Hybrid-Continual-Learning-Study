@@ -9,9 +9,9 @@ A rigorous comparative study of **hybrid continual learning (CL) methods** to id
 - **Research focus**: Hybrid CL methods (combinations of ≥2 strategies)
 - **Standalone methods**: Included only as baseline reference rows in tables/plots
 - **Scenarios**: Class-Incremental Learning (Class-IL) primarily; Permuted MNIST uses Domain-IL naturally
-- **Compute split**: Local runs for small/medium datasets; Google Colab for larger datasets and ViT experiments
+- **Compute split**: Local runs for small/medium datasets and Phase 4 Mini-ImageNet ResNet18; optional fallback cloud use for heavier ViT experiments
 - **Frontend**: Streamlit dashboard built *after* all experiments conclude
-- **Compute-bound dataset rationale**: The benchmark set is intentionally constrained by free-tier GPU limits. Heavier datasets (Mini-ImageNet, Tiny-ImageNet) and ViT runs are kept on Colab, while smaller datasets stay local to remain reproducible without paid hardware.
+- **Compute-bound dataset rationale**: The benchmark set is intentionally constrained by limited hardware. Mini-ImageNet ResNet18 is now planned locally on the RTX 4050 laptop, while heavier ViT/Tiny-ImageNet work may still use a fallback cloud path if needed.
 
 ---
 
@@ -21,10 +21,10 @@ A rigorous comparative study of **hybrid continual learning (CL) methods** to id
 |---|---|---|---|
 | Permuted MNIST, Split CIFAR-10 | ResNet-8 / Slim ResNet-18 | **Local** | Both systems |
 | Split CIFAR-100 | Slim ResNet-18 | **Local** | Both systems, FP16 |
-| Split Mini-ImageNet | Slim ResNet-18, ViT-Small\* | **Colab T4** | Multi-session, checkpoint to Drive |
-| Sequential Tiny-ImageNet | ViT-Small\* | **Colab T4** | Selected top methods only |
+| Split Mini-ImageNet | Slim ResNet-18, ViT-Small\* | **Local RTX 4050 first** | Resume-enabled local runs; cloud fallback optional |
+| Sequential Tiny-ImageNet | ViT-Small\* / Slim ResNet-18 | **Local feasibility first** | Selected top methods only |
 
-\*ViT-Small uses gradient checkpointing + FP16 + gradient accumulation to fit Colab's ~15GB VRAM.
+\*ViT-Small uses gradient checkpointing + FP16 + gradient accumulation to stay within the local RTX 4050 memory budget where feasible, with cloud fallback still possible if needed.
 
 ---
 
@@ -38,8 +38,8 @@ d:\Catastrophic Forgetting\Project\
 │   │   ├── permuted_mnist.py       # Domain-IL, 10 tasks
 │   │   ├── split_cifar10.py        # Class-IL, 5 tasks × 2 classes
 │   │   ├── split_cifar100.py       # Class-IL, 20 tasks × 5 classes
-│   │   ├── split_mini_imagenet.py  # Class-IL, 20 tasks × 5 classes (Colab)
-│   │   ├── seq_tiny_imagenet.py    # Class-IL, 10 tasks × 20 classes (Colab)
+│   │   ├── split_mini_imagenet.py  # Class-IL, 20 tasks × 5 classes
+│   │   ├── seq_tiny_imagenet.py    # Class-IL, 10 tasks × 20 classes
 │   │   └── base_dataset.py         # Abstract base class for all dataset wrappers
 │   ├── models/
 │   │   ├── __init__.py
@@ -84,15 +84,13 @@ d:\Catastrophic Forgetting\Project\
 │   │   └── split_cifar100_*.yaml
 │   └── run_experiment.py           # CLI entrypoint: --config, --seed, --device
 ├── notebooks/
-│   ├── colab_mini_imagenet.ipynb   # Colab: Mini-ImageNet all methods
-│   ├── colab_tiny_imagenet.ipynb   # Colab: Tiny-ImageNet top methods + ViT
-│   └── analysis.ipynb              # Statistical tests, ablations, Pareto charts
+│   ├── local_mini_imagenet.py      # Local: Mini-ImageNet multi-method runner
+│   └── local_tiny_imagenet.py      # Local: Tiny-ImageNet top-method runner
 ├── results/
 │   ├── raw/                        # Per-run CSVs (method, dataset, seed, metrics)
 │   └── figures/                    # PNG plots per method × dataset
 ├── requirements.txt
-└── app/
-    └── main.py                     # Streamlit dashboard (Phase 6)
+└── app/                            # Planned for Phase 6 (not created yet)
 ```
 
 ---
@@ -123,11 +121,11 @@ class BaseCLDataset:
 - Outputs a feature vector; classifier head is separate and expandable
 - ~2M parameters. FP16 training via `torch.cuda.amp`
 
-**ViT-Small** (Colab only):
+**ViT-Small** (optional higher-memory run):
 - Loaded from `timm` library (`vit_small_patch16_224`)
 - Gradient checkpointing enabled (`model.set_grad_checkpointing(True)`)
 - FP16 via `torch.cuda.amp.autocast`
-- Gradient accumulation (steps=4) to simulate batch=64 with batch=16
+- Gradient checkpointing is enabled; batch size should stay conservative on local hardware
 
 **Expandable Classifier Head** (Class-IL):
 - Multi-head design: one output head per task group
@@ -239,19 +237,20 @@ seeds: [42, 123, 456, 789, 1024]
 
 ---
 
-### 9. Colab Notebooks
+### 9. Local Phase 4 Runners
 
-**`colab_mini_imagenet.ipynb`**:
-- Mount Google Drive → load dataset from Drive
-- Install dependencies, import `src/` via `sys.path`
-- Run all baseline + hybrid methods on Mini-ImageNet
-- Save results CSV + PNGs to Drive
+**`Project/notebooks/local_mini_imagenet.py`**:
+- runs Mini-ImageNet locally
+- supports multiple methods and seeds
+- enables task-boundary resume
+- can delete checkpoints automatically after successful completion
 
-**`colab_tiny_imagenet.ipynb`**:
-- Same structure, but only top-3 hybrid methods + baselines
-- ViT-Small with gradient checkpointing + FP16
+**`Project/notebooks/local_tiny_imagenet.py`**:
+- runs Tiny-ImageNet locally with a top-method subset
+- supports resumable task-boundary checkpoints
+- keeps local-first execution while preserving a fallback path for heavier runs
 
-**Checkpoint strategy**: After each task, save `{method}_{task_id}.pt` to Drive. Colab reconnection resumes from last checkpoint.
+**Checkpoint strategy**: Save `{run_name}_task{N}.pt` after each completed task. Resume continues from the latest completed task checkpoint. Completed successful runs may delete checkpoints automatically to save space.
 
 ---
 
@@ -282,7 +281,7 @@ Implementation: `sklearn.tree.DecisionTreeClassifier` trained on (experiment con
 
 ---
 
-### 12. Streamlit Dashboard (`app/main.py`) — Phase 6
+### 12. Streamlit Dashboard (`Project/app/main.py`, planned) — Phase 6
 
 Sections:
 1. **Inputs panel**: Sliders + dropdowns for hardware constraints + task params
@@ -328,7 +327,7 @@ Sections:
 | Distill α/λ | 0.1, 0.5, 1.0 | For distillation term weight |
 | LR | 0.01, 0.03, 0.1 | SGD with momentum 0.9 |
 | Epochs/task | 1, 5 | 1 = standard CL setting |
-| Batch size | 32 (local), 16 (Colab ViT) | |
+| Batch size | 32 (local ResNet), small conservative batches for local ViT | |
 | Seeds | 5 per config (42, 123, 456, 789, 1024) | |
 
 ---
@@ -403,7 +402,7 @@ streamlit>=1.29.0     # Phase 6 only
 > Class-IL (no task ID at test time) is the default scenario for all image datasets. This is the hardest and most scientifically rigorous setting. The expandable multi-head classifier with argmax over all heads handles this correctly.
 
 > [!NOTE]
-> ViT-Small experiments run exclusively on Colab with checkpoint-resume support. This means Colab experiments are designed to survive session disconnections gracefully.
+> ViT-Small experiments are optional and should use conservative local settings first; cloud fallback remains available if local memory becomes the bottleneck.
 
 > [!NOTE]
 > Novel hybrid methods (A-GEM+Distill, SI+DER) are original contributions of this project. Their results will be discussed comparatively alongside known methods.

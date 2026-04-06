@@ -136,3 +136,13 @@ class EWC(BaseCLMethod):
         # Estimate Fisher.
         self._fishers.append(self._compute_fisher(train_loader))
         self.model.train()
+
+    def _method_state(self) -> Dict[str, Any]:
+        return {
+            "old_params": self._old_params,
+            "fishers": self._fishers,
+        }
+
+    def _load_method_state(self, state: Dict[str, Any]) -> None:
+        self._old_params = state.get("old_params", [])
+        self._fishers = state.get("fishers", [])

@@ -1,4 +1,4 @@
-"""Sequential Tiny-ImageNet — Class-Incremental benchmark (Colab / high-VRAM).
+"""Sequential Tiny-ImageNet — Class-Incremental benchmark for local or cloud runs.
 
 Tiny-ImageNet: 200 classes, 110,000 images at 64×64 RGB pixels.
 Split into **10 sequential tasks of 20 classes each** (Class-IL).
@@ -112,12 +112,10 @@ class TinyImageNetDataset(Dataset):
 class SeqTinyImageNet(BaseCLDataset):
     """10-task Sequential Tiny-ImageNet benchmark (Class-IL, 20 classes/task).
 
-    Intended for **Colab execution** with ViT-Small model only.
-
     Args:
         root:        Path to ``tiny-imagenet-200`` root directory.
-        batch_size:  16 recommended for ViT on T4 (with grad accumulation).
-        num_workers: 4 recommended on Colab.
+        batch_size:  Small batches are recommended for local ViT runs.
+        num_workers: DataLoader workers for the local machine.
     """
 
     _TASK_CLASSES: List[List[int]] = [

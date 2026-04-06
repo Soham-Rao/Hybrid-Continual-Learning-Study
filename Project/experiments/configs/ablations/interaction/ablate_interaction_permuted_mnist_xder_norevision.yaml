@@ -6,7 +6,7 @@ seeds:
 - 42
 - 123
 - 456
-results_root: results_phase3_interactions_plots
-log_dir: results_phase3_interactions_plots/raw
-figure_dir: results_phase3_interactions_plots/figures
+results_root: results/epoch_1/ablations/interactions_plots
+log_dir: results/epoch_1/ablations/interactions_plots/raw
+figure_dir: results/epoch_1/ablations/interactions_plots/figures
 xder_beta: 0.0

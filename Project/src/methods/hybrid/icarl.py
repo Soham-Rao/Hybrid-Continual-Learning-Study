@@ -130,12 +130,19 @@ class iCaRL(BaseCLMethod):
 
         # Herding exemplar selection.
         n_per_class = max(1, self.buffer.capacity // self.model.n_classes)
+        self.buffer.prune_per_class(n_per_class)
         self.buffer.add_task_exemplars(features, xs, ys, task_id, n_per_class)
 
-        # Update class means (used by NMC).
-        for cls in ys.unique().tolist():
-            mask = (ys == cls)
-            self.class_means[cls] = features[mask].mean(0).to(self.device)
+        # Recompute class means from the actual stored exemplar set.
+        self.class_means = {}
+        if self.buffer._storage:
+            buf_x = torch.stack([entry["x"] for entry in self.buffer._storage]).to(self.device)
+            buf_y = torch.stack([entry["y"] for entry in self.buffer._storage]).to(self.device)
+            with torch.no_grad():
+                buf_features = self.model.get_features(buf_x)
+            for cls in buf_y.unique().tolist():
+                mask = (buf_y == cls)
+                self.class_means[int(cls)] = buf_features[mask].mean(0).detach()
 
         self.model.train()
 
@@ -159,3 +166,9 @@ class iCaRL(BaseCLMethod):
         dists = (feats.unsqueeze(1) - means.unsqueeze(0)).pow(2).sum(-1)
         pred_local = dists.argmin(1)                      # index in `classes`
         return torch.tensor([classes[i] for i in pred_local.tolist()], device=x.device)
+
+    def _method_state(self) -> Dict[str, Any]:
+        return {"class_means": self.class_means}
+
+    def _load_method_state(self, state: Dict[str, Any]) -> None:
+        self.class_means = state.get("class_means", {})

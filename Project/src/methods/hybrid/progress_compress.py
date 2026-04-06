@@ -204,3 +204,26 @@ class ProgressCompress(BaseCLMethod):
         for p in self.kb.parameters():
             p.requires_grad_(False)
         self.model.train()
+
+    def _method_state(self) -> Dict[str, Any]:
+        return {
+            "kb_state": self.kb.state_dict(),
+            "kb_n_classes": self.kb.n_classes,
+            "kb_old_params": self._kb_old_params,
+            "kb_fisher": self._kb_fisher,
+        }
+
+    def _load_method_state(self, state: Dict[str, Any]) -> None:
+        kb_n_classes = state.get("kb_n_classes", 0)
+        kb_expand = kb_n_classes - self.kb.n_classes
+        if kb_expand > 0:
+            self.kb.expand(kb_expand)
+        kb_state = state.get("kb_state")
+        if kb_state is not None:
+            self.kb.load_state_dict(kb_state)
+        self.kb.to(self.device)
+        self.kb.eval()
+        for p in self.kb.parameters():
+            p.requires_grad_(False)
+        self._kb_old_params = state.get("kb_old_params", {})
+        self._kb_fisher = state.get("kb_fisher", {})

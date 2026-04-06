@@ -61,6 +61,8 @@ base_config:
   disable_tqdm: true
   disable_checkpoints: false
   disable_plots: false
+  resume: false
+  cleanup_checkpoints_on_success: false
   seeds: [42, 123, 456, 789, 1024]
   results_root: results
   checkpoint_dir: results/checkpoints

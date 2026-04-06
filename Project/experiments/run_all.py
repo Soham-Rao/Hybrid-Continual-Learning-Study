@@ -72,6 +72,16 @@ def main() -> None:
         help="Force-enable plotting regardless of config.",
     )
     parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume each run from the latest completed task checkpoint if present.",
+    )
+    parser.add_argument(
+        "--cleanup-checkpoints",
+        action="store_true",
+        help="Delete a run's checkpoints after it completes successfully.",
+    )
+    parser.add_argument(
         "--config-dir",
         default=None,
         help="Override config directory (defaults to experiments/configs).",
@@ -114,6 +124,10 @@ def main() -> None:
             cfg["figure_dir"] = args.figure_dir
         if args.enable_plots:
             cfg["disable_plots"] = False
+        if args.resume:
+            cfg["resume"] = True
+        if args.cleanup_checkpoints:
+            cfg["cleanup_checkpoints_on_success"] = True
         disable_plots = disable_plots or cfg.get("disable_plots", False)
         if results_root is None:
             results_root = cfg.get("results_root", "results")

@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import matplotlib
-matplotlib.use("Agg")          # headless, safe for servers and Colab
+matplotlib.use("Agg")          # headless, safe for servers and notebook runs
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np

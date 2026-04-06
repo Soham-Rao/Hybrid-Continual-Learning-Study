@@ -79,12 +79,15 @@ class CLTrainer:
         """Run the full continual learning sequence.
 
         Args:
-            start_task: Resume from this task ID (used for Colab checkpoint
-                        recovery — 0 means start fresh).
+            start_task: Resume from this task ID after restoring the latest
+                        task-boundary checkpoint. ``0`` means start fresh.
 
         Returns:
             Dictionary with ``acc_matrix``, ``metrics``, and ``task_times``.
         """
+        if start_task >= self.n_tasks:
+            return self.current_results()
+
         all_test_loaders = self.dataset.get_all_test_loaders()
 
         for task_id in range(start_task, self.n_tasks):
@@ -155,15 +158,29 @@ class CLTrainer:
             self._save_ckpt(task_id)
 
         # ── Final metrics ──────────────────────────────────────────────
+        results = self.current_results()
+        self.logger.print("\n" + self._metrics_str(results["metrics"]))
+        return results
+
+    def current_results(self) -> Dict[str, Any]:
         metrics = compute_all_metrics(
             self.acc_matrix, self.baseline_acc, self.n_tasks
         )
-        self.logger.print("\n" + self._metrics_str(metrics))
         return {
-            "acc_matrix":  self.acc_matrix,
-            "metrics":     metrics,
-            "task_times":  self.task_times,
+            "acc_matrix": self.acc_matrix,
+            "metrics": metrics,
+            "task_times": self.task_times,
         }
+
+    def resume_from_latest(self) -> int:
+        """Restore the latest task-boundary checkpoint for this run.
+
+        Returns the next task index to train.
+        """
+        ckpt_path = latest_checkpoint(self._checkpoint_dir, self._run_name)
+        if ckpt_path is None:
+            return 0
+        return self._restore_ckpt(ckpt_path)
 
     # ------------------------------------------------------------------
     # Training helpers
@@ -258,18 +275,35 @@ class CLTrainer:
             f"{self._checkpoint_dir}/"
             f"{self._run_name}_task{task_id}.pt"
         )
-        buf = self.method.get_buffer()
         save_checkpoint(
             {
                 "task_id":      task_id,
+                "model_n_classes": self.method.model.n_classes,
                 "model_state":  self.method.model.state_dict(),
                 "acc_matrix":   self.acc_matrix,
                 "baseline_acc": self.baseline_acc,
                 "task_times":   self.task_times,
-                "buffer":       buf._storage if buf else None,
+                "method_state": self.method.state_dict(),
             },
             path,
         )
+
+    def _restore_ckpt(self, path: str) -> int:
+        state = load_checkpoint(path, device=str(self.device))
+        model_n_classes = int(state.get("model_n_classes", 0))
+        to_expand = model_n_classes - self.method.model.n_classes
+        if to_expand > 0:
+            self.method.model.expand(to_expand)
+            self.method.model.to(self.device)
+        self.method.model.load_state_dict(state["model_state"])
+        self.method.load_state_dict(state.get("method_state", {}))
+        self.acc_matrix = state.get("acc_matrix", self.acc_matrix)
+        self.baseline_acc = state.get("baseline_acc", self.baseline_acc)
+        self.task_times = state.get("task_times", self.task_times)
+        next_task = int(state.get("task_id", -1)) + 1
+        self.logger.print(f"Resumed from checkpoint: {path}")
+        self.logger.print(f"Next task index: {next_task}")
+        return next_task
 
     # ------------------------------------------------------------------
     @staticmethod

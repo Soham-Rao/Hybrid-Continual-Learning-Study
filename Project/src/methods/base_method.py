@@ -78,7 +78,7 @@ class ReplayBuffer:
         if self.strategy != "reservoir":
             raise RuntimeError("Use add_task_exemplars() for herding strategy.")
         x, y = x.detach().cpu(), y.detach().cpu()
-        logits_cpu = logits.detach().cpu() if logits is not None else None
+        logits_cpu = logits.detach().float().cpu() if logits is not None else None
 
         for i in range(x.size(0)):
             sample = {
@@ -130,6 +130,8 @@ class ReplayBuffer:
                 # Greedily pick the sample that moves running mean closest.
                 candidates = (running_sum.unsqueeze(0) + feats) / (len(selected) + 1)
                 dists = (candidates - class_mean).pow(2).sum(1)
+                if selected:
+                    dists[selected] = float("inf")
                 chosen = int(dists.argmin().item())
                 selected.append(chosen)
                 running_sum += feats[chosen]
@@ -149,6 +151,8 @@ class ReplayBuffer:
                         if s["y"].item() == cls:
                             self._storage[s_idx] = sample
                             break
+                    else:
+                        self._storage[0] = sample
 
     # ------------------------------------------------------------------
     def sample(
@@ -189,6 +193,20 @@ class ReplayBuffer:
             "task_ids": task_ids,
         }
 
+    def state_dict(self) -> Dict[str, Any]:
+        return {
+            "capacity": self.capacity,
+            "strategy": self.strategy,
+            "storage": self._storage,
+            "n_seen": self._n_seen,
+        }
+
+    def load_state_dict(self, state: Dict[str, Any]) -> None:
+        self.capacity = state.get("capacity", self.capacity)
+        self.strategy = state.get("strategy", self.strategy)
+        self._storage = state.get("storage", [])
+        self._n_seen = state.get("n_seen", len(self._storage))
+
     # ------------------------------------------------------------------
     def update_logits(self, model: nn.Module, device: torch.device) -> None:
         """Re-compute and overwrite stored logits (used by X-DER).
@@ -199,7 +217,7 @@ class ReplayBuffer:
         with torch.no_grad():
             for entry in self._storage:
                 x = entry["x"].unsqueeze(0).to(device)
-                entry["logits"] = model(x).squeeze(0).cpu()
+                entry["logits"] = model(x).squeeze(0).float().cpu()
                 entry["logit_size"] = int(entry["logits"].numel())
         model.train()
 
@@ -214,6 +232,18 @@ class ReplayBuffer:
     def clear(self) -> None:
         self._storage.clear()
         self._n_seen = 0
+
+    def prune_per_class(self, max_per_class: int) -> None:
+        """Keep at most *max_per_class* samples for each class."""
+        kept: List[Dict[str, Any]] = []
+        counts: Dict[int, int] = {}
+        for sample in self._storage:
+            cls = int(sample["y"].item())
+            if counts.get(cls, 0) >= max_per_class:
+                continue
+            kept.append(sample)
+            counts[cls] = counts.get(cls, 0) + 1
+        self._storage = kept
 
 
 # ===========================================================================
@@ -324,3 +354,42 @@ class BaseCLMethod(ABC):
         self, logits: torch.Tensor, labels: torch.Tensor
     ) -> torch.Tensor:
         return nn.functional.cross_entropy(logits, labels)
+
+    def state_dict(self) -> Dict[str, Any]:
+        state = {"method_state": self._method_state()}
+        buf = self.get_buffer()
+        if buf is not None:
+            state["buffer_state"] = buf.state_dict()
+        return state
+
+    def load_state_dict(self, state: Dict[str, Any]) -> None:
+        buf_state = state.get("buffer_state")
+        buf = self.get_buffer()
+        if buf is not None and buf_state is not None:
+            buf.load_state_dict(buf_state)
+        self._load_method_state(state.get("method_state", {}))
+
+    def _method_state(self) -> Dict[str, Any]:
+        return {}
+
+    def _load_method_state(self, state: Dict[str, Any]) -> None:
+        del state
+
+    def _grad_vector(self) -> torch.Tensor:
+        grads = [
+            p.grad.view(-1)
+            for p in self.model.parameters()
+            if p.grad is not None
+        ]
+        if not grads:
+            return torch.empty(0, device=self.device)
+        return torch.cat(grads)
+
+    def _write_grad_vector(self, grad_vector: torch.Tensor) -> None:
+        offset = 0
+        for p in self.model.parameters():
+            if p.grad is None:
+                continue
+            n = p.grad.numel()
+            p.grad.copy_(grad_vector[offset: offset + n].view_as(p.grad))
+            offset += n

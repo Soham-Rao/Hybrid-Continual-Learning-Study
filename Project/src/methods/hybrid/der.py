@@ -65,13 +65,14 @@ class DER(BaseCLMethod):
                         < mem["logit_sizes"][:, None]
                     )
                     dark_loss = F.mse_loss(
-                        buf_logits_now[:, :stored_dim][mask],
-                        mem["logits"][mask],
+                        buf_logits_now[:, :stored_dim].float()[mask],
+                        mem["logits"].float()[mask],
                     )
                 else:
                     stored_dim = mem["logits"].size(1)
                     dark_loss  = F.mse_loss(
-                        buf_logits_now[:, :stored_dim], mem["logits"]
+                        buf_logits_now[:, :stored_dim].float(),
+                        mem["logits"].float(),
                     )
 
             loss = ce_loss + self.der_alpha * dark_loss
@@ -84,6 +85,6 @@ class DER(BaseCLMethod):
         with torch.no_grad():
             with torch.cuda.amp.autocast(enabled=self.fp16):
                 stored_logits = self.model(x)
-        self.buffer.add(x, y, task_id, logits=stored_logits.detach())
+        self.buffer.add(x, y, task_id, logits=stored_logits.detach().float())
 
         return loss.item()

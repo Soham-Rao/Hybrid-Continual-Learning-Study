@@ -1,4 +1,4 @@
-"""Split Mini-ImageNet — Class-Incremental benchmark (Colab / high-VRAM only).
+"""Split Mini-ImageNet — Class-Incremental benchmark for local or fallback cloud runs.
 
 Mini-ImageNet: 100 classes, 64,000 images at 84×84 RGB pixels.
 Split into **20 sequential tasks of 5 classes each** (Class-IL).
@@ -63,13 +63,11 @@ def _build_transforms(train: bool, image_size: int = _IMAGE_SIZE) -> transforms.
 class SplitMiniImageNet(BaseCLDataset):
     """20-task Split Mini-ImageNet benchmark (Class-IL, 5 classes/task).
 
-    This dataset is **intended for Colab execution** where adequate VRAM
-    (≥12 GB) is available.
-
     Args:
         root:        Path to the mini-imagenet root directory.
-        batch_size:  Mini-batch size (16 recommended for ViT-Small on T4).
-        num_workers: DataLoader workers (4 recommended on Colab).
+        batch_size:  Mini-batch size. 32 works for local ResNet runs;
+                     smaller values are recommended for ViT-Small.
+        num_workers: DataLoader workers for the local machine.
         seed:        Used for reproducible train/test split when no
                      separate test folder exists.
     """

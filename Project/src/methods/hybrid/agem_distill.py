@@ -78,31 +78,30 @@ class AGEM_Distill(BaseCLMethod):
         ) * (T ** 2)
 
     # ------------------------------------------------------------------
-    def _project_gradient(self) -> None:
+    def _project_gradient(self, g_cur: torch.Tensor) -> torch.Tensor:
         """A-GEM gradient projection onto memory constraint."""
         if self.buffer.is_empty():
-            return
-        mem   = self.buffer.sample(self.mem_batch, self.device)
-        self.model.zero_grad()
+            return g_cur
+        mem = self.buffer.sample(self.mem_batch, self.device)
+
+        self.optimizer.zero_grad(set_to_none=True)
         with torch.cuda.amp.autocast(enabled=self.fp16):
             m_logits  = self.model(mem["x"])
             m_loss    = F.cross_entropy(m_logits, mem["y"])
-        m_loss.backward()
-        g_mem = torch.cat([
-            p.grad.view(-1) for p in self.model.parameters() if p.grad is not None
-        ])
-        g_cur = torch.cat([
-            p.grad.view(-1) for p in self.model.parameters() if p.grad is not None
-        ])
+        self.scaler.scale(m_loss).backward()
+        if self.fp16:
+            self.scaler.unscale_(self.optimizer)
+        g_mem = self._grad_vector().detach().clone()
+
+        self.optimizer.zero_grad(set_to_none=True)
+        if g_mem.numel() == 0:
+            return g_cur
+
         dot = (g_cur * g_mem).sum()
-        if dot < 0:
-            g_proj = g_cur - (dot / (g_mem * g_mem).sum()) * g_mem
-            offset = 0
-            for p in self.model.parameters():
-                if p.grad is not None:
-                    n = p.grad.numel()
-                    p.grad.copy_(g_proj[offset: offset + n].view_as(p.grad))
-                    offset += n
+        mem_norm = (g_mem * g_mem).sum()
+        if dot < 0 and mem_norm > 0:
+            return g_cur - (dot / mem_norm) * g_mem
+        return g_cur
 
     # ------------------------------------------------------------------
     def observe(
@@ -120,12 +119,17 @@ class AGEM_Distill(BaseCLMethod):
             distill_loss = self._distillation_loss(logits, x)
             loss        = ce_loss + self.distill_lam * distill_loss
 
-        loss.backward()
-        if not self.buffer.is_empty():
-            self._project_gradient()
-        self.optimizer.step()
+        self.scaler.scale(loss).backward()
+        if self.fp16:
+            self.scaler.unscale_(self.optimizer)
 
-        self.buffer.add(x, y, task_id)
+        g_cur = self._grad_vector().detach().clone()
+        if not self.buffer.is_empty():
+            g_cur = self._project_gradient(g_cur)
+        self._write_grad_vector(g_cur)
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
+
         return loss.item()
 
     # ------------------------------------------------------------------

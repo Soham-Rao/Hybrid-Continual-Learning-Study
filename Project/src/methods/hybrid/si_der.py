@@ -187,3 +187,9 @@ class SI_DER(BaseCLMethod):
     # ------------------------------------------------------------------
     def after_task(self, task_id: int, train_loader: DataLoader) -> None:
         self._update_si_omega()
+
+    def _method_state(self) -> Dict[str, Any]:
+        return {"si_omega": self._si_omega}
+
+    def _load_method_state(self, state: Dict[str, Any]) -> None:
+        self._si_omega = state.get("si_omega", {})

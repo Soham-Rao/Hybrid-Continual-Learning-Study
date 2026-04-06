@@ -1,5 +1,7 @@
 # Project Summary
 
+Note: the current repository computes FWT from pre-training zero-shot accuracy minus a baseline term `b_i`, and the current trainer uses chance-level `b_i`. In Class-IL this often drives strongly negative FWT values, so treat FWT here as a zero-shot transfer proxy rather than an especially strong standalone ranking signal.
+
 ## Tables
 
 ### Permuted MNIST (10 tasks × 10 classes) — 10 fixed pixel permutations of MNIST digits (Domain‑IL).
@@ -95,28 +97,28 @@
 | si_der (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + SI + logit MSE | 200 | 1.0 | - | 1.0 | true | - | 2.77 ± 0.23 | 45.14 ± 2.19 | -45.14 ± 2.19 | -2.71 ± 0.03 |
 | xder (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + logit MSE (X‑DER) | 200 | 1.0 | - | - | true | der_alpha=0.5, xder_beta=0.5 | 1.65 ± 0.90 | 36.11 ± 9.19 | -36.11 ± 9.19 | -2.72 ± 0.02 |
 
-### Split Mini‑ImageNet (20 tasks × 5 classes) — 100‑class subset; Colab runs pending.
+### Split Mini‑ImageNet (20 tasks × 5 classes) — 100‑class subset; local Phase 4 runs pending.
 
 | Method | Model | Epochs/Task | Batch | LR | Optimizer | Loss | Buffer | Distill λ | EWC λ | SI λ | FP16 | Other | Avg Acc | Forgetting | BWT | FWT |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| fine_tune (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE | - | - | - | - | true | - | - | - | - | - |
-| joint_training (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE (joint replay) | full (all tasks) | - | - | - | true | joint_replay_epochs=1 | - | - | - | - |
-| ewc (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + EWC | - | - | 100.0 | - | true | - | - | - | - | - |
-| agem (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + GEM projection | 200 | - | - | - | true | agem_mem_batch=64 | - | - | - | - |
-| lwf (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + KD (LwF) | - | 1.0 | - | - | true | lwf_lambda=1.0, lwf_temp=2.0 | - | - | - | - |
-| der (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + logit MSE (DER) | 200 | 1.0 | - | - | true | der_alpha=0.5 | - | - | - | - |
-| xder (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + logit MSE (X‑DER) | 200 | 1.0 | - | - | true | der_alpha=0.5, xder_beta=0.5 | - | - | - | - |
-| icarl (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + KD + NMC | 200 | 1.0 | - | - | true | icarl_temp=2.0, use_nmc=True | - | - | - | - |
-| er_ewc (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + replay + EWC | 200 | - | 100.0 | - | true | er_replay_ratio=0.5 | - | - | - | - |
-| progress_compress (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + distill + EWC (compress) | - | 1.0 | 100.0 | - | true | pc_distill_w=1.0, pc_compress_epochs=3 | - | - | - | - |
-| agem_distill (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + GEM projection + distill | 200 | 1.0 | - | - | true | agem_mem_batch=64, distill_temp=2.0 | - | - | - | - |
-| si_der (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (Colab) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + SI + logit MSE | 200 | 1.0 | - | 1.0 | true | - | - | - | - | - |
+| fine_tune (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE | - | - | - | - | true | - | - | - | - | - |
+| joint_training (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE (joint replay) | full (all tasks) | - | - | - | true | joint_replay_epochs=1 | - | - | - | - |
+| ewc (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + EWC | - | - | 100.0 | - | true | - | - | - | - | - |
+| agem (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + GEM projection | 200 | - | - | - | true | agem_mem_batch=64 | - | - | - | - |
+| lwf (baseline) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + KD (LwF) | - | 1.0 | - | - | true | lwf_lambda=1.0, lwf_temp=2.0 | - | - | - | - |
+| der (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + logit MSE (DER) | 200 | 1.0 | - | - | true | der_alpha=0.5 | - | - | - | - |
+| xder (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + logit MSE (X‑DER) | 200 | 1.0 | - | - | true | der_alpha=0.5, xder_beta=0.5 | - | - | - | - |
+| icarl (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + KD + NMC | 200 | 1.0 | - | - | true | icarl_temp=2.0, use_nmc=True | - | - | - | - |
+| er_ewc (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + replay + EWC | 200 | - | 100.0 | - | true | er_replay_ratio=0.5 | - | - | - | - |
+| progress_compress (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + distill + EWC (compress) | - | 1.0 | 100.0 | - | true | pc_distill_w=1.0, pc_compress_epochs=3 | - | - | - | - |
+| agem_distill (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + GEM projection + distill | 200 | 1.0 | - | - | true | agem_mem_batch=64, distill_temp=2.0 | - | - | - | - |
+| si_der (hybrid) | Slim ResNet‑18 (18 layers, ~2M params) / ViT‑Small (optional) | 1 | 32 | 0.03 | SGD (m=0.9, wd=0.0001) | CE + SI + logit MSE | 200 | 1.0 | - | 1.0 | true | - | - | - | - | - |
 
 ## Tools
 
 - **PyTorch** — Core training and autograd for all models and CL methods.
 - **torchvision** — Dataset utilities and transforms for MNIST/CIFAR.
-- **timm** — ViT‑Small model for planned Colab runs.
+- **timm** — ViT‑Small model for optional higher-memory runs.
 - **NumPy** — Vectorized metric aggregation and statistics.
 - **Pandas** — Result table assembly and CSV outputs.
 - **Matplotlib** — Primary plotting backend for curves/heatmaps.
@@ -126,7 +128,7 @@
 - **tqdm** — Progress bars during training.
 - **pytest** — Sanity tests for trainer, metrics, and plotting.
 - **Streamlit** — Planned dashboard UI for Phase 6.
-- **Google Colab + Drive** — Free‑tier GPU runs with checkpoint persistence.
+- **Local RTX 4050 + optional cloud fallback** — resumable larger-dataset runs.
 
 ## Ablation Notes
 

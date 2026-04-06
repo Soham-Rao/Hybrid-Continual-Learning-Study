@@ -12,9 +12,7 @@ or run manually with different --seed values.
 """
 
 import argparse
-import os
 import sys
-import time
 from pathlib import Path
 from typing import Any, Dict
 
@@ -28,14 +26,12 @@ from src.datasets    import get_dataset
 from src.models      import get_model
 from src.methods     import get_method
 from src.trainers.cl_trainer import CLTrainer
-from src.metrics.continual_metrics import compute_all_metrics
 from src.visualization.plots import (
     plot_summary_grid,
-    plot_all_metric_bars,
     plot_training_curves,
     plot_accuracy_heatmap,
 )
-from src.utils import seed_everything, RunLogger
+from src.utils import seed_everything, RunLogger, cleanup_checkpoints
 
 
 # ===========================================================================
@@ -98,7 +94,12 @@ def run(cfg: Dict[str, Any], seed: int, device: str) -> Dict[str, Any]:
 
     # ── Trainer ───────────────────────────────────────────────────────────
     trainer = CLTrainer(method, dataset, cfg, logger, dev)
-    results = trainer.train()
+    start_task = 0
+    if cfg.get("resume", False):
+        start_task = trainer.resume_from_latest()
+        if start_task >= dataset.n_tasks:
+            logger.print("Checkpoint already contains a completed run.")
+    results = trainer.train(start_task=start_task)
 
     acc_matrix = results["acc_matrix"]
     metrics    = results["metrics"]
@@ -133,6 +134,16 @@ def run(cfg: Dict[str, Any], seed: int, device: str) -> Dict[str, Any]:
     logger.print(f"\nDone - run: {run_name}")
     logger.print(f"Metrics: {metrics}")
 
+    if (
+        not cfg.get("disable_checkpoints", False)
+        and cfg.get("cleanup_checkpoints_on_success", False)
+    ):
+        deleted = cleanup_checkpoints(
+            cfg.get("checkpoint_dir", "results/checkpoints"),
+            run_name,
+        )
+        logger.print(f"Deleted {deleted} checkpoint(s) after successful completion.")
+
     return {"run_name": run_name, "metrics": metrics, "acc_matrix": acc_matrix}
 
 
@@ -145,9 +156,17 @@ def main() -> None:
                         help="Random seed (default 42).")
     parser.add_argument("--device", default="cuda",
                         help="'cuda', 'cpu', or 'cuda:0' etc. (default: cuda)")
+    parser.add_argument("--resume", action="store_true",
+                        help="Resume from the latest completed task checkpoint, if present.")
+    parser.add_argument("--cleanup-checkpoints", action="store_true",
+                        help="Delete this run's task checkpoints after a successful completed run.")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
+    if args.resume:
+        cfg["resume"] = True
+    if args.cleanup_checkpoints:
+        cfg["cleanup_checkpoints_on_success"] = True
     run(cfg, seed=args.seed, device=args.device)
 
 
