@@ -1,0 +1,11 @@
+dataset: permuted_mnist
+model: resnet8
+method: icarl
+run_tag: nonmc
+seeds:
+- 42
+- 123
+- 456
+result_group: ablations
+ablation_family: interaction
+use_nmc: false

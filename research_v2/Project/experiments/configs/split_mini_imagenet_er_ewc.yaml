@@ -1,0 +1,14 @@
+# Split Mini-ImageNet — ER+EWC hybrid
+dataset: split_mini_imagenet
+data_root: data_local/mini-imagenet
+model: slim_resnet18
+method: er_ewc
+n_epochs: 1
+batch_size: 32
+num_workers: 0
+lr: 0.03
+fp16: true
+buffer_size: 200
+ewc_lambda: 100.0
+er_replay_ratio: 0.5
+seeds: [42, 123, 456, 789, 1024]

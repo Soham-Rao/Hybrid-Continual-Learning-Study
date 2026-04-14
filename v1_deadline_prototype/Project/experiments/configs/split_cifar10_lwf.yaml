@@ -1,0 +1,11 @@
+# Split CIFAR-10 — LwF (distillation-only baseline)
+dataset: split_cifar10
+model: slim_resnet18
+method: lwf
+lwf_lambda: 1.0
+lwf_temp: 2.0
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: false
+seeds: [42, 123, 456, 789, 1024]

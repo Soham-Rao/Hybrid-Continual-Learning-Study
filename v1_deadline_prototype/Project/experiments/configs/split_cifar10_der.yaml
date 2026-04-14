@@ -1,0 +1,11 @@
+# Split CIFAR-10 — DER (Replay + Distillation hybrid)
+dataset: split_cifar10
+model: slim_resnet18
+method: der
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: false
+buffer_size: 200
+der_alpha: 0.5
+seeds: [42, 123, 456, 789, 1024]

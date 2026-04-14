@@ -1,0 +1,16 @@
+dataset: split_mini_imagenet
+data_root: Project/data_local/mini-imagenet
+model: slim_resnet18
+pretrained: false
+n_epochs: 1
+batch_size: 32
+num_workers: 0
+lr: 0.03
+momentum: 0.9
+weight_decay: 0.0001
+fp16: true
+disable_tqdm: false
+disable_checkpoints: false
+disable_plots: false
+resume: true
+cleanup_checkpoints_on_success: true

@@ -1,0 +1,11 @@
+dataset: split_cifar10
+model: slim_resnet18
+method: der
+run_tag: nodistill
+seeds:
+- 42
+- 123
+- 456
+result_group: ablations
+ablation_family: interaction
+der_alpha: 0.0

@@ -1,0 +1,13 @@
+# Split CIFAR-100 — A-GEM + Distillation (novel hybrid)
+dataset: split_cifar100
+model: slim_resnet18
+method: agem_distill
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: true
+buffer_size: 200
+agem_mem_batch: 64
+distill_lambda: 1.0
+distill_temp: 2.0
+seeds: [42, 123, 456, 789, 1024]

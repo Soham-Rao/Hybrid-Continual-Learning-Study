@@ -1,0 +1,10 @@
+# Permuted MNIST — LwF (distillation-only baseline)
+dataset: permuted_mnist
+model: resnet8
+method: lwf
+lwf_lambda: 1.0
+lwf_temp: 2.0
+n_epochs: 1
+batch_size: 32
+fp16: false
+seeds: [42, 123, 456, 789, 1024]

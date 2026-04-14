@@ -1,0 +1,11 @@
+# Split CIFAR-100 — EWC
+dataset: split_cifar100
+model: slim_resnet18
+method: ewc
+ewc_lambda: 100.0
+fisher_samples: 200
+n_epochs: 1
+batch_size: 32
+lr: 0.03
+fp16: true
+seeds: [42, 123, 456, 789, 1024]

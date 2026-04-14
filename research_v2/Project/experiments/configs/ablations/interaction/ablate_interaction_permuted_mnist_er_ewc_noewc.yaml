@@ -1,0 +1,11 @@
+dataset: permuted_mnist
+model: resnet8
+method: er_ewc
+run_tag: noewc
+seeds:
+- 42
+- 123
+- 456
+result_group: ablations
+ablation_family: interaction
+ewc_lambda: 0.0

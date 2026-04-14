@@ -1,0 +1,11 @@
+dataset: permuted_mnist
+model: resnet8
+method: xder
+run_tag: norevision
+seeds:
+- 42
+- 123
+- 456
+result_group: ablations
+ablation_family: interaction
+xder_beta: 0.0

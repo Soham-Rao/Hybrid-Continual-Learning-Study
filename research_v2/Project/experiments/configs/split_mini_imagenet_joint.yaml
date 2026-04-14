@@ -1,0 +1,12 @@
+# Split Mini-ImageNet — Joint Training baseline
+dataset: split_mini_imagenet
+data_root: data_local/mini-imagenet
+model: slim_resnet18
+method: joint_training
+n_epochs: 1
+batch_size: 32
+num_workers: 0
+lr: 0.03
+fp16: true
+joint_replay_epochs: 1
+seeds: [42, 123, 456, 789, 1024]

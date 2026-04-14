@@ -1,0 +1,13 @@
+# Split Mini-ImageNet — LwF baseline
+dataset: split_mini_imagenet
+data_root: data_local/mini-imagenet
+model: slim_resnet18
+method: lwf
+n_epochs: 1
+batch_size: 32
+num_workers: 0
+lr: 0.03
+fp16: true
+lwf_lambda: 1.0
+lwf_temp: 2.0
+seeds: [42, 123, 456, 789, 1024]

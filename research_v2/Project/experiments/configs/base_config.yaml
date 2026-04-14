@@ -1,0 +1,74 @@
+base_config:
+  # ── Dataset ──────────────────────────────────────────────────────────────
+  dataset: split_cifar10
+  data_root: data_local
+  dataset_image_size: null
+  dataset_out_channels: null
+
+  # ── Model ────────────────────────────────────────────────────────────────
+  model: slim_resnet18
+  pretrained: false
+  model_image_size: null
+
+  # ── Method ───────────────────────────────────────────────────────────────
+  method: fine_tune
+
+  # ── Training ─────────────────────────────────────────────────────────────
+  n_epochs: 1
+  batch_size: 32
+  num_workers: 0
+  lr: 0.03
+  momentum: 0.9
+  weight_decay: 0.0001
+  fp16: false
+
+  # ── Replay buffer ────────────────────────────────────────────────────────
+  buffer_size: 200
+
+  # ── EWC / SI ─────────────────────────────────────────────────────────────
+  ewc_lambda: 100.0
+  fisher_samples: 200
+  si_lambda: 1.0
+  si_xi: 0.1
+
+  # ── DER / X-DER ──────────────────────────────────────────────────────────
+  der_alpha: 0.5
+  xder_beta: 0.5
+
+  # ── LwF / iCaRL distillation ─────────────────────────────────────────────
+  lwf_lambda: 1.0
+  lwf_temp: 2.0
+  icarl_distill_w: 1.0
+  icarl_temp: 2.0
+  use_nmc: true
+
+  # ── A-GEM ────────────────────────────────────────────────────────────────
+  agem_mem_batch: 64
+
+  # ── A-GEM + Distill ──────────────────────────────────────────────────────
+  distill_lambda: 1.0
+  distill_temp: 2.0
+
+  # ── Progress & Compress ──────────────────────────────────────────────────
+  pc_distill_w: 1.0
+  pc_ewc_lambda: 100.0
+  pc_compress_epochs: 3
+
+  # ── ER-Reservoir + EWC ───────────────────────────────────────────────────
+  er_replay_ratio: 0.5
+
+  # ── Joint Training ───────────────────────────────────────────────────────
+  joint_replay_epochs: 1
+
+  # ── Experiment control ───────────────────────────────────────────────────
+  disable_tqdm: true
+  disable_checkpoints: false
+  disable_plots: false
+  resume: false
+  cleanup_checkpoints_on_success: false
+  result_group: runs
+  ablation_family: null
+
+  # ── Seeds / roots ────────────────────────────────────────────────────────
+  seeds: [42, 123, 456, 789, 1024]
+  results_root: results

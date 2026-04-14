@@ -1,0 +1,11 @@
+# Permuted MNIST — smoke test (3 tasks, 1 seed, 1 epoch, no figures)
+# Run: python experiments/run_experiment.py --config experiments/configs/smoke_test.yaml --seed 42 --device cuda
+dataset: permuted_mnist
+model: resnet8
+method: fine_tune
+n_tasks: 3
+n_epochs: 1
+batch_size: 128
+lr: 0.03
+fp16: false
+seeds: [42]

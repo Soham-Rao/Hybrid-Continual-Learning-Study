@@ -1,0 +1,11 @@
+dataset: permuted_mnist
+model: resnet8
+method: agem_distill
+run_tag: nodistill
+seeds:
+- 42
+- 123
+- 456
+result_group: ablations
+ablation_family: interaction
+distill_lambda: 0.0
