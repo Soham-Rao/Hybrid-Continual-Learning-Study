@@ -798,11 +798,20 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
       function startMomentum() {{
         stopMomentum();
-        const friction = 0.92;
-        const minVelocity = 0.12;
+        const friction = 0.9;
+        const minVelocity = 0.08;
         function tick() {{
-          tx += velocityX;
-          ty += velocityY;
+          const proposedTx = tx + velocityX;
+          const proposedTy = ty + velocityY;
+          const clamped = clampTransformState(proposedTx, proposedTy, scale);
+          if (Math.abs(clamped.tx - proposedTx) > 0.2) {{
+            velocityX = 0;
+          }}
+          if (Math.abs(clamped.ty - proposedTy) > 0.2) {{
+            velocityY = 0;
+          }}
+          tx = clamped.tx;
+          ty = clamped.ty;
           targetTx = tx;
           targetTy = ty;
           targetScale = scale;
@@ -1058,17 +1067,17 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const dy = event.clientY - lastY;
         dragDistance += Math.abs(dx) + Math.abs(dy);
         const dt = Math.max(now - lastMoveAt, 8);
-        const panBoost = Math.min(2.6 + (scale * 0.18), 6.1);
-        tx += dx * panBoost;
-        ty += dy * panBoost;
-        const clampedPan = clampTransformState(tx, ty, scale);
+        const panGain = 1.08;
+        const proposedTx = tx + (dx * panGain);
+        const proposedTy = ty + (dy * panGain);
+        const clampedPan = clampTransformState(proposedTx, proposedTy, scale);
         tx = clampedPan.tx;
         ty = clampedPan.ty;
         targetTx = tx;
         targetTy = ty;
         targetScale = scale;
-        velocityX = (dx * panBoost) / dt * 22;
-        velocityY = (dy * panBoost) / dt * 22;
+        velocityX = (dx * panGain) / dt * 18;
+        velocityY = (dy * panGain) / dt * 18;
         lastX = event.clientX;
         lastY = event.clientY;
         lastMoveAt = now;
