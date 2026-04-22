@@ -7,6 +7,7 @@ from .engine import CopilotEngine, CopilotExplanationResult
 from .external_sources import ExternalLookupPolicy, default_external_lookup_policy
 from .method_cards import MethodCard, get_method_card
 from .ollama_client import OllamaClient, OllamaGenerateResult, OllamaStatus
+from .policies import SafetyEnvelope, SourceDisclosure, build_safety_envelope
 from .prompts import build_explain_recommendation_system_prompt, build_explain_recommendation_user_prompt
 from .retrieval import CopilotRetriever, EvidenceItem, RetrievalBundle
 
@@ -25,8 +26,11 @@ __all__ = [
     "OllamaStatus",
     "RecommendationExplanationContext",
     "RetrievalBundle",
+    "SafetyEnvelope",
+    "SourceDisclosure",
     "build_explain_recommendation_system_prompt",
     "build_explain_recommendation_user_prompt",
+    "build_safety_envelope",
     "default_external_lookup_policy",
     "get_method_card",
     "infer_settings_from_text",

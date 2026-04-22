@@ -13,6 +13,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.dashboard_data import DATASET_LABELS, dataset_options, load_dashboard_bundle
 from app.copilot_runtime import get_copilot_settings, get_copilot_status
+from app.copilot_ui import init_copilot_state, render_copilot_panel
 from app.dashboard_views import (
     render_artifact_library_tab,
     render_decision_tree_tab,
@@ -153,35 +154,41 @@ def _sidebar(bundle) -> dict:
 
 def main() -> None:
     inject_css()
+    init_copilot_state()
     bundle = _bundle()
     render_missing_artifacts(bundle)
     render_hero(bundle)
     state = _sidebar(bundle)
 
-    tabs = st.tabs(["Recommendation", "Decision Tree", "Method Comparison", "Dataset Visuals", "Report / About", "Library"])
-    with tabs[0]:
-        render_recommendation_tab(bundle, state["request"])
-    with tabs[1]:
-        render_decision_tree_tab(bundle, state["request"])
-    with tabs[2]:
-        render_comparison_tab(
-            bundle,
-            dataset=state["dataset"],
-            families=state["families"],
-            include_joint=state["include_joint"],
-            top_cluster_only=state["top_cluster_only"],
-        )
-    with tabs[3]:
-        render_dataset_visuals_tab(
-            bundle,
-            dataset=state["dataset"],
-            families=state["families"],
-            include_joint=state["include_joint"],
-        )
-    with tabs[4]:
-        render_report_tab(bundle, dataset=state["dataset"], include_joint=state["include_joint"])
-    with tabs[5]:
-        render_artifact_library_tab(bundle, dataset=state["dataset"])
+    panel_width = 1.35 if st.session_state.get("copilot_open") else 0.22
+    main_col, copilot_col = st.columns([5.2, panel_width], gap="medium")
+    with main_col:
+        tabs = st.tabs(["Recommendation", "Decision Tree", "Method Comparison", "Dataset Visuals", "Report / About", "Library"])
+        with tabs[0]:
+            render_recommendation_tab(bundle, state["request"])
+        with tabs[1]:
+            render_decision_tree_tab(bundle, state["request"])
+        with tabs[2]:
+            render_comparison_tab(
+                bundle,
+                dataset=state["dataset"],
+                families=state["families"],
+                include_joint=state["include_joint"],
+                top_cluster_only=state["top_cluster_only"],
+            )
+        with tabs[3]:
+            render_dataset_visuals_tab(
+                bundle,
+                dataset=state["dataset"],
+                families=state["families"],
+                include_joint=state["include_joint"],
+            )
+        with tabs[4]:
+            render_report_tab(bundle, dataset=state["dataset"], include_joint=state["include_joint"])
+        with tabs[5]:
+            render_artifact_library_tab(bundle, dataset=state["dataset"])
+    with copilot_col:
+        render_copilot_panel(bundle, state["request"])
 
 
 if __name__ == "__main__":

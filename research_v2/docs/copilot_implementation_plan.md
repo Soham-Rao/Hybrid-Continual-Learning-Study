@@ -103,6 +103,7 @@ First-release approval:
 - prompt-template chips are in scope for the initial build
 - they should appear above the chat box as hoverable suggestions/examples
 - they may prefill or inject text, but should not auto-send prompts
+- future chat refinement should support streamed token-by-token output instead of only full responses appearing at once
 
 ## Knowledge Sources
 
@@ -303,12 +304,45 @@ Track 4 implementation lock:
 - it returns a structured proposal plus visible assumptions rather than mutating controls directly
 - every inferred-settings result is confirmation-gated before application
 - vague hardware descriptions such as older GPUs, laptop-only setups, and retraining tolerance are mapped conservatively
+- broader hardware descriptions such as additional GPUs, CPU-only setups, CPU tiers, and RAM amounts are interpreted heuristically with explicit scope notes when the mapping is only approximate
+- if the request references hardware, datasets, or backbone choices outside the exact evaluated study scope, the copilot should say so clearly and frame the result as an estimated suggestion rather than a directly validated one
 
 ### Chart Interpretation Flow
 1. User asks about a chart while on a given tab.
 2. App passes the active tab, chart type, filters, and selected dataset/method context.
 3. Retrieval layer gathers the relevant summary rows and report snippets.
 4. LLM returns a simple interpretation grounded in visible evidence.
+
+### Clarification Flow
+1. User gives an ambiguous or underspecified natural-language request.
+2. The settings-inference layer identifies only the highest-value missing signals.
+3. The copilot returns at most a few targeted clarification questions instead of expanding into a long generic chat.
+4. Follow-up answers refine the proposed settings while preserving visible assumptions and confirmation gating.
+
+Track 5 implementation lock:
+- clarification is now generated only when important setting gaps remain
+- the question set is intentionally capped and focused on the biggest unresolved decision variables
+- follow-up prompting should refine the inferred settings rather than opening a freeform broad conversation
+
+### Dashboard Integration Flow
+1. The user opens the copilot from the slim right-side reveal handle.
+2. The panel stays available while the main dashboard tabs continue to drive the core workspace.
+3. The copilot keeps its conversation state across tab switches and reruns.
+4. Quick actions can trigger explanation, chart-help entry points, and settings application.
+5. Settings application remains confirmation-gated and updates the dashboard controls only when explicitly applied.
+
+Track 6 implementation lock:
+- the first visible copilot UI is now integrated as a collapsible right-side panel shell
+- the panel persists alongside Recommendation, Decision Tree, Method Comparison, Dataset Visuals, Report/About, and Library
+- chat state survives tab switches through session state
+- quick actions exist for explaining the recommendation, prompting chart help, applying inferred settings, dismissing the panel, and clearing chat
+- the first Streamlit implementation uses a slim right-side reveal/toggle handle rather than a fully custom hover-only overlay
+
+Track 7 implementation lock:
+- prompt-template buttons now appear above the chat box
+- they prefill the chat draft rather than sending immediately
+- templates cover recommendation explanation, comparison, settings inference, chart interpretation, trade-offs, and literature-backed prompts
+- template copy is contextualized with the current dataset and, when available, the current recommended method
 
 ## Prompt Design
 
@@ -338,6 +372,13 @@ Prompt the model to:
 
 Additional Track 0 lock:
 - if the evidence is insufficient, the assistant should say so instead of filling the gap with confident generic prose
+
+Track 8 implementation lock:
+- every explanation response now carries an explicit note that the deterministic recommendation engine remains the recommendation source of truth
+- responses now disclose whether they are grounded in local study evidence, local notes/documents, or external material
+- the copilot now surfaces an uncertainty note whenever retrieved evidence is sparse or mixed
+- if generated wording drifts toward unsupported significance or literature-authority claims without matching retrieved evidence, the UI adds a claim-guardrail note
+- evidence snippets are now attached to explanation responses so higher-stakes answers can point back to concrete retrieved context
 
 ## Suggested Delivery Order
 

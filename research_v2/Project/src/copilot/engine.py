@@ -13,6 +13,7 @@ from .config import CopilotSettings
 from .context_builder import CopilotContextBuilder, RecommendationExplanationContext
 from .method_cards import get_method_card
 from .ollama_client import OllamaClient, OllamaError
+from .policies import SafetyEnvelope, build_safety_envelope
 from .prompts import build_explain_recommendation_system_prompt, build_explain_recommendation_user_prompt
 from .retrieval import CopilotRetriever, EvidenceItem
 
@@ -23,6 +24,11 @@ class CopilotExplanationResult:
     summary: str
     explanation: str
     evidence_items: tuple[EvidenceItem, ...]
+    recommendation_source_note: str
+    source_disclosure: str
+    uncertainty_note: str
+    claim_guardrail_note: str | None
+    evidence_snippets: tuple[str, ...]
     used_model: str | None
     mode: str
 
@@ -47,6 +53,34 @@ def _fallback_explanation(ctx: RecommendationExplanationContext) -> tuple[str, s
     summary = f"{ctx.method_card.label} fits this request because it offers the strongest grounded trade-off under the current constraints."
     explanation = f"{summary}\n\nEmpirical evidence: {empirical}\n\nConceptual interpretation: {conceptual}\n\nComparison: {comparison}"
     return summary, explanation
+
+
+def _build_result(
+    *,
+    ctx: RecommendationExplanationContext,
+    summary: str,
+    explanation: str,
+    used_model: str | None,
+    mode: str,
+) -> CopilotExplanationResult:
+    safety: SafetyEnvelope = build_safety_envelope(
+        explanation,
+        ctx.evidence.items,
+        external_policy_note=ctx.evidence.external_policy_note,
+    )
+    return CopilotExplanationResult(
+        recommended_method=ctx.recommended_method,
+        summary=summary,
+        explanation=explanation,
+        evidence_items=ctx.evidence.items,
+        recommendation_source_note=safety.recommendation_source_note,
+        source_disclosure=safety.source_disclosure,
+        uncertainty_note=safety.uncertainty_note,
+        claim_guardrail_note=safety.claim_guardrail_note,
+        evidence_snippets=safety.evidence_snippets,
+        used_model=used_model,
+        mode=mode,
+    )
 
 
 class CopilotEngine:
@@ -81,21 +115,19 @@ class CopilotEngine:
                 temperature=0.2,
             )
             summary = f"{get_method_card(ctx.recommended_method).label} is recommended because it best matches the current empirical trade-off and constraints."
-            return CopilotExplanationResult(
-                recommended_method=ctx.recommended_method,
+            return _build_result(
+                ctx=ctx,
                 summary=summary,
                 explanation=generated.text,
-                evidence_items=ctx.evidence.items,
                 used_model=generated.model,
                 mode="ollama",
             )
         except OllamaError:
             summary, explanation = _fallback_explanation(ctx)
-            return CopilotExplanationResult(
-                recommended_method=ctx.recommended_method,
+            return _build_result(
+                ctx=ctx,
                 summary=summary,
                 explanation=explanation,
-                evidence_items=ctx.evidence.items,
                 used_model=None,
                 mode="fallback",
             )

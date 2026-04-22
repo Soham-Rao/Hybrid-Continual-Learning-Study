@@ -42,31 +42,31 @@ This track covers the conversational assistant that lives inside the dashboard a
 - [x] Preserve user trust by surfacing what was assumed versus what was directly stated
 
 ## Track 5 — Follow-Up Questioning
-- [ ] Add a lightweight clarification mode when the user request is too ambiguous
-- [ ] Limit clarifying questions to high-value gaps only
-- [ ] Use follow-up answers to refine inferred settings or the explanation context
-- [ ] Avoid turning the copilot into a long generic chat unless that is explicitly needed
+- [x] Add a lightweight clarification mode when the user request is too ambiguous
+- [x] Limit clarifying questions to high-value gaps only
+- [x] Use follow-up answers to refine inferred settings or the explanation context
+- [x] Avoid turning the copilot into a long generic chat unless that is explicitly needed
 
 ## Track 6 — Dashboard Integration
-- [ ] Add a right-edge hidden hover handle that reveals the copilot across all tabs
-- [ ] Keep the copilot persistent across Recommendation, Method Comparison, Dataset Visuals, Report/About, Library, and Decision Tree views
-- [ ] Preserve chat state across tab switches
-- [ ] Add quick actions for “Explain this recommendation”, “Explain this chart”, and “Apply inferred settings”
-- [ ] Add dismiss / collapse behavior that feels lightweight and non-intrusive
+- [x] Add a right-edge hidden hover handle that reveals the copilot across all tabs
+- [x] Keep the copilot persistent across Recommendation, Method Comparison, Dataset Visuals, Report/About, Library, and Decision Tree views
+- [x] Preserve chat state across tab switches
+- [x] Add quick actions for “Explain this recommendation”, “Explain this chart”, and “Apply inferred settings”
+- [x] Add dismiss / collapse behavior that feels lightweight and non-intrusive
 
 ## Track 7 — Prompt Templates And Guided Prompts
-- [ ] Add hoverable prompt-template chips above the chat box
-- [ ] Include templates for explanation, constraint translation, comparison, chart interpretation, and literature-backed questions
-- [ ] Make prompt suggestions context-aware to the active tab when possible
-- [ ] Keep templates short, practical, and phrased for strong grounded responses
-- [ ] Test that templates improve output quality without making the UI feel cluttered
+- [x] Add hoverable prompt-template chips above the chat box
+- [x] Include templates for explanation, constraint translation, comparison, chart interpretation, and literature-backed questions
+- [x] Make prompt suggestions context-aware to the active tab when possible
+- [x] Keep templates short, practical, and phrased for strong grounded responses
+- [x] Test that templates improve output quality without making the UI feel cluttered
 
 ## Track 8 — Safety, Grounding, And Claim Control
-- [ ] Force the copilot to treat the deterministic engine as the recommendation source of truth
-- [ ] Prevent unsupported claims about scientific results, significance, or literature
-- [ ] Surface uncertainty when evidence is thin or mixed
-- [ ] Label when a response is using external internet material versus local study evidence
-- [ ] Add citation or evidence snippets for high-stakes explanations when practical
+- [x] Force the copilot to treat the deterministic engine as the recommendation source of truth
+- [x] Prevent unsupported claims about scientific results, significance, or literature
+- [x] Surface uncertainty when evidence is thin or mixed
+- [x] Label when a response is using external internet material versus local study evidence
+- [x] Add citation or evidence snippets for high-stakes explanations when practical
 
 ## Track 9 — Evaluation
 - [ ] Define qualitative acceptance criteria for clarity, grounding, and usefulness

@@ -11,7 +11,8 @@ def build_explain_recommendation_system_prompt() -> str:
         "The deterministic recommendation engine is the source of truth for which method was recommended. "
         "Explain why the recommendation fits, compare it with nearby alternatives, and distinguish clearly between "
         "empirical evidence from the study and your conceptual inference. "
-        "Do not invent significance claims or unsupported empirical results. "
+        "Do not invent significance claims, literature claims, or unsupported empirical results. "
+        "If no retrieved evidence explicitly supports a statistical or literature-backed statement, avoid making it. "
         "If evidence is thin, say so plainly."
     )
 
