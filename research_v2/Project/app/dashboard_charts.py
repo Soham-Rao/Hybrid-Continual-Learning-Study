@@ -505,6 +505,12 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
                 "value": int(row.value),
                 "score": float(row.score),
                 "active": bool(row.active),
+                "bounds": {
+                    "min_x": float(min(x1, x2)),
+                    "max_x": float(max(x1, x2)),
+                    "min_y": float(min(sy0, sy1, ty0, ty1)) - 3.0,
+                    "max_y": float(max(sy0, sy1, ty0, ty1)) + 3.0,
+                },
             }
         )
 
@@ -644,6 +650,9 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       let scale = 1.0;
       let tx = 20;
       let ty = 24;
+      let targetScale = scale;
+      let targetTx = tx;
+      let targetTy = ty;
       let dragging = false;
       let lastX = 0;
       let lastY = 0;
@@ -654,7 +663,11 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       let lastMoveAt = 0;
       let selectedFlowId = null;
       let pendingTransform = false;
+      let transformAnimationFrame = null;
       let interactionTimer = null;
+      let hoverAnimationFrame = null;
+      let hoverEvent = null;
+      let currentSelection = new Set();
       const activeFill = "rgba(110,231,183,0.62)";
       const contextFill = "rgba(148,163,184,0.26)";
       const selectedFill = "rgba(251,191,36,0.78)";
@@ -673,15 +686,35 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         requestAnimationFrame(() => {{
           pendingTransform = false;
           setTransform();
-          drawFlows(selectedFlowId
-            ? new Set(
-                (linksByCase.get(flowById.get(selectedFlowId)?.case_id) || [])
-                  .filter((item) => item.stage_step <= (flowById.get(selectedFlowId)?.stage_step || 0))
-                  .map((item) => item.id)
-              )
-            : new Set()
-          );
         }});
+      }}
+
+      function animateToTarget() {{
+        transformAnimationFrame = null;
+        const scaleDelta = targetScale - scale;
+        const txDelta = targetTx - tx;
+        const tyDelta = targetTy - ty;
+        const scaleDone = Math.abs(scaleDelta) < 0.0008;
+        const txDone = Math.abs(txDelta) < 0.35;
+        const tyDone = Math.abs(tyDelta) < 0.35;
+        if (scaleDone && txDone && tyDone) {{
+          scale = targetScale;
+          tx = targetTx;
+          ty = targetTy;
+          scheduleTransform();
+          setInteractiveMode(false);
+          return;
+        }}
+        scale += scaleDelta * 0.18;
+        tx += txDelta * 0.22;
+        ty += tyDelta * 0.22;
+        scheduleTransform();
+        transformAnimationFrame = requestAnimationFrame(animateToTarget);
+      }}
+
+      function ensureTransformAnimation() {{
+        if (transformAnimationFrame) return;
+        transformAnimationFrame = requestAnimationFrame(animateToTarget);
       }}
 
       function setInteractiveMode(active) {{
@@ -704,10 +737,15 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         scale = 1.0;
         tx = 20;
         ty = 24;
+        targetScale = scale;
+        targetTx = tx;
+        targetTy = ty;
         velocityX = 0;
         velocityY = 0;
         selectedFlowId = null;
         if (momentumFrame) cancelAnimationFrame(momentumFrame);
+        if (transformAnimationFrame) cancelAnimationFrame(transformAnimationFrame);
+        transformAnimationFrame = null;
         applySelection(new Set());
         setInteractiveMode(false);
         scheduleTransform();
@@ -727,6 +765,9 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         function tick() {{
           tx += velocityX;
           ty += velocityY;
+          targetTx = tx;
+          targetTy = ty;
+          targetScale = scale;
           velocityX *= friction;
           velocityY *= friction;
           setInteractiveMode(true);
@@ -754,6 +795,13 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       const flowById = new Map(flows.map((flow) => [flow.id, flow]));
       const linksByCase = new Map();
       const nodeElements = new Map();
+      const labelElements = new Map();
+      const stageLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const nodeLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const labelLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      viewport.appendChild(stageLayer);
+      viewport.appendChild(nodeLayer);
+      viewport.appendChild(labelLayer);
 
       function registerCase(flow) {{
         if (!linksByCase.has(flow.case_id)) {{
@@ -794,11 +842,12 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       }}
 
       function applySelection(linkIds) {{
+        currentSelection = new Set(linkIds);
         drawFlows(linkIds);
         const highlightedNodes = selectedNodeIds(linkIds);
         nodeElements.forEach((groupEl, nodeId) => {{
           const rect = groupEl.querySelector("rect");
-          const label = groupEl.querySelector("text");
+          const label = labelElements.get(nodeId);
           const node = groupEl.__data;
           if (!rect || !label) return;
           const fill = linkIds.size
@@ -819,7 +868,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         text.setAttribute("font-weight", "700");
         text.style.pointerEvents = "none";
         text.textContent = stage.label;
-        viewport.appendChild(text);
+        stageLayer.appendChild(text);
       }});
 
       flows.forEach((flow) => registerCase(flow));
@@ -853,9 +902,10 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         label.textContent = node.label;
 
         group.appendChild(rect);
-        group.appendChild(label);
         nodeElements.set(node.id, group);
-        viewport.appendChild(group);
+        labelElements.set(node.id, label);
+        nodeLayer.appendChild(group);
+        labelLayer.appendChild(label);
       }});
 
       function worldPointFromEvent(event) {{
@@ -872,6 +922,10 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const {{ worldX, worldY }} = worldPointFromEvent(event);
         for (let i = flows.length - 1; i >= 0; i -= 1) {{
           const flow = flows[i];
+          const bounds = flow.bounds;
+          if (worldX < bounds.min_x || worldX > bounds.max_x || worldY < bounds.min_y || worldY > bounds.max_y) {{
+            continue;
+          }}
           if (ctx.isPointInPath(flow.path2d, worldX, worldY)) {{
             return flow;
           }}
@@ -904,21 +958,37 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const mouseY = event.clientY - rect.top;
         stopMomentum();
         setInteractiveMode(true);
-        const direction = event.deltaY < 0 ? 1.18 : 0.84;
-        const nextScale = Math.min(Math.max(scale * direction, 0.3), 18.0);
-        const worldX = (mouseX - tx) / scale;
-        const worldY = (mouseY - ty) / scale;
-        tx = mouseX - (worldX * nextScale);
-        ty = mouseY - (worldY * nextScale);
-        scale = nextScale;
-        scheduleTransform();
-        setInteractiveMode(false);
+        const deltaModeFactor = event.deltaMode === 1 ? 18 : event.deltaMode === 2 ? 120 : 1;
+        const normalizedDelta = Math.max(-180, Math.min(180, event.deltaY * deltaModeFactor));
+        const zoomFactor = Math.exp(-normalizedDelta * 0.00105);
+        const baseScale = targetScale;
+        const baseTx = targetTx;
+        const baseTy = targetTy;
+        const nextScale = Math.min(Math.max(baseScale * zoomFactor, 0.3), 18.0);
+        const worldX = (mouseX - baseTx) / baseScale;
+        const worldY = (mouseY - baseTy) / baseScale;
+        const anchorX = mouseX - (worldX * nextScale);
+        const anchorY = mouseY - (worldY * nextScale);
+        const frameCenterX = rect.width / 2;
+        const frameCenterY = rect.height / 2;
+        const centeredX = frameCenterX - (worldX * nextScale);
+        const centeredY = frameCenterY - (worldY * nextScale);
+        const centerPull = 0.32;
+        targetTx = anchorX + ((centeredX - anchorX) * centerPull);
+        targetTy = anchorY + ((centeredY - anchorY) * centerPull);
+        targetScale = nextScale;
+        ensureTransformAnimation();
       }}, {{ passive: false }});
 
       frame.addEventListener("mousemove", (event) => {{
         if (dragging) return;
-        const hit = hitFlowAtEvent(event);
-        frame.style.cursor = hit ? "pointer" : "grab";
+        hoverEvent = event;
+        if (hoverAnimationFrame) return;
+        hoverAnimationFrame = requestAnimationFrame(() => {{
+          hoverAnimationFrame = null;
+          const hit = hoverEvent ? hitFlowAtEvent(hoverEvent) : null;
+          frame.style.cursor = hit ? "pointer" : "grab";
+        }});
       }});
 
       frame.addEventListener("mouseleave", () => {{
@@ -929,6 +999,13 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
       frame.addEventListener("mousedown", (event) => {{
         stopMomentum();
+        if (transformAnimationFrame) {{
+          cancelAnimationFrame(transformAnimationFrame);
+          transformAnimationFrame = null;
+        }}
+        targetScale = scale;
+        targetTx = tx;
+        targetTy = ty;
         dragging = true;
         lastX = event.clientX;
         lastY = event.clientY;
@@ -950,6 +1027,9 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const panBoost = Math.min(3.0 + (scale * 0.22), 7.0);
         tx += dx * panBoost;
         ty += dy * panBoost;
+        targetTx = tx;
+        targetTy = ty;
+        targetScale = scale;
         velocityX = (dx * panBoost) / dt * 22;
         velocityY = (dy * panBoost) / dt * 22;
         lastX = event.clientX;
