@@ -11,10 +11,13 @@ from src.recommendation.engine import RecommendationRequest
 from .actions import InferredSettingsResult, infer_settings_from_text
 from .config import CopilotSettings
 from .context_builder import CopilotContextBuilder, RecommendationExplanationContext
-from .method_cards import get_method_card
+from .knowledge_base import recommendation_explanation_draft
 from .ollama_client import OllamaClient, OllamaError
 from .policies import SafetyEnvelope, build_safety_envelope
-from .prompts import build_explain_recommendation_system_prompt, build_explain_recommendation_user_prompt
+from .prompts import (
+    build_grounded_composer_system_prompt,
+    build_grounded_composer_user_prompt,
+)
 from .retrieval import CopilotRetriever, EvidenceItem
 
 
@@ -34,25 +37,7 @@ class CopilotExplanationResult:
 
 
 def _fallback_explanation(ctx: RecommendationExplanationContext) -> tuple[str, str]:
-    best = ctx.shortlist[0]
-    alternatives = [item["method"] for item in ctx.shortlist[1:3]]
-    alt_text = ", ".join(alternatives) if alternatives else "nearby alternatives"
-    empirical = (
-        f"In the current study artifacts, `{ctx.recommended_method}` is competitive on `{ctx.request.dataset}` with "
-        f"mean accuracy {best['avg_accuracy_mean']:.2f}, forgetting {best['forgetting_mean']:.2f}, "
-        f"runtime {best['runtime_hours_mean']:.2f} hours, and estimated memory {best['estimated_memory_mb']:.2f} MB."
-    )
-    conceptual = (
-        f"Conceptually, this fits because {ctx.method_card.mechanism.lower()} "
-        f"It is especially attractive when {ctx.method_card.works_well_when[0].lower()}."
-    )
-    comparison = (
-        f"The engine placed it ahead of {alt_text} because its constraint-adjusted trade-off was stronger for the current "
-        "memory, runtime, and retention target."
-    )
-    summary = f"{ctx.method_card.label} fits this request because it offers the strongest grounded trade-off under the current constraints."
-    explanation = f"{summary}\n\nEmpirical evidence: {empirical}\n\nConceptual interpretation: {conceptual}\n\nComparison: {comparison}"
-    return summary, explanation
+    return recommendation_explanation_draft(ctx)
 
 
 def _build_result(
@@ -107,14 +92,14 @@ class CopilotEngine:
         query: str = "",
     ) -> CopilotExplanationResult:
         ctx = self.context_builder.build_recommendation_context(profiles_df, request, query=query)
+        summary, grounded_draft = _fallback_explanation(ctx)
         try:
             generated = self.ollama_client.generate(
-                build_explain_recommendation_user_prompt(ctx),
-                system=build_explain_recommendation_system_prompt(),
+                build_grounded_composer_user_prompt(draft=grounded_draft, user_query=query),
+                system=build_grounded_composer_system_prompt(),
                 model=self.settings.default_model,
-                temperature=0.2,
+                temperature=0.15,
             )
-            summary = f"{get_method_card(ctx.recommended_method).label} is recommended because it best matches the current empirical trade-off and constraints."
             return _build_result(
                 ctx=ctx,
                 summary=summary,
@@ -123,11 +108,10 @@ class CopilotEngine:
                 mode="ollama",
             )
         except OllamaError:
-            summary, explanation = _fallback_explanation(ctx)
             return _build_result(
                 ctx=ctx,
                 summary=summary,
-                explanation=explanation,
+                explanation=grounded_draft,
                 used_model=None,
                 mode="fallback",
             )

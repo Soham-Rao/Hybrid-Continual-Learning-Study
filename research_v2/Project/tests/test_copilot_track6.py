@@ -7,14 +7,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st
 
-from app.copilot_ui import _format_inferred_settings, infer_copilot_intent, init_copilot_state
+from app.copilot_ui import _chart_focus_from_text, _format_inferred_settings, infer_copilot_intent, init_copilot_state
 from src.copilot import infer_settings_from_text
 from src.recommendation.engine import RecommendationRequest
 
 
 def test_infer_copilot_intent_routes_settings_like_prompts() -> None:
     assert infer_copilot_intent("I have 4 GB VRAM and do not want retraining.") == "infer_settings"
+    assert infer_copilot_intent("i have a gt210 what do you think i should do") == "infer_settings"
     assert infer_copilot_intent("Why was this method recommended?") == "explain_recommendation"
+    assert infer_copilot_intent("What trade-off is this chart showing right now?") == "interpret_chart"
+
+
+def test_chart_focus_detects_named_tradeoff_views() -> None:
+    assert _chart_focus_from_text("explain accuracy vs forgetting chart") == "accuracy_forgetting"
+    assert _chart_focus_from_text("explain accuracy vs estimated memory chart") == "accuracy_memory"
+    assert _chart_focus_from_text("show me the score breakdown") == "score_breakdown"
 
 
 def test_format_inferred_settings_includes_assumptions_and_scope_notes() -> None:

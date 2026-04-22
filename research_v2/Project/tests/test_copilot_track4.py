@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.copilot import CopilotEngine, CopilotSettings, OllamaClient, infer_settings_from_text
+from src.copilot.actions import looks_like_settings_query
 from src.recommendation.engine import RecommendationRequest
 
 
@@ -25,6 +26,10 @@ def test_infer_settings_maps_gt210_description_to_low_compute_and_1gb_budget() -
     assert result.request.compute_budget == "low"
     assert result.requires_confirmation is True
     assert any("GT 210" in item or "gt 210" in item.lower() for item in result.assumptions)
+
+
+def test_looks_like_settings_query_catches_gpu_shorthand_requests() -> None:
+    assert looks_like_settings_query("i have a gt210 what do you think i should do") is True
 
 
 def test_infer_settings_preserves_current_values_when_text_is_vague() -> None:

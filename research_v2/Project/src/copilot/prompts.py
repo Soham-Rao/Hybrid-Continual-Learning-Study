@@ -17,6 +17,27 @@ def build_explain_recommendation_system_prompt() -> str:
     )
 
 
+def build_grounded_composer_system_prompt() -> str:
+    return (
+        "You are a careful research copilot editor. "
+        "Rewrite the grounded draft into natural, concise prose without changing the facts, rankings, caveats, or source-of-truth policy. "
+        "Do not add new claims, numbers, significance language, or literature assertions. "
+        "If the draft already sounds clear, keep the rewrite minimal."
+    )
+
+
+def build_grounded_composer_user_prompt(*, draft: str, user_query: str) -> str:
+    return f"""
+User query:
+{user_query or "Explain the current recommendation clearly."}
+
+Grounded draft:
+{draft}
+
+Rewrite this draft so it reads naturally and helpfully, but preserve every factual claim.
+""".strip()
+
+
 def build_explain_recommendation_user_prompt(ctx: RecommendationExplanationContext) -> str:
     shortlist_lines = []
     for idx, item in enumerate(ctx.shortlist[:3], start=1):

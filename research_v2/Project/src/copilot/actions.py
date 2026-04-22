@@ -84,6 +84,39 @@ class InferredSettingsResult:
     mode: str
 
 
+def looks_like_settings_query(text: str) -> bool:
+    lowered = text.lower()
+    direct_terms = (
+        "gpu",
+        "vram",
+        "ram",
+        "memory",
+        "compute",
+        "retrain",
+        "retention",
+        "forgetting",
+        "laptop",
+        "cpu",
+        "hardware",
+        "budget",
+        "what should i do",
+        "what should i use",
+        "suggest settings",
+        "infer my settings",
+    )
+    if any(term in lowered for term in direct_terms):
+        return True
+    if any(alias in lowered for alias in GPU_HINTS):
+        return True
+    if any(alias in lowered for alias in CPU_HINTS):
+        return True
+    if any(alias in lowered for alias in DATASET_ALIASES):
+        return True
+    if re.search(r"(\d+(?:\.\d+)?)\s*(gb|gib|mb|mib)", lowered):
+        return True
+    return False
+
+
 def _first_dataset_match(text: str) -> str | None:
     lowered = text.lower()
     for alias, dataset in sorted(DATASET_ALIASES.items(), key=lambda item: len(item[0]), reverse=True):

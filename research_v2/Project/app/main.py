@@ -44,6 +44,14 @@ def _bundle():
 def _sidebar(bundle) -> dict:
     datasets = dataset_options(bundle.recommendation_profiles if not bundle.recommendation_profiles.empty else bundle.summary)
     default_dataset = "split_mini_imagenet" if "split_mini_imagenet" in datasets else datasets[0]
+    pending_request = st.session_state.pop("copilot_pending_dashboard_request", None)
+    if pending_request is not None:
+        st.session_state["dashboard_dataset"] = pending_request.dataset
+        st.session_state["dashboard_memory_budget_mb"] = int(pending_request.memory_budget_mb)
+        st.session_state["dashboard_compute_budget"] = pending_request.compute_budget
+        st.session_state["dashboard_acceptable_forgetting"] = int(pending_request.acceptable_forgetting or 0)
+        st.session_state["dashboard_task_similarity"] = pending_request.task_similarity
+        st.session_state["dashboard_joint_allowed"] = pending_request.joint_retraining_allowed
     st.session_state.setdefault("dashboard_dataset", default_dataset)
     st.session_state.setdefault("dashboard_families", ["baseline", "hybrid"])
     st.session_state.setdefault("dashboard_include_joint", True)
