@@ -324,7 +324,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         }
     )
 
-    for label_col, key_col, level_name in level_keys:
+    for label_col, key_col, level_name in level_keys[:-1]:
         grouped = (
             tree_df.groupby([key_col, label_col], dropna=False)
             .agg(
@@ -362,6 +362,53 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
                 }
             )
 
+    method_node_rows: list[dict[str, object]] = []
+    for rank in range(1, 4):
+        method_col = f"candidate_method_{rank}"
+        label_col = f"candidate_method_label_{rank}"
+        score_col = f"candidate_score_{rank}"
+        if method_col not in tree_df.columns:
+            continue
+        subset = tree_df[tree_df[method_col].astype(str) != ""].copy()
+        if subset.empty:
+            continue
+        grouped = (
+            subset.groupby([method_col, label_col], dropna=False)
+            .agg(
+                score=(score_col, "mean"),
+                count=("case_id", "count"),
+                avg_accuracy=("avg_accuracy_mean", "mean"),
+                forgetting=("forgetting_mean", "mean"),
+                runtime=("runtime_hours_mean", "mean"),
+                memory=("estimated_memory_mb", "mean"),
+            )
+            .reset_index()
+            .sort_values(["score", "avg_accuracy", label_col], ascending=[False, False, True])
+        )
+        for row in grouped.itertuples(index=False):
+            method_key = str(getattr(row, method_col))
+            method_node_rows.append(
+                {
+                    "id": f"method::{method_key}",
+                    "label": str(getattr(row, label_col)),
+                    "level": "method",
+                    "stage_index": stage_index["method"],
+                    "score": float(row.score),
+                    "count": max(int(row.count), 1),
+                    "color": "#8fdcc9" if active_keys.get("method") == method_key else "#cbd5e1",
+                    "meta": {
+                        "dataset": dataset_key,
+                        "method_key": method_key,
+                        "method_label": str(getattr(row, label_col)),
+                        "avg_accuracy_mean": float(row.avg_accuracy),
+                        "forgetting_mean": float(row.forgetting),
+                        "runtime_hours_mean": float(row.runtime),
+                        "estimated_memory_mb": float(row.memory),
+                    },
+                }
+            )
+    node_rows.extend(method_node_rows)
+
     node_df = pd.DataFrame(node_rows).drop_duplicates(subset=["id"]).reset_index(drop=True)
     node_index = {node_id: idx for idx, node_id in enumerate(node_df["id"].tolist())}
 
@@ -379,7 +426,6 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
             and str(getattr(row, "forgetting_bucket_key")) == active_keys["forgetting"]
             and str(getattr(row, "similarity_bucket_key")) == active_keys["similarity"]
             and str(getattr(row, "joint_bucket_key")) == active_keys["joint"]
-            and str(getattr(row, "recommended_method")) == active_keys["method"]
         )
         transitions = [
             (root_id, f"memory::{getattr(row, 'memory_bucket_key')}"),
@@ -387,7 +433,6 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
             (f"compute::{getattr(row, 'compute_bucket_key')}", f"forgetting::{getattr(row, 'forgetting_bucket_key')}"),
             (f"forgetting::{getattr(row, 'forgetting_bucket_key')}", f"similarity::{getattr(row, 'similarity_bucket_key')}"),
             (f"similarity::{getattr(row, 'similarity_bucket_key')}", f"joint::{getattr(row, 'joint_bucket_key')}"),
-            (f"joint::{getattr(row, 'joint_bucket_key')}", f"method::{getattr(row, 'recommended_method')}"),
         ]
         for stage_step, (source_id, target_id) in enumerate(transitions, start=1):
             link_rows.append(
@@ -401,6 +446,24 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
                     "score": float(getattr(row, "score")),
                     "active": path_is_active,
                     "fill": _pastel(case_id, stage_step),
+                }
+            )
+        for rank in range(1, 4):
+            method_key = str(getattr(row, f"candidate_method_{rank}", "") or "")
+            if not method_key:
+                continue
+            method_active = path_is_active and method_key == active_keys["method"]
+            link_rows.append(
+                {
+                    "id": f"link::{case_id}::method::{rank}",
+                    "case_id": case_id,
+                    "stage_step": 6,
+                    "source_id": f"joint::{getattr(row, 'joint_bucket_key')}",
+                    "target_id": f"method::{method_key}",
+                    "value": 1,
+                    "score": float(getattr(row, f'candidate_score_{rank}', getattr(row, 'score')) or 0.0),
+                    "active": method_active,
+                    "fill": _pastel(case_id, 6 + rank),
                 }
             )
 
@@ -528,6 +591,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         "title": title,
         "width": svg_width,
         "height": svg_height,
+        "viewport_storage_key": f"decision-viewport::{dataset_key}",
         "nodes": graph_nodes,
         "paths": paths,
         "stages": stage_titles,
@@ -678,6 +742,37 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       const sceneWidth = payload.width;
       const sceneHeight = payload.height;
       const viewPadding = 40;
+      const viewportStorageKey = payload.viewport_storage_key || "decision-viewport";
+
+      function loadViewportState() {{
+        try {{
+          const raw = window.sessionStorage.getItem(viewportStorageKey);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (
+            typeof parsed !== "object" || parsed === null
+            || !Number.isFinite(parsed.scale)
+            || !Number.isFinite(parsed.tx)
+            || !Number.isFinite(parsed.ty)
+          ) {{
+            return null;
+          }}
+          return parsed;
+        }} catch (error) {{
+          return null;
+        }}
+      }}
+
+      function saveViewportState() {{
+        try {{
+          window.sessionStorage.setItem(
+            viewportStorageKey,
+            JSON.stringify({{ scale, tx, ty }})
+          );
+        }} catch (error) {{
+          // ignore storage errors and keep the graph interactive
+        }}
+      }}
 
       function clampTransformState(nextTx, nextTy, nextScale) {{
         const frameWidth = frame.clientWidth || sceneWidth;
@@ -713,6 +808,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         requestAnimationFrame(() => {{
           pendingTransform = false;
           setTransform();
+          saveViewportState();
         }});
       }}
 
@@ -1093,6 +1189,16 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
       frame.addEventListener("dblclick", resetView);
       if (reset) reset.addEventListener("click", resetView);
+      const savedViewport = loadViewportState();
+      if (savedViewport) {{
+        const restored = clampTransformState(savedViewport.tx, savedViewport.ty, savedViewport.scale);
+        scale = savedViewport.scale;
+        tx = restored.tx;
+        ty = restored.ty;
+        targetScale = scale;
+        targetTx = tx;
+        targetTy = ty;
+      }}
       applySelection(new Set());
       scheduleTransform();
     }})();

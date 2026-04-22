@@ -383,7 +383,25 @@ def render_decision_tree_tab(bundle: DashboardBundle, request: RecommendationReq
     engine = RecommendationEngine(bundle.recommendation_profiles)
     result = engine.recommend(request, top_k=3)
     active_path = request_bucket_state(request)
-    active_path["recommended_method"] = result["recommended_method"]
+    candidate_subset = tree_df[
+        (tree_df["memory_bucket_key"].astype(str) == str(active_path["memory_bucket_key"]))
+        & (tree_df["compute_bucket_key"].astype(str) == str(active_path["compute_bucket_key"]))
+        & (tree_df["forgetting_bucket_key"].astype(str) == str(active_path["forgetting_bucket_key"]))
+        & (tree_df["similarity_bucket_key"].astype(str) == str(active_path["similarity_bucket_key"]))
+        & (tree_df["joint_bucket_key"].astype(str) == str(active_path["joint_bucket_key"]))
+    ].copy()
+    graph_candidates: list[str] = []
+    if not candidate_subset.empty:
+        row = candidate_subset.iloc[0]
+        for rank in range(1, 4):
+            candidate_method = str(row.get(f"candidate_method_{rank}", "") or "")
+            if candidate_method:
+                graph_candidates.append(candidate_method)
+    active_path["recommended_method"] = (
+        str(result["recommended_method"])
+        if str(result["recommended_method"]) in graph_candidates
+        else (graph_candidates[0] if graph_candidates else str(result["recommended_method"]))
+    )
     current_path = pd.DataFrame(
         [
             {"Stage": "Dataset", "Current choice": DATASET_LABELS.get(str(request.dataset), str(request.dataset))},

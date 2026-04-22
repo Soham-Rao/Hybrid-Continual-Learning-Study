@@ -386,34 +386,44 @@ def build_decision_tree_rows(profiles_df: pd.DataFrame, dataset: str) -> pd.Data
                         )
                         result = engine.recommend(request, top_k=3)
                         best = result["shortlist"][0]
+                        shortlist = result["shortlist"][:3]
                         case_id += 1
+                        row = {
+                            "case_id": case_id,
+                            "dataset": str(dataset),
+                            "dataset_label": DATASET_LABELS.get(str(dataset), str(dataset)),
+                            "memory_bucket_key": str(memory_bucket["key"]),
+                            "memory_bucket_label": str(memory_bucket["label"]),
+                            "compute_bucket_key": str(compute_bucket["key"]),
+                            "compute_bucket_label": str(compute_bucket["label"]),
+                            "forgetting_bucket_key": str(retention_bucket["key"]),
+                            "forgetting_bucket_label": str(retention_bucket["label"]),
+                            "similarity_bucket_key": str(similarity_bucket["key"]),
+                            "similarity_bucket_label": str(similarity_bucket["label"]),
+                            "joint_bucket_key": str(joint_bucket["key"]),
+                            "joint_bucket_label": str(joint_bucket["label"]),
+                            "joint_retraining_allowed": bool(joint_bucket["value"]),
+                            "recommended_method": str(result["recommended_method"]),
+                            "method_label": METHOD_LABELS.get(str(result["recommended_method"]), str(result["recommended_method"])),
+                            "score": float(best["score"]),
+                            "avg_accuracy_mean": float(best["avg_accuracy_mean"]),
+                            "forgetting_mean": float(best["forgetting_mean"]),
+                            "runtime_hours_mean": float(best["runtime_hours_mean"]),
+                            "estimated_memory_mb": float(best["estimated_memory_mb"]),
+                            "leader_flag": bool(best["leader_flag"]),
+                            "top_cluster_flag": bool(best["top_cluster_flag"]),
+                            "rationale": str(result["rationale"]),
+                        }
+                        for idx, candidate in enumerate(shortlist, start=1):
+                            row[f"candidate_method_{idx}"] = str(candidate["method"])
+                            row[f"candidate_method_label_{idx}"] = METHOD_LABELS.get(str(candidate["method"]), str(candidate["method"]))
+                            row[f"candidate_score_{idx}"] = float(candidate["score"])
+                        for idx in range(len(shortlist) + 1, 4):
+                            row[f"candidate_method_{idx}"] = ""
+                            row[f"candidate_method_label_{idx}"] = ""
+                            row[f"candidate_score_{idx}"] = None
                         rows.append(
-                            {
-                                "case_id": case_id,
-                                "dataset": str(dataset),
-                                "dataset_label": DATASET_LABELS.get(str(dataset), str(dataset)),
-                                "memory_bucket_key": str(memory_bucket["key"]),
-                                "memory_bucket_label": str(memory_bucket["label"]),
-                                "compute_bucket_key": str(compute_bucket["key"]),
-                                "compute_bucket_label": str(compute_bucket["label"]),
-                                "forgetting_bucket_key": str(retention_bucket["key"]),
-                                "forgetting_bucket_label": str(retention_bucket["label"]),
-                                "similarity_bucket_key": str(similarity_bucket["key"]),
-                                "similarity_bucket_label": str(similarity_bucket["label"]),
-                                "joint_bucket_key": str(joint_bucket["key"]),
-                                "joint_bucket_label": str(joint_bucket["label"]),
-                                "joint_retraining_allowed": bool(joint_bucket["value"]),
-                                "recommended_method": str(result["recommended_method"]),
-                                "method_label": METHOD_LABELS.get(str(result["recommended_method"]), str(result["recommended_method"])),
-                                "score": float(best["score"]),
-                                "avg_accuracy_mean": float(best["avg_accuracy_mean"]),
-                                "forgetting_mean": float(best["forgetting_mean"]),
-                                "runtime_hours_mean": float(best["runtime_hours_mean"]),
-                                "estimated_memory_mb": float(best["estimated_memory_mb"]),
-                                "leader_flag": bool(best["leader_flag"]),
-                                "top_cluster_flag": bool(best["top_cluster_flag"]),
-                                "rationale": str(result["rationale"]),
-                            }
+                            row
                         )
     tree_df = pd.DataFrame(rows)
     return tree_df.sort_values(
