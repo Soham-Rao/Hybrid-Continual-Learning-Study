@@ -281,6 +281,12 @@ Track 1 implementation lock:
    - clear distinction between evidence and inference
 5. Copilot returns grounded natural-language output.
 
+Track 3 implementation lock:
+- explain-recommendation mode now has a dedicated backend path
+- it builds a grounded context from the current request, shortlist, method card, and retrieved evidence
+- it uses Ollama when available and falls back to a deterministic grounded explanation when Ollama is offline
+- the explanation path is UI-ready but not yet exposed as the right-edge chat panel
+
 ### Natural Language To Settings Flow
 1. User describes constraints in free text.
 2. Copilot classifies intent as `infer_settings`.
@@ -291,6 +297,12 @@ Track 1 implementation lock:
    - assumptions
    - apply/cancel option
 6. On approval, dashboard controls update.
+
+Track 4 implementation lock:
+- the first settings-inference backend uses deterministic heuristics and validation as the primary parser
+- it returns a structured proposal plus visible assumptions rather than mutating controls directly
+- every inferred-settings result is confirmation-gated before application
+- vague hardware descriptions such as older GPUs, laptop-only setups, and retraining tolerance are mapped conservatively
 
 ### Chart Interpretation Flow
 1. User asks about a chart while on a given tab.

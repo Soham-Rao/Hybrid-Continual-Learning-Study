@@ -28,18 +28,18 @@ This track covers the conversational assistant that lives inside the dashboard a
 - [x] Add metadata so retrieved evidence can be labeled as empirical result, design note, literature note, or external source
 
 ## Track 3 — Explain Recommendation Mode
-- [ ] Use current dashboard state plus retrieved evidence to explain why the recommended method fits the current constraints
-- [ ] Explain tradeoffs in conceptual language, not just engine score components
-- [ ] Compare the winner against the top alternatives using grounded evidence
-- [ ] Distinguish clearly between empirical evidence and reasoned inference
-- [ ] Add a concise “why this works here” summary block for the current recommendation
+- [x] Use current dashboard state plus retrieved evidence to explain why the recommended method fits the current constraints
+- [x] Explain tradeoffs in conceptual language, not just engine score components
+- [x] Compare the winner against the top alternatives using grounded evidence
+- [x] Distinguish clearly between empirical evidence and reasoned inference
+- [x] Add a concise “why this works here” summary block for the current recommendation
 
 ## Track 4 — Natural Language To Settings
-- [ ] Parse freeform user descriptions of hardware, constraints, and goals into structured dashboard settings
-- [ ] Show the inferred settings and assumptions before applying them
-- [ ] Add a confirmation step for mutating sliders, toggles, or dropdowns
-- [ ] Support vague hardware descriptions like old GPUs, laptop-only setups, and overnight retraining tolerance
-- [ ] Preserve user trust by surfacing what was assumed versus what was directly stated
+- [x] Parse freeform user descriptions of hardware, constraints, and goals into structured dashboard settings
+- [x] Show the inferred settings and assumptions before applying them
+- [x] Add a confirmation step for mutating sliders, toggles, or dropdowns
+- [x] Support vague hardware descriptions like old GPUs, laptop-only setups, and overnight retraining tolerance
+- [x] Preserve user trust by surfacing what was assumed versus what was directly stated
 
 ## Track 5 — Follow-Up Questioning
 - [ ] Add a lightweight clarification mode when the user request is too ambiguous
