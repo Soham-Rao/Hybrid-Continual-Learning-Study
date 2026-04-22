@@ -1,0 +1,10 @@
+dataset,method,seed,run_tag,ablation_family,stop_after_task,avg_accuracy,forgetting,backward_transfer,forward_transfer
+permuted_mnist,agem_distill,42,resumecheck,robustness,4,65.485,33.9333,-33.9333,1.2922
+permuted_mnist,agem_distill,123,resumecheck,robustness,4,63.37,35.8522,-33.4756,2.3244
+permuted_mnist,agem_distill,456,resumecheck,robustness,4,62.649,36.8267,-36.81,2.69
+split_cifar10,icarl,42,resumecheck,robustness,1,26.89,39.9625,-39.9625,-16.0417
+split_cifar10,icarl,123,resumecheck,robustness,1,25.2,33.6375,-33.6375,-16.0417
+split_cifar10,icarl,456,resumecheck,robustness,1,26.78,37.8375,-37.8375,-16.0417
+split_cifar10,joint_training,42,resumecheck,robustness,1,66.28,9.85,-6.625,-15.7667
+split_cifar10,joint_training,123,resumecheck,robustness,1,65.84,8.2875,-2.4875,-15.7792
+split_cifar10,joint_training,456,resumecheck,robustness,1,65.19,7.5625,-6.2375,-15.2667

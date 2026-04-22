@@ -1,0 +1,241 @@
+dataset,method,seed,run_name,config_name,model,n_epochs,batch_size,num_workers,fp16,buffer_size,total_time_sec,log_starts,completed,caveat_note,avg_accuracy,forgetting,backward_transfer,forward_transfer
+permuted_mnist,agem,42,permuted_mnist_agem_seed42,permuted_mnist_agem.yaml,slim_resnet18,1,32,2,False,200,1569.0,3,True,Run log contains restarts; final metrics were read from the last completed metrics block.,37.567,65.5422,-65.5422,1.4344
+permuted_mnist,agem,123,permuted_mnist_agem_seed123,permuted_mnist_agem.yaml,slim_resnet18,1,32,2,False,200,1721.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,36.73,66.3922,-66.3922,2.2489
+permuted_mnist,agem,456,permuted_mnist_agem_seed456,permuted_mnist_agem.yaml,slim_resnet18,1,32,2,False,200,1769.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,36.589,66.3467,-66.3467,1.1767
+permuted_mnist,agem,789,permuted_mnist_agem_seed789,permuted_mnist_agem.yaml,slim_resnet18,1,32,2,False,200,1786.6,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,34.072,69.2556,-69.2556,1.3711
+permuted_mnist,agem,1024,permuted_mnist_agem_seed1024,permuted_mnist_agem.yaml,slim_resnet18,1,32,2,False,200,1563.0,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,35.865,66.9733,-66.9733,1.5989
+permuted_mnist,agem_distill,42,permuted_mnist_agem_distill_seed42,permuted_mnist_agem_distill.yaml,slim_resnet18,1,32,2,False,200,1680.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,66.652,32.7011,-32.7011,1.9
+permuted_mnist,agem_distill,123,permuted_mnist_agem_distill_seed123,permuted_mnist_agem_distill.yaml,slim_resnet18,1,32,2,False,200,1685.5,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,63.097,36.1733,-33.7967,3.2033
+permuted_mnist,agem_distill,456,permuted_mnist_agem_distill_seed456,permuted_mnist_agem_distill.yaml,slim_resnet18,1,32,2,False,200,1666.2,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,62.192,37.5622,-37.5456,1.7333
+permuted_mnist,agem_distill,789,permuted_mnist_agem_distill_seed789,permuted_mnist_agem_distill.yaml,slim_resnet18,1,32,2,False,200,1750.6,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,57.1,43.49,-43.49,2.6
+permuted_mnist,agem_distill,1024,permuted_mnist_agem_distill_seed1024,permuted_mnist_agem_distill.yaml,slim_resnet18,1,32,2,False,200,1881.8,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,63.768,35.1378,-35.1378,2.8056
+permuted_mnist,der,42,permuted_mnist_der_seed42,permuted_mnist_der.yaml,slim_resnet18,1,32,2,False,200,1722.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,69.757,30.5256,-30.5256,1.1444
+permuted_mnist,der,123,permuted_mnist_der_seed123,permuted_mnist_der.yaml,slim_resnet18,1,32,2,False,200,1738.7,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,71.217,29.0222,-29.0222,1.6578
+permuted_mnist,der,456,permuted_mnist_der_seed456,permuted_mnist_der.yaml,slim_resnet18,1,32,2,False,200,1568.4,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,69.675,30.7878,-30.7878,0.7033
+permuted_mnist,der,789,permuted_mnist_der_seed789,permuted_mnist_der.yaml,slim_resnet18,1,32,2,False,200,1549.6,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,71.02,29.1367,-29.1367,1.5633
+permuted_mnist,der,1024,permuted_mnist_der_seed1024,permuted_mnist_der.yaml,slim_resnet18,1,32,2,False,200,1527.5,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,73.144,26.7511,-26.7511,0.5267
+permuted_mnist,er_ewc,42,permuted_mnist_er_ewc_seed42,permuted_mnist_er_ewc.yaml,slim_resnet18,1,32,2,False,200,3021.4,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,56.813,44.2544,-44.2544,0.9411
+permuted_mnist,er_ewc,123,permuted_mnist_er_ewc_seed123,permuted_mnist_er_ewc.yaml,slim_resnet18,1,32,2,False,200,3019.1,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,53.245,47.1767,-47.1767,0.4311
+permuted_mnist,er_ewc,456,permuted_mnist_er_ewc_seed456,permuted_mnist_er_ewc.yaml,slim_resnet18,1,32,2,False,200,3014.4,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,59.329,41.5922,-41.5922,1.6444
+permuted_mnist,er_ewc,789,permuted_mnist_er_ewc_seed789,permuted_mnist_er_ewc.yaml,slim_resnet18,1,32,2,False,200,3177.5,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,53.085,47.5033,-47.5033,1.85
+permuted_mnist,er_ewc,1024,permuted_mnist_er_ewc_seed1024,permuted_mnist_er_ewc.yaml,slim_resnet18,1,32,2,False,200,3694.2,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,59.115,41.4267,-41.4267,0.93
+permuted_mnist,ewc,42,permuted_mnist_ewc_seed42,permuted_mnist_ewc.yaml,slim_resnet18,1,32,2,False,200,4334.9,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,30.011,73.5678,-73.5678,-0.0478
+permuted_mnist,ewc,123,permuted_mnist_ewc_seed123,permuted_mnist_ewc.yaml,slim_resnet18,1,32,2,False,200,5497.2,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,27.85,76.3667,-76.3667,2.4711
+permuted_mnist,ewc,456,permuted_mnist_ewc_seed456,permuted_mnist_ewc.yaml,slim_resnet18,1,32,2,False,200,2132.1,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,29.288,74.5611,-74.5611,-0.51
+permuted_mnist,ewc,789,permuted_mnist_ewc_seed789,permuted_mnist_ewc.yaml,slim_resnet18,1,32,2,False,200,3865.2,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,28.062,76.0533,-76.0533,0.6
+permuted_mnist,ewc,1024,permuted_mnist_ewc_seed1024,permuted_mnist_ewc.yaml,slim_resnet18,1,32,2,False,200,3698.1,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,28.908,74.5633,-74.5633,1.0378
+permuted_mnist,fine_tune,42,permuted_mnist_fine_tune_seed42,permuted_mnist_finetune.yaml,slim_resnet18,1,32,2,False,200,1070.7,5,True,Run log contains restarts; final metrics were read from the last completed metrics block.,58.9633,55.235,-55.235,1.535
+permuted_mnist,fine_tune,123,permuted_mnist_fine_tune_seed123,permuted_mnist_finetune.yaml,slim_resnet18,1,32,2,False,200,720.8,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,31.514,72.5556,-72.5556,0.54
+permuted_mnist,fine_tune,456,permuted_mnist_fine_tune_seed456,permuted_mnist_finetune.yaml,slim_resnet18,1,32,2,False,200,707.9,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,29.192,74.7356,-74.7356,0.2367
+permuted_mnist,fine_tune,789,permuted_mnist_fine_tune_seed789,permuted_mnist_finetune.yaml,slim_resnet18,1,32,2,False,200,713.6,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,29.551,74.4322,-74.4322,1.57
+permuted_mnist,fine_tune,1024,permuted_mnist_fine_tune_seed1024,permuted_mnist_finetune.yaml,slim_resnet18,1,32,2,False,200,706.4,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,28.582,75.4644,-75.4644,0.1489
+permuted_mnist,icarl,42,permuted_mnist_icarl_seed42,permuted_mnist_icarl.yaml,slim_resnet18,1,32,2,False,500,1079.5,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,21.759,8.5967,-7.6844,0.7444
+permuted_mnist,icarl,123,permuted_mnist_icarl_seed123,permuted_mnist_icarl.yaml,slim_resnet18,1,32,2,False,500,1100.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,23.789,10.4733,-8.4367,-0.4967
+permuted_mnist,icarl,456,permuted_mnist_icarl_seed456,permuted_mnist_icarl.yaml,slim_resnet18,1,32,2,False,500,1124.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,19.605,6.16,-5.2556,0.1878
+permuted_mnist,icarl,789,permuted_mnist_icarl_seed789,permuted_mnist_icarl.yaml,slim_resnet18,1,32,2,False,500,1145.0,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,17.517,0.9344,-0.6456,0.0333
+permuted_mnist,icarl,1024,permuted_mnist_icarl_seed1024,permuted_mnist_icarl.yaml,slim_resnet18,1,32,2,False,500,1140.5,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,18.897,2.2311,-0.8467,-0.7133
+permuted_mnist,joint_training,42,permuted_mnist_joint_training_seed42,permuted_mnist_joint.yaml,slim_resnet18,1,32,2,False,200,721.5,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,92.732,3.9011,-3.8111,0.5878
+permuted_mnist,joint_training,123,permuted_mnist_joint_training_seed123,permuted_mnist_joint.yaml,slim_resnet18,1,32,2,False,200,695.9,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,95.869,0.64,0.71,1.5644
+permuted_mnist,joint_training,456,permuted_mnist_joint_training_seed456,permuted_mnist_joint.yaml,slim_resnet18,1,32,2,False,200,642.8,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,96.084,0.4267,0.1611,1.1167
+permuted_mnist,joint_training,789,permuted_mnist_joint_training_seed789,permuted_mnist_joint.yaml,slim_resnet18,1,32,2,False,200,627.7,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,95.993,0.5967,-0.02,1.4956
+permuted_mnist,joint_training,1024,permuted_mnist_joint_training_seed1024,permuted_mnist_joint.yaml,slim_resnet18,1,32,2,False,200,510.9,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,96.191,0.3889,0.19,1.3133
+permuted_mnist,lwf,42,permuted_mnist_lwf_seed42,permuted_mnist_lwf.yaml,slim_resnet18,1,32,2,False,200,561.8,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,34.479,68.9344,-68.9344,1.1111
+permuted_mnist,lwf,123,permuted_mnist_lwf_seed123,permuted_mnist_lwf.yaml,slim_resnet18,1,32,2,False,200,548.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,35.057,67.6944,-67.6944,0.5356
+permuted_mnist,lwf,456,permuted_mnist_lwf_seed456,permuted_mnist_lwf.yaml,slim_resnet18,1,32,2,False,200,548.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,33.15,70.4456,-70.4456,0.6233
+permuted_mnist,lwf,789,permuted_mnist_lwf_seed789,permuted_mnist_lwf.yaml,slim_resnet18,1,32,2,False,200,550.8,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,31.44,72.15,-72.15,1.3511
+permuted_mnist,lwf,1024,permuted_mnist_lwf_seed1024,permuted_mnist_lwf.yaml,slim_resnet18,1,32,2,False,200,546.0,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,30.717,73.1189,-73.1189,0.8656
+permuted_mnist,progress_compress,42,permuted_mnist_progress_compress_seed42,permuted_mnist_progress_compress.yaml,slim_resnet18,1,32,2,False,200,549.7,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,29.379,75.0067,-75.0067,1.08
+permuted_mnist,progress_compress,123,permuted_mnist_progress_compress_seed123,permuted_mnist_progress_compress.yaml,slim_resnet18,1,32,2,False,200,557.0,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,28.798,75.6544,-75.6544,1.14
+permuted_mnist,progress_compress,456,permuted_mnist_progress_compress_seed456,permuted_mnist_progress_compress.yaml,slim_resnet18,1,32,2,False,200,693.8,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,28.233,76.1544,-76.1544,1.63
+permuted_mnist,progress_compress,789,permuted_mnist_progress_compress_seed789,permuted_mnist_progress_compress.yaml,slim_resnet18,1,32,2,False,200,2046.1,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,27.123,77.1744,-77.1744,1.5467
+permuted_mnist,progress_compress,1024,permuted_mnist_progress_compress_seed1024,permuted_mnist_progress_compress.yaml,slim_resnet18,1,32,2,False,200,952.8,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,28.347,76.0278,-76.0278,0.7744
+permuted_mnist,si_der,42,permuted_mnist_si_der_seed42,permuted_mnist_si_der.yaml,slim_resnet18,1,32,2,False,200,1839.0,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,70.746,29.3778,-29.3778,1.1433
+permuted_mnist,si_der,123,permuted_mnist_si_der_seed123,permuted_mnist_si_der.yaml,slim_resnet18,1,32,2,False,200,1668.6,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,72.82,27.1589,-27.1589,1.5
+permuted_mnist,si_der,456,permuted_mnist_si_der_seed456,permuted_mnist_si_der.yaml,slim_resnet18,1,32,2,False,200,1832.5,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,70.309,29.9544,-29.9544,0.5522
+permuted_mnist,si_der,789,permuted_mnist_si_der_seed789,permuted_mnist_si_der.yaml,slim_resnet18,1,32,2,False,200,1671.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,68.646,31.6756,-31.6756,1.5244
+permuted_mnist,si_der,1024,permuted_mnist_si_der_seed1024,permuted_mnist_si_der.yaml,slim_resnet18,1,32,2,False,200,1679.7,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,71.808,28.1544,-28.1544,0.2444
+permuted_mnist,xder,42,permuted_mnist_xder_seed42,permuted_mnist_xder.yaml,slim_resnet18,1,32,2,False,200,993.2,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,70.795,29.2833,-29.2833,0.87
+permuted_mnist,xder,123,permuted_mnist_xder_seed123,permuted_mnist_xder.yaml,slim_resnet18,1,32,2,False,200,1028.3,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,71.348,28.7944,-28.7944,0.3822
+permuted_mnist,xder,456,permuted_mnist_xder_seed456,permuted_mnist_xder.yaml,slim_resnet18,1,32,2,False,200,1007.4,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,69.445,30.9856,-30.9856,0.9778
+permuted_mnist,xder,789,permuted_mnist_xder_seed789,permuted_mnist_xder.yaml,slim_resnet18,1,32,2,False,200,1001.6,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,72.168,27.8367,-27.8367,1.8856
+permuted_mnist,xder,1024,permuted_mnist_xder_seed1024,permuted_mnist_xder.yaml,slim_resnet18,1,32,2,False,200,1006.7,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,72.116,27.9589,-27.9589,0.3433
+split_cifar10,agem,42,split_cifar10_agem_seed42,split_cifar10_agem.yaml,slim_resnet18,1,32,0,False,200,91.2,1,True,,16.07,76.125,-76.125,-16.0042
+split_cifar10,agem,123,split_cifar10_agem_seed123,split_cifar10_agem.yaml,slim_resnet18,1,32,0,False,200,98.0,1,True,,17.25,80.3125,-80.3125,-15.9917
+split_cifar10,agem,456,split_cifar10_agem_seed456,split_cifar10_agem.yaml,slim_resnet18,1,32,0,False,200,102.9,1,True,,16.2,81.875,-81.875,-14.7292
+split_cifar10,agem,789,split_cifar10_agem_seed789,split_cifar10_agem.yaml,slim_resnet18,1,32,0,False,200,107.3,1,True,,14.42,78.4375,-78.4375,-14.8167
+split_cifar10,agem,1024,split_cifar10_agem_seed1024,split_cifar10_agem.yaml,slim_resnet18,1,32,0,False,200,101.5,1,True,,15.95,80.0,-80.0,-15.7792
+split_cifar10,agem_distill,42,split_cifar10_agem_distill_seed42,split_cifar10_agem_distill.yaml,slim_resnet18,1,32,0,False,200,110.6,1,True,,17.17,77.2125,-77.2125,-16.0042
+split_cifar10,agem_distill,123,split_cifar10_agem_distill_seed123,split_cifar10_agem_distill.yaml,slim_resnet18,1,32,0,False,200,109.9,1,True,,16.37,80.475,-80.475,-15.9917
+split_cifar10,agem_distill,456,split_cifar10_agem_distill_seed456,split_cifar10_agem_distill.yaml,slim_resnet18,1,32,0,False,200,112.3,1,True,,17.43,81.6,-81.6,-14.7292
+split_cifar10,agem_distill,789,split_cifar10_agem_distill_seed789,split_cifar10_agem_distill.yaml,slim_resnet18,1,32,0,False,200,107.5,1,True,,16.66,79.7625,-79.7625,-14.8167
+split_cifar10,agem_distill,1024,split_cifar10_agem_distill_seed1024,split_cifar10_agem_distill.yaml,slim_resnet18,1,32,0,False,200,112.2,1,True,,17.28,81.2,-81.2,-15.7792
+split_cifar10,der,42,split_cifar10_der_seed42,split_cifar10_der.yaml,slim_resnet18,1,32,0,False,200,97.8,1,True,,15.85,78.5375,-78.5375,-16.0417
+split_cifar10,der,123,split_cifar10_der_seed123,split_cifar10_der.yaml,slim_resnet18,1,32,0,False,200,99.1,1,True,,17.11,79.4875,-79.4875,-16.0417
+split_cifar10,der,456,split_cifar10_der_seed456,split_cifar10_der.yaml,slim_resnet18,1,32,0,False,200,96.3,1,True,,16.31,81.9125,-81.9125,-9.2167
+split_cifar10,der,789,split_cifar10_der_seed789,split_cifar10_der.yaml,slim_resnet18,1,32,0,False,200,99.1,1,True,,16.88,80.2,-80.2,-11.7667
+split_cifar10,der,1024,split_cifar10_der_seed1024,split_cifar10_der.yaml,slim_resnet18,1,32,0,False,200,100.8,1,True,,16.97,81.1875,-81.1875,-12.6167
+split_cifar10,er_ewc,42,split_cifar10_er_ewc_seed42,split_cifar10_er_ewc.yaml,slim_resnet18,1,32,0,False,200,127.1,1,True,,22.94,73.0625,-73.0625,-15.5167
+split_cifar10,er_ewc,123,split_cifar10_er_ewc_seed123,split_cifar10_er_ewc.yaml,slim_resnet18,1,32,0,False,200,124.9,1,True,,23.6,73.325,-73.325,-15.5792
+split_cifar10,er_ewc,456,split_cifar10_er_ewc_seed456,split_cifar10_er_ewc.yaml,slim_resnet18,1,32,0,False,200,126.2,1,True,,24.67,71.6375,-71.6375,-15.7417
+split_cifar10,er_ewc,789,split_cifar10_er_ewc_seed789,split_cifar10_er_ewc.yaml,slim_resnet18,1,32,0,False,200,122.2,1,True,,22.03,76.975,-76.975,-14.2042
+split_cifar10,er_ewc,1024,split_cifar10_er_ewc_seed1024,split_cifar10_er_ewc.yaml,slim_resnet18,1,32,0,False,200,123.9,1,True,,24.37,70.8125,-70.8125,-15.4792
+split_cifar10,ewc,42,split_cifar10_ewc_seed42,split_cifar10_ewc.yaml,slim_resnet18,1,32,0,False,200,116.7,1,True,,16.59,78.475,-78.475,-16.0042
+split_cifar10,ewc,123,split_cifar10_ewc_seed123,split_cifar10_ewc.yaml,slim_resnet18,1,32,0,False,200,115.8,1,True,,16.37,75.15,-75.15,-15.9917
+split_cifar10,ewc,456,split_cifar10_ewc_seed456,split_cifar10_ewc.yaml,slim_resnet18,1,32,0,False,200,113.4,1,True,,17.15,80.9625,-80.9625,-14.7292
+split_cifar10,ewc,789,split_cifar10_ewc_seed789,split_cifar10_ewc.yaml,slim_resnet18,1,32,0,False,200,98.2,1,True,,17.2,79.2,-79.2,-14.8167
+split_cifar10,ewc,1024,split_cifar10_ewc_seed1024,split_cifar10_ewc.yaml,slim_resnet18,1,32,0,False,200,111.7,1,True,,17.16,81.3375,-81.3375,-15.7792
+split_cifar10,fine_tune,42,split_cifar10_fine_tune_seed42,split_cifar10_finetune.yaml,slim_resnet18,1,32,0,False,200,58.6,1,True,,15.52,77.1875,-77.1875,-16.0042
+split_cifar10,fine_tune,123,split_cifar10_fine_tune_seed123,split_cifar10_finetune.yaml,slim_resnet18,1,32,0,False,200,55.6,1,True,,16.6,80.7125,-80.7125,-15.9917
+split_cifar10,fine_tune,456,split_cifar10_fine_tune_seed456,split_cifar10_finetune.yaml,slim_resnet18,1,32,0,False,200,56.2,1,True,,15.12,80.3375,-80.3375,-14.7292
+split_cifar10,fine_tune,789,split_cifar10_fine_tune_seed789,split_cifar10_finetune.yaml,slim_resnet18,1,32,0,False,200,58.6,1,True,,16.32,75.0875,-75.0875,-14.8167
+split_cifar10,fine_tune,1024,split_cifar10_fine_tune_seed1024,split_cifar10_finetune.yaml,slim_resnet18,1,32,0,False,200,54.5,1,True,,15.75,79.7125,-79.7125,-15.7792
+split_cifar10,icarl,42,split_cifar10_icarl_seed42,split_cifar10_icarl.yaml,slim_resnet18,1,32,0,False,500,72.5,1,True,,26.67,39.5375,-39.5375,-16.0417
+split_cifar10,icarl,123,split_cifar10_icarl_seed123,split_cifar10_icarl.yaml,slim_resnet18,1,32,0,False,500,76.1,1,True,,25.5,38.9625,-38.9625,-16.0417
+split_cifar10,icarl,456,split_cifar10_icarl_seed456,split_cifar10_icarl.yaml,slim_resnet18,1,32,0,False,500,76.0,1,True,,26.58,44.175,-44.175,-16.0417
+split_cifar10,icarl,789,split_cifar10_icarl_seed789,split_cifar10_icarl.yaml,slim_resnet18,1,32,0,False,500,74.2,1,True,,29.33,38.05,-38.05,-16.0417
+split_cifar10,icarl,1024,split_cifar10_icarl_seed1024,split_cifar10_icarl.yaml,slim_resnet18,1,32,0,False,500,73.4,1,True,,28.16,38.05,-38.05,-16.0417
+split_cifar10,joint_training,42,split_cifar10_joint_training_seed42,split_cifar10_joint.yaml,slim_resnet18,1,32,0,False,200,54.8,1,True,,63.09,6.8,-5.55,-15.7667
+split_cifar10,joint_training,123,split_cifar10_joint_training_seed123,split_cifar10_joint.yaml,slim_resnet18,1,32,0,False,200,55.0,1,True,,61.89,14.2375,-6.5125,-15.7542
+split_cifar10,joint_training,456,split_cifar10_joint_training_seed456,split_cifar10_joint.yaml,slim_resnet18,1,32,0,False,200,54.4,1,True,,62.73,12.425,-11.5625,-15.2667
+split_cifar10,joint_training,789,split_cifar10_joint_training_seed789,split_cifar10_joint.yaml,slim_resnet18,1,32,0,False,200,54.2,1,True,,66.88,6.65,0.0,-15.1167
+split_cifar10,joint_training,1024,split_cifar10_joint_training_seed1024,split_cifar10_joint.yaml,slim_resnet18,1,32,0,False,200,54.5,1,True,,63.95,14.675,-13.5125,-15.8292
+split_cifar10,lwf,42,split_cifar10_lwf_seed42,split_cifar10_lwf.yaml,slim_resnet18,1,32,0,False,200,61.1,1,True,,16.02,74.6625,-74.6625,-16.0042
+split_cifar10,lwf,123,split_cifar10_lwf_seed123,split_cifar10_lwf.yaml,slim_resnet18,1,32,0,False,200,60.5,1,True,,15.85,79.2375,-79.2375,-15.9917
+split_cifar10,lwf,456,split_cifar10_lwf_seed456,split_cifar10_lwf.yaml,slim_resnet18,1,32,0,False,200,61.5,1,True,,15.04,80.775,-80.775,-14.7292
+split_cifar10,lwf,789,split_cifar10_lwf_seed789,split_cifar10_lwf.yaml,slim_resnet18,1,32,0,False,200,62.0,1,True,,16.22,76.1875,-76.1875,-14.8167
+split_cifar10,lwf,1024,split_cifar10_lwf_seed1024,split_cifar10_lwf.yaml,slim_resnet18,1,32,0,False,200,63.7,1,True,,16.53,80.475,-80.475,-15.7792
+split_cifar10,progress_compress,42,split_cifar10_progress_compress_seed42,split_cifar10_progress_compress.yaml,slim_resnet18,1,32,0,False,200,65.4,1,True,,17.8,79.775,-79.775,-15.6667
+split_cifar10,progress_compress,123,split_cifar10_progress_compress_seed123,split_cifar10_progress_compress.yaml,slim_resnet18,1,32,0,False,200,62.3,1,True,,18.01,80.575,-80.575,-15.6042
+split_cifar10,progress_compress,456,split_cifar10_progress_compress_seed456,split_cifar10_progress_compress.yaml,slim_resnet18,1,32,0,False,200,63.7,1,True,,17.89,78.4875,-78.4875,-12.8167
+split_cifar10,progress_compress,789,split_cifar10_progress_compress_seed789,split_cifar10_progress_compress.yaml,slim_resnet18,1,32,0,False,200,62.8,1,True,,18.12,81.175,-81.175,-9.9167
+split_cifar10,progress_compress,1024,split_cifar10_progress_compress_seed1024,split_cifar10_progress_compress.yaml,slim_resnet18,1,32,0,False,200,62.0,1,True,,16.97,80.825,-80.825,-15.7167
+split_cifar10,si_der,42,split_cifar10_si_der_seed42,split_cifar10_si_der.yaml,slim_resnet18,1,32,0,False,200,142.9,1,True,,16.34,78.1375,-78.1375,-16.0417
+split_cifar10,si_der,123,split_cifar10_si_der_seed123,split_cifar10_si_der.yaml,slim_resnet18,1,32,0,False,200,178.2,1,True,,16.52,79.35,-79.35,-16.0417
+split_cifar10,si_der,456,split_cifar10_si_der_seed456,split_cifar10_si_der.yaml,slim_resnet18,1,32,0,False,200,210.1,1,True,,17.41,80.7625,-80.7625,-9.2167
+split_cifar10,si_der,789,split_cifar10_si_der_seed789,split_cifar10_si_der.yaml,slim_resnet18,1,32,0,False,200,167.5,1,True,,17.41,80.85,-80.85,-11.7667
+split_cifar10,si_der,1024,split_cifar10_si_der_seed1024,split_cifar10_si_der.yaml,slim_resnet18,1,32,0,False,200,167.9,1,True,,17.34,81.5125,-81.5125,-12.6167
+split_cifar10,xder,42,split_cifar10_xder_seed42,split_cifar10_xder.yaml,slim_resnet18,1,32,0,False,200,113.8,1,True,,23.47,68.45,-68.45,-16.0417
+split_cifar10,xder,123,split_cifar10_xder_seed123,split_cifar10_xder.yaml,slim_resnet18,1,32,0,False,200,108.8,1,True,,20.94,72.625,-72.625,-16.0417
+split_cifar10,xder,456,split_cifar10_xder_seed456,split_cifar10_xder.yaml,slim_resnet18,1,32,0,False,200,110.4,1,True,,20.23,76.4625,-76.4625,-11.8167
+split_cifar10,xder,789,split_cifar10_xder_seed789,split_cifar10_xder.yaml,slim_resnet18,1,32,0,False,200,113.5,1,True,,20.4,78.7375,-78.7375,-13.3917
+split_cifar10,xder,1024,split_cifar10_xder_seed1024,split_cifar10_xder.yaml,slim_resnet18,1,32,0,False,200,92.2,1,True,,21.04,74.6625,-74.6625,-13.4917
+split_cifar100,agem,42,split_cifar100_agem_seed42,split_cifar100_agem.yaml,slim_resnet18,1,32,0,True,200,120.1,1,True,,2.01,40.9158,-40.9158,-2.7345
+split_cifar100,agem,123,split_cifar100_agem_seed123,split_cifar100_agem.yaml,slim_resnet18,1,32,0,True,200,129.1,1,True,,2.37,41.1053,-41.1053,-2.7345
+split_cifar100,agem,456,split_cifar100_agem_seed456,split_cifar100_agem.yaml,slim_resnet18,1,32,0,True,200,135.1,1,True,,1.53,35.6316,-35.6316,-2.7345
+split_cifar100,agem,789,split_cifar100_agem_seed789,split_cifar100_agem.yaml,slim_resnet18,1,32,0,True,200,132.1,1,True,,2.24,39.3158,-39.3158,-2.7345
+split_cifar100,agem,1024,split_cifar100_agem_seed1024,split_cifar100_agem.yaml,slim_resnet18,1,32,0,True,200,128.9,1,True,,2.83,45.3895,-45.3895,-2.7345
+split_cifar100,agem_distill,42,split_cifar100_agem_distill_seed42,split_cifar100_agem_distill.yaml,slim_resnet18,1,32,0,True,200,144.1,1,True,,2.86,45.2737,-45.2737,-2.7345
+split_cifar100,agem_distill,123,split_cifar100_agem_distill_seed123,split_cifar100_agem_distill.yaml,slim_resnet18,1,32,0,True,200,139.7,1,True,,2.53,48.1474,-48.1474,-2.7345
+split_cifar100,agem_distill,456,split_cifar100_agem_distill_seed456,split_cifar100_agem_distill.yaml,slim_resnet18,1,32,0,True,200,139.3,1,True,,2.41,43.4105,-43.4105,-2.7345
+split_cifar100,agem_distill,789,split_cifar100_agem_distill_seed789,split_cifar100_agem_distill.yaml,slim_resnet18,1,32,0,True,200,137.4,1,True,,2.97,47.6316,-47.6316,-2.7345
+split_cifar100,agem_distill,1024,split_cifar100_agem_distill_seed1024,split_cifar100_agem_distill.yaml,slim_resnet18,1,32,0,True,200,141.1,1,True,,2.84,48.2105,-48.2105,-2.7345
+split_cifar100,der,42,split_cifar100_der_seed42,split_cifar100_der.yaml,slim_resnet18,1,32,0,True,200,114.5,1,True,,2.86,42.5684,-42.5684,-2.7239
+split_cifar100,der,123,split_cifar100_der_seed123,split_cifar100_der.yaml,slim_resnet18,1,32,0,True,200,114.9,1,True,,2.76,45.7474,-45.7474,-2.7345
+split_cifar100,der,456,split_cifar100_der_seed456,split_cifar100_der.yaml,slim_resnet18,1,32,0,True,200,113.6,1,True,,2.96,45.5158,-45.5158,-2.7345
+split_cifar100,der,789,split_cifar100_der_seed789,split_cifar100_der.yaml,slim_resnet18,1,32,0,True,200,114.1,1,True,,2.69,47.4211,-47.4211,-2.7134
+split_cifar100,der,1024,split_cifar100_der_seed1024,split_cifar100_der.yaml,slim_resnet18,1,32,0,True,200,112.9,1,True,,2.13,42.4947,-42.4947,-2.5766
+split_cifar100,er_ewc,42,split_cifar100_er_ewc_seed42,split_cifar100_er_ewc.yaml,slim_resnet18,1,32,0,True,200,344.0,1,True,,4.91,56.3789,-56.3789,-2.7345
+split_cifar100,er_ewc,123,split_cifar100_er_ewc_seed123,split_cifar100_er_ewc.yaml,slim_resnet18,1,32,0,True,200,404.7,1,True,,4.6,61.2316,-61.2316,-2.7345
+split_cifar100,er_ewc,456,split_cifar100_er_ewc_seed456,split_cifar100_er_ewc.yaml,slim_resnet18,1,32,0,True,200,407.3,1,True,,4.53,56.9158,-56.9158,-2.7345
+split_cifar100,er_ewc,789,split_cifar100_er_ewc_seed789,split_cifar100_er_ewc.yaml,slim_resnet18,1,32,0,True,200,390.5,1,True,,4.2,56.9263,-56.9263,-2.7345
+split_cifar100,er_ewc,1024,split_cifar100_er_ewc_seed1024,split_cifar100_er_ewc.yaml,slim_resnet18,1,32,0,True,200,392.3,1,True,,4.16,59.9263,-59.9263,-2.7134
+split_cifar100,ewc,42,split_cifar100_ewc_seed42,split_cifar100_ewc.yaml,slim_resnet18,1,32,0,True,200,384.3,1,True,,1.93,32.3474,-32.3474,-2.7345
+split_cifar100,ewc,123,split_cifar100_ewc_seed123,split_cifar100_ewc.yaml,slim_resnet18,1,32,0,True,200,384.9,1,True,,2.51,38.3579,-38.3579,-2.7345
+split_cifar100,ewc,456,split_cifar100_ewc_seed456,split_cifar100_ewc.yaml,slim_resnet18,1,32,0,True,200,381.2,1,True,,2.07,36.5895,-36.5895,-2.7345
+split_cifar100,ewc,789,split_cifar100_ewc_seed789,split_cifar100_ewc.yaml,slim_resnet18,1,32,0,True,200,380.8,1,True,,1.69,32.3263,-32.3263,-2.7345
+split_cifar100,ewc,1024,split_cifar100_ewc_seed1024,split_cifar100_ewc.yaml,slim_resnet18,1,32,0,True,200,377.7,1,True,,2.05,32.5263,-32.5263,-2.7345
+split_cifar100,fine_tune,42,split_cifar100_fine_tune_seed42,split_cifar100_finetune.yaml,slim_resnet18,1,32,0,True,200,64.6,1,True,,1.7,34.3474,-34.3474,-2.7345
+split_cifar100,fine_tune,123,split_cifar100_fine_tune_seed123,split_cifar100_finetune.yaml,slim_resnet18,1,32,0,True,200,67.6,1,True,,2.28,37.4526,-37.4526,-2.7345
+split_cifar100,fine_tune,456,split_cifar100_fine_tune_seed456,split_cifar100_finetune.yaml,slim_resnet18,1,32,0,True,200,82.6,1,True,,2.27,41.1053,-41.1053,-2.7345
+split_cifar100,fine_tune,789,split_cifar100_fine_tune_seed789,split_cifar100_finetune.yaml,slim_resnet18,1,32,0,True,200,88.7,1,True,,2.44,42.4842,-42.4842,-2.7345
+split_cifar100,fine_tune,1024,split_cifar100_fine_tune_seed1024,split_cifar100_finetune.yaml,slim_resnet18,1,32,0,True,200,100.7,1,True,,1.96,39.2105,-39.2105,-2.7345
+split_cifar100,icarl,42,split_cifar100_icarl_seed42,split_cifar100_icarl.yaml,slim_resnet18,1,32,0,True,500,94.0,1,True,,4.65,11.1684,-9.4842,-2.7345
+split_cifar100,icarl,123,split_cifar100_icarl_seed123,split_cifar100_icarl.yaml,slim_resnet18,1,32,0,True,500,100.7,1,True,,4.68,13.0526,-10.5158,-2.7345
+split_cifar100,icarl,456,split_cifar100_icarl_seed456,split_cifar100_icarl.yaml,slim_resnet18,1,32,0,True,500,108.8,1,True,,3.61,10.6,-9.4,-2.7345
+split_cifar100,icarl,789,split_cifar100_icarl_seed789,split_cifar100_icarl.yaml,slim_resnet18,1,32,0,True,500,111.4,1,True,,5.29,10.8,-8.2947,-2.7345
+split_cifar100,icarl,1024,split_cifar100_icarl_seed1024,split_cifar100_icarl.yaml,slim_resnet18,1,32,0,True,500,81.6,1,True,,3.64,10.5263,-8.5579,-2.7345
+split_cifar100,joint_training,42,split_cifar100_joint_training_seed42,split_cifar100_joint.yaml,slim_resnet18,1,32,0,True,200,70.6,1,True,,47.97,5.5368,17.3368,-2.7345
+split_cifar100,joint_training,123,split_cifar100_joint_training_seed123,split_cifar100_joint.yaml,slim_resnet18,1,32,0,True,200,66.7,1,True,,46.7,6.6842,9.7789,-2.7345
+split_cifar100,joint_training,456,split_cifar100_joint_training_seed456,split_cifar100_joint.yaml,slim_resnet18,1,32,0,True,200,64.8,1,True,,48.1,5.2526,16.1474,-2.7345
+split_cifar100,joint_training,789,split_cifar100_joint_training_seed789,split_cifar100_joint.yaml,slim_resnet18,1,32,0,True,200,63.9,1,True,,45.42,5.2737,12.5789,-2.7345
+split_cifar100,joint_training,1024,split_cifar100_joint_training_seed1024,split_cifar100_joint.yaml,slim_resnet18,1,32,0,True,200,65.7,1,True,,45.54,7.7579,10.9158,-2.7345
+split_cifar100,lwf,42,split_cifar100_lwf_seed42,split_cifar100_lwf.yaml,slim_resnet18,1,32,0,True,200,79.5,1,True,,2.8,44.0737,-44.0737,-2.7345
+split_cifar100,lwf,123,split_cifar100_lwf_seed123,split_cifar100_lwf.yaml,slim_resnet18,1,32,0,True,200,76.5,1,True,,2.39,43.2421,-43.2421,-2.7345
+split_cifar100,lwf,456,split_cifar100_lwf_seed456,split_cifar100_lwf.yaml,slim_resnet18,1,32,0,True,200,81.7,1,True,,2.34,39.0105,-39.0105,-2.7345
+split_cifar100,lwf,789,split_cifar100_lwf_seed789,split_cifar100_lwf.yaml,slim_resnet18,1,32,0,True,200,76.7,1,True,,2.87,41.7368,-41.7368,-2.7345
+split_cifar100,lwf,1024,split_cifar100_lwf_seed1024,split_cifar100_lwf.yaml,slim_resnet18,1,32,0,True,200,81.2,1,True,,2.64,42.3895,-42.3895,-2.7345
+split_cifar100,progress_compress,42,split_cifar100_progress_compress_seed42,split_cifar100_progress_compress.yaml,slim_resnet18,1,32,0,True,200,75.1,1,True,,3.45,51.1263,-51.1263,-2.7345
+split_cifar100,progress_compress,123,split_cifar100_progress_compress_seed123,split_cifar100_progress_compress.yaml,slim_resnet18,1,32,0,True,200,81.6,1,True,,3.92,53.6737,-53.6737,-2.7345
+split_cifar100,progress_compress,456,split_cifar100_progress_compress_seed456,split_cifar100_progress_compress.yaml,slim_resnet18,1,32,0,True,200,78.2,1,True,,3.46,51.7368,-51.7368,-2.6924
+split_cifar100,progress_compress,789,split_cifar100_progress_compress_seed789,split_cifar100_progress_compress.yaml,slim_resnet18,1,32,0,True,200,81.8,1,True,,3.63,52.8632,-52.8632,-2.7134
+split_cifar100,progress_compress,1024,split_cifar100_progress_compress_seed1024,split_cifar100_progress_compress.yaml,slim_resnet18,1,32,0,True,200,81.7,1,True,,3.3,54.3579,-54.3579,-2.7345
+split_cifar100,si_der,42,split_cifar100_si_der_seed42,split_cifar100_si_der.yaml,slim_resnet18,1,32,0,True,200,181.4,1,True,,2.76,42.1579,-42.1579,-2.7239
+split_cifar100,si_der,123,split_cifar100_si_der_seed123,split_cifar100_si_der.yaml,slim_resnet18,1,32,0,True,200,178.6,1,True,,3.01,46.7684,-46.7684,-2.7345
+split_cifar100,si_der,456,split_cifar100_si_der_seed456,split_cifar100_si_der.yaml,slim_resnet18,1,32,0,True,200,169.5,1,True,,3.07,44.7895,-44.7895,-2.7345
+split_cifar100,si_der,789,split_cifar100_si_der_seed789,split_cifar100_si_der.yaml,slim_resnet18,1,32,0,True,200,138.5,1,True,,2.67,45.5895,-45.5895,-2.7134
+split_cifar100,si_der,1024,split_cifar100_si_der_seed1024,split_cifar100_si_der.yaml,slim_resnet18,1,32,0,True,200,137.8,1,True,,2.8,45.6,-45.6,-2.5766
+split_cifar100,xder,42,split_cifar100_xder_seed42,split_cifar100_xder.yaml,slim_resnet18,1,32,0,True,200,87.4,1,True,,1.25,39.2105,-39.2105,-2.7345
+split_cifar100,xder,123,split_cifar100_xder_seed123,split_cifar100_xder.yaml,slim_resnet18,1,32,0,True,200,85.6,1,True,,2.49,45.0842,-45.0842,-2.7345
+split_cifar100,xder,456,split_cifar100_xder_seed456,split_cifar100_xder.yaml,slim_resnet18,1,32,0,True,200,80.8,1,True,,2.28,48.7895,-48.7895,-2.7345
+split_cifar100,xder,789,split_cifar100_xder_seed789,split_cifar100_xder.yaml,slim_resnet18,1,32,0,True,200,77.1,1,True,,3.6,56.4,-56.4,-2.7134
+split_cifar100,xder,1024,split_cifar100_xder_seed1024,split_cifar100_xder.yaml,slim_resnet18,1,32,0,True,200,68.7,1,True,,2.33,36.1474,-36.1474,-2.7239
+split_mini_imagenet,agem,42,split_mini_imagenet_agem_seed42,split_mini_imagenet_agem.yaml,slim_resnet18,1,32,0,True,200,580.1,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,1.85,32.6754,-32.6754,-2.7345
+split_mini_imagenet,agem,123,split_mini_imagenet_agem_seed123,split_mini_imagenet_agem.yaml,slim_resnet18,1,32,0,True,200,549.3,1,True,,1.6,29.5263,-29.5263,-2.7345
+split_mini_imagenet,agem,456,split_mini_imagenet_agem_seed456,split_mini_imagenet_agem.yaml,slim_resnet18,1,32,0,True,200,533.1,1,True,,2.1167,30.6579,-30.6579,-2.7257
+split_mini_imagenet,agem,789,split_mini_imagenet_agem_seed789,split_mini_imagenet_agem.yaml,slim_resnet18,1,32,0,True,200,547.1,1,True,,2.0,32.4561,-32.4561,-2.7345
+split_mini_imagenet,agem,1024,split_mini_imagenet_agem_seed1024,split_mini_imagenet_agem.yaml,slim_resnet18,1,32,0,True,200,515.6,1,True,,2.1083,35.7105,-35.7105,-2.7169
+split_mini_imagenet,agem_distill,42,split_mini_imagenet_agem_distill_seed42,split_mini_imagenet_agem_distill.yaml,slim_resnet18,1,32,0,True,200,488.6,1,True,,2.3833,33.8947,-33.8947,-2.7345
+split_mini_imagenet,agem_distill,123,split_mini_imagenet_agem_distill_seed123,split_mini_imagenet_agem_distill.yaml,slim_resnet18,1,32,0,True,200,505.2,1,True,,2.3583,36.7632,-36.7632,-2.7345
+split_mini_imagenet,agem_distill,456,split_mini_imagenet_agem_distill_seed456,split_mini_imagenet_agem_distill.yaml,slim_resnet18,1,32,0,True,200,519.7,1,True,,2.4583,35.9211,-35.9211,-2.7257
+split_mini_imagenet,agem_distill,789,split_mini_imagenet_agem_distill_seed789,split_mini_imagenet_agem_distill.yaml,slim_resnet18,1,32,0,True,200,540.1,1,True,,2.0083,30.8684,-30.8684,-2.7345
+split_mini_imagenet,agem_distill,1024,split_mini_imagenet_agem_distill_seed1024,split_mini_imagenet_agem_distill.yaml,slim_resnet18,1,32,0,True,200,571.0,1,True,,2.3,36.5439,-36.5439,-2.7169
+split_mini_imagenet,der,42,split_mini_imagenet_der_seed42,split_mini_imagenet_der.yaml,slim_resnet18,1,32,0,True,200,383.1,1,True,,2.5333,35.4123,-35.4123,-2.6555
+split_mini_imagenet,der,123,split_mini_imagenet_der_seed123,split_mini_imagenet_der.yaml,slim_resnet18,1,32,0,True,200,382.9,1,True,,1.925,35.2895,-35.2895,-2.7257
+split_mini_imagenet,der,456,split_mini_imagenet_der_seed456,split_mini_imagenet_der.yaml,slim_resnet18,1,32,0,True,200,381.8,1,True,,1.6667,33.9035,-33.9035,-2.7345
+split_mini_imagenet,der,789,split_mini_imagenet_der_seed789,split_mini_imagenet_der.yaml,slim_resnet18,1,32,0,True,200,343.7,1,True,,2.0583,32.9211,-32.9211,-2.5415
+split_mini_imagenet,der,1024,split_mini_imagenet_der_seed1024,split_mini_imagenet_der.yaml,slim_resnet18,1,32,0,True,200,346.7,1,True,,1.6167,34.193,-34.193,-2.4888
+split_mini_imagenet,er_ewc,42,split_mini_imagenet_er_ewc_seed42,split_mini_imagenet_er_ewc.yaml,slim_resnet18,1,32,0,True,200,482.5,1,True,,3.2917,44.8509,-44.8509,-2.7257
+split_mini_imagenet,er_ewc,123,split_mini_imagenet_er_ewc_seed123,split_mini_imagenet_er_ewc.yaml,slim_resnet18,1,32,0,True,200,503.6,1,True,,3.025,43.1754,-43.1754,-2.7345
+split_mini_imagenet,er_ewc,456,split_mini_imagenet_er_ewc_seed456,split_mini_imagenet_er_ewc.yaml,slim_resnet18,1,32,0,True,200,537.1,1,True,,3.8083,46.2281,-46.2281,-2.7169
+split_mini_imagenet,er_ewc,789,split_mini_imagenet_er_ewc_seed789,split_mini_imagenet_er_ewc.yaml,slim_resnet18,1,32,0,True,200,535.4,1,True,,3.55,43.4298,-43.4298,-2.7345
+split_mini_imagenet,er_ewc,1024,split_mini_imagenet_er_ewc_seed1024,split_mini_imagenet_er_ewc.yaml,slim_resnet18,1,32,0,True,200,671.0,1,True,,3.0083,45.3947,-45.3947,-2.7345
+split_mini_imagenet,ewc,42,split_mini_imagenet_ewc_seed42,split_mini_imagenet_ewc.yaml,slim_resnet18,1,32,0,True,200,621.5,1,True,,2.2083,31.7105,-31.7105,-2.7345
+split_mini_imagenet,ewc,123,split_mini_imagenet_ewc_seed123,split_mini_imagenet_ewc.yaml,slim_resnet18,1,32,0,True,200,577.7,1,True,,1.9333,27.4035,-27.4035,-2.7345
+split_mini_imagenet,ewc,456,split_mini_imagenet_ewc_seed456,split_mini_imagenet_ewc.yaml,slim_resnet18,1,32,0,True,200,624.2,1,True,,2.0583,26.8772,-26.8772,-2.7257
+split_mini_imagenet,ewc,789,split_mini_imagenet_ewc_seed789,split_mini_imagenet_ewc.yaml,slim_resnet18,1,32,0,True,200,562.3,1,True,,2.0583,27.9912,-27.9912,-2.7345
+split_mini_imagenet,ewc,1024,split_mini_imagenet_ewc_seed1024,split_mini_imagenet_ewc.yaml,slim_resnet18,1,32,0,True,200,558.3,1,True,,2.1167,30.8333,-30.8333,-2.7169
+split_mini_imagenet,fine_tune,42,split_mini_imagenet_fine_tune_seed42,split_mini_imagenet_finetune.yaml,slim_resnet18,1,32,0,True,200,377.6,1,True,,2.25,29.5702,-29.5702,-2.7345
+split_mini_imagenet,fine_tune,123,split_mini_imagenet_fine_tune_seed123,split_mini_imagenet_finetune.yaml,slim_resnet18,1,32,0,True,200,353.1,1,True,,2.0167,31.6316,-31.6316,-2.7345
+split_mini_imagenet,fine_tune,456,split_mini_imagenet_fine_tune_seed456,split_mini_imagenet_finetune.yaml,slim_resnet18,1,32,0,True,200,376.8,1,True,,2.0917,29.0526,-29.0526,-2.7257
+split_mini_imagenet,fine_tune,789,split_mini_imagenet_fine_tune_seed789,split_mini_imagenet_finetune.yaml,slim_resnet18,1,32,0,True,200,397.1,1,True,,1.7833,30.1754,-30.1754,-2.7345
+split_mini_imagenet,fine_tune,1024,split_mini_imagenet_fine_tune_seed1024,split_mini_imagenet_finetune.yaml,slim_resnet18,1,32,0,True,200,400.2,1,True,,1.5583,27.7719,-27.7719,-2.7169
+split_mini_imagenet,icarl,42,split_mini_imagenet_icarl_seed42,split_mini_imagenet_icarl.yaml,slim_resnet18,1,32,0,True,500,415.9,1,True,,3.7583,10.4035,-8.4825,-2.7345
+split_mini_imagenet,icarl,123,split_mini_imagenet_icarl_seed123,split_mini_imagenet_icarl.yaml,slim_resnet18,1,32,0,True,500,414.7,1,True,,3.1333,7.5175,-5.886,-2.7345
+split_mini_imagenet,icarl,456,split_mini_imagenet_icarl_seed456,split_mini_imagenet_icarl.yaml,slim_resnet18,1,32,0,True,500,396.0,1,True,,2.25,4.8596,-2.4035,-2.7345
+split_mini_imagenet,icarl,789,split_mini_imagenet_icarl_seed789,split_mini_imagenet_icarl.yaml,slim_resnet18,1,32,0,True,500,391.1,1,True,,3.325,8.9561,-7.9649,-2.7345
+split_mini_imagenet,icarl,1024,split_mini_imagenet_icarl_seed1024,split_mini_imagenet_icarl.yaml,slim_resnet18,1,32,0,True,500,395.2,1,True,,3.3167,7.2982,-6.4211,-2.7345
+split_mini_imagenet,joint_training,42,split_mini_imagenet_joint_training_seed42,split_mini_imagenet_joint.yaml,slim_resnet18,1,32,0,True,200,410.9,1,True,,44.3083,5.2105,18.693,-2.7345
+split_mini_imagenet,joint_training,123,split_mini_imagenet_joint_training_seed123,split_mini_imagenet_joint.yaml,slim_resnet18,1,32,0,True,200,439.2,2,True,Run log contains restarts; final metrics were read from the last completed metrics block.,46.3917,2.8333,20.1053,-2.7345
+split_mini_imagenet,joint_training,456,split_mini_imagenet_joint_training_seed456,split_mini_imagenet_joint.yaml,slim_resnet18,1,32,0,True,200,405.0,1,True,,42.625,4.9561,19.1228,-2.7345
+split_mini_imagenet,joint_training,789,split_mini_imagenet_joint_training_seed789,split_mini_imagenet_joint.yaml,slim_resnet18,1,32,0,True,200,2356.4,8,True,Run log contains restarts; final metrics were read from the last completed metrics block.,44.1417,2.0526,19.807,-2.7257
+split_mini_imagenet,joint_training,1024,split_mini_imagenet_joint_training_seed1024,split_mini_imagenet_joint.yaml,slim_resnet18,1,32,0,True,200,408.9,1,True,,48.475,2.6842,21.5,-2.7257
+split_mini_imagenet,lwf,42,split_mini_imagenet_lwf_seed42,split_mini_imagenet_lwf.yaml,slim_resnet18,1,32,0,True,200,1471.9,3,True,Run log contains restarts; final metrics were read from the last completed metrics block.,1.4333,26.5702,-26.5702,-2.7345
+split_mini_imagenet,lwf,123,split_mini_imagenet_lwf_seed123,split_mini_imagenet_lwf.yaml,slim_resnet18,1,32,0,True,200,434.1,1,True,,1.55,27.0351,-27.0351,-2.7345
+split_mini_imagenet,lwf,456,split_mini_imagenet_lwf_seed456,split_mini_imagenet_lwf.yaml,slim_resnet18,1,32,0,True,200,438.9,1,True,,2.3333,30.0175,-30.0175,-2.7345
+split_mini_imagenet,lwf,789,split_mini_imagenet_lwf_seed789,split_mini_imagenet_lwf.yaml,slim_resnet18,1,32,0,True,200,456.3,1,True,,1.375,26.2193,-26.2193,-2.7257
+split_mini_imagenet,lwf,1024,split_mini_imagenet_lwf_seed1024,split_mini_imagenet_lwf.yaml,slim_resnet18,1,32,0,True,200,450.4,1,True,,2.1333,32.4912,-32.4912,-2.6994
+split_mini_imagenet,progress_compress,42,split_mini_imagenet_progress_compress_seed42,split_mini_imagenet_progress_compress.yaml,slim_resnet18,1,32,0,True,200,458.6,1,True,,2.7417,44.5789,-44.5789,-2.6818
+split_mini_imagenet,progress_compress,123,split_mini_imagenet_progress_compress_seed123,split_mini_imagenet_progress_compress.yaml,slim_resnet18,1,32,0,True,200,462.7,1,True,,2.8833,42.8947,-42.8947,-2.4625
+split_mini_imagenet,progress_compress,456,split_mini_imagenet_progress_compress_seed456,split_mini_imagenet_progress_compress.yaml,slim_resnet18,1,32,0,True,200,470.0,1,True,,2.6667,43.5614,-43.5614,-2.6643
+split_mini_imagenet,progress_compress,789,split_mini_imagenet_progress_compress_seed789,split_mini_imagenet_progress_compress.yaml,slim_resnet18,1,32,0,True,200,471.5,1,True,,2.4917,41.5702,-41.5702,-2.6117
+split_mini_imagenet,progress_compress,1024,split_mini_imagenet_progress_compress_seed1024,split_mini_imagenet_progress_compress.yaml,slim_resnet18,1,32,0,True,200,482.1,1,True,,2.6,43.4737,-43.4737,-2.7345
+split_mini_imagenet,si_der,42,split_mini_imagenet_si_der_seed42,split_mini_imagenet_si_der.yaml,slim_resnet18,1,32,0,True,200,592.1,1,True,,2.2667,34.307,-34.307,-2.6555
+split_mini_imagenet,si_der,123,split_mini_imagenet_si_der_seed123,split_mini_imagenet_si_der.yaml,slim_resnet18,1,32,0,True,200,585.2,1,True,,2.125,36.0,-36.0,-2.7257
+split_mini_imagenet,si_der,456,split_mini_imagenet_si_der_seed456,split_mini_imagenet_si_der.yaml,slim_resnet18,1,32,0,True,200,583.4,1,True,,2.45,33.193,-33.193,-2.7345
+split_mini_imagenet,si_der,789,split_mini_imagenet_si_der_seed789,split_mini_imagenet_si_der.yaml,slim_resnet18,1,32,0,True,200,583.7,1,True,,2.1167,36.4211,-36.4211,-2.5415
+split_mini_imagenet,si_der,1024,split_mini_imagenet_si_der_seed1024,split_mini_imagenet_si_der.yaml,slim_resnet18,1,32,0,True,200,581.0,1,True,,2.2667,33.9825,-33.9825,-2.4888
+split_mini_imagenet,xder,42,split_mini_imagenet_xder_seed42,split_mini_imagenet_xder.yaml,slim_resnet18,1,32,0,True,200,512.8,1,True,,2.6167,41.4825,-41.4825,-2.7257
+split_mini_imagenet,xder,123,split_mini_imagenet_xder_seed123,split_mini_imagenet_xder.yaml,slim_resnet18,1,32,0,True,200,512.3,1,True,,2.4917,42.0263,-42.0263,-2.638
+split_mini_imagenet,xder,456,split_mini_imagenet_xder_seed456,split_mini_imagenet_xder.yaml,slim_resnet18,1,32,0,True,200,509.6,1,True,,2.9917,40.6667,-40.6667,-2.7169
+split_mini_imagenet,xder,789,split_mini_imagenet_xder_seed789,split_mini_imagenet_xder.yaml,slim_resnet18,1,32,0,True,200,510.0,1,True,,2.2083,32.8596,-32.8596,-2.5941
+split_mini_imagenet,xder,1024,split_mini_imagenet_xder_seed1024,split_mini_imagenet_xder.yaml,slim_resnet18,1,32,0,True,200,532.8,1,True,,2.975,41.9737,-41.9737,-2.5853

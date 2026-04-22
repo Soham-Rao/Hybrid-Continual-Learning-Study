@@ -1,0 +1,53 @@
+[00:35:49] Starting: split_cifar10_agem_seed789
+[00:35:49] Config: {'dataset': 'split_cifar10', 'data_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project\\data_local', 'dataset_image_size': None, 'dataset_out_channels': None, 'model': 'slim_resnet18', 'pretrained': False, 'model_image_size': None, 'method': 'agem', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': False, 'disable_plots': False, 'resume': True, 'cleanup_checkpoints_on_success': True, 'result_group': 'runs', 'ablation_family': None, 'seeds': [42, 123, 456, 789, 1024], 'results_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results', 'seed': 789, 'run_name': 'split_cifar10_agem_seed789', 'project_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project', 'workspace_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2', 'run_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar10\\baselines\\agem\\seed_789', 'log_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar10\\baselines\\agem\\seed_789\\logs', 'metrics_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar10\\baselines\\agem\\seed_789\\metrics', 'checkpoint_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar10\\baselines\\agem\\seed_789\\checkpoints', 'artifact_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar10\\baselines\\agem\\seed_789\\artifacts', 'figure_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\figures\\epoch_1\\split_cifar10\\baselines\\agem\\seed_789'}
+[00:35:49] Device: cuda
+[00:35:52] Dataset: SplitCIFAR10(tasks=5, classes_per_task=2, scenario=class-il)
+[00:35:52] 
+============================================================
+ Task 1/5  | Classes (0, 2)
+============================================================
+[00:35:52] Task 0 baseline (chance): 50.00%
+[00:36:03] task=0  epoch=0  train_loss=0.5285
+[00:36:04] task=0  epoch=END  time_sec=11.5  acc_task0=80.15
+[00:36:04] 
+============================================================
+ Task 2/5  | Classes (2, 4)
+============================================================
+[00:36:04] Task 1 baseline (chance): 25.00%
+[00:36:05] Task 1 zero-shot (pre-train): 4.90%
+[00:36:29] task=1  epoch=0  train_loss=0.6509
+[00:36:31] task=1  epoch=END  time_sec=24.0  acc_task0=0.0  acc_task1=72.2
+[00:36:31] 
+============================================================
+ Task 3/5  | Classes (4, 6)
+============================================================
+[00:36:31] Task 2 baseline (chance): 16.67%
+[00:36:31] Task 2 zero-shot (pre-train): 0.00%
+[00:36:53] task=2  epoch=0  train_loss=0.5857
+[00:36:56] task=2  epoch=END  time_sec=22.1  acc_task0=0.0  acc_task1=0.0  acc_task2=78.0
+[00:36:56] 
+============================================================
+ Task 4/5  | Classes (6, 8)
+============================================================
+[00:36:56] Task 3 baseline (chance): 12.50%
+[00:36:57] Task 3 zero-shot (pre-train): 0.00%
+[00:37:21] task=3  epoch=0  train_loss=0.6119
+[00:37:24] task=3  epoch=END  time_sec=24.1  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=83.4
+[00:37:24] 
+============================================================
+ Task 5/5  | Classes (8, 10)
+============================================================
+[00:37:24] Task 4 baseline (chance): 10.00%
+[00:37:25] Task 4 zero-shot (pre-train): 0.00%
+[00:37:51] task=4  epoch=0  train_loss=0.6833
+[00:37:56] task=4  epoch=END  time_sec=25.6  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=72.1
+[00:37:56] 
+Final Metrics:
+  avg_accuracy         +14.4200
+  forgetting           +78.4375
+  backward_transfer    -78.4375
+  forward_transfer     -14.8167
+[00:37:57] 
+Done - run: split_cifar10_agem_seed789
+[00:37:57] Metrics: {'avg_accuracy': 14.42, 'forgetting': 78.4375, 'backward_transfer': -78.4375, 'forward_transfer': -14.8167}
+[00:37:57] Deleted 5 checkpoint(s) after successful completion.

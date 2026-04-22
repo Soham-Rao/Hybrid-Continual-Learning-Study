@@ -1,0 +1,186 @@
+[19:34:00] Starting: permuted_mnist_si_der_seed123
+[19:34:00] Config: {'dataset': 'permuted_mnist', 'data_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project\\data_local', 'dataset_image_size': None, 'dataset_out_channels': None, 'model': 'resnet8', 'pretrained': False, 'model_image_size': None, 'method': 'si_der', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': False, 'disable_plots': False, 'resume': True, 'cleanup_checkpoints_on_success': True, 'result_group': 'runs', 'ablation_family': None, 'seeds': [42, 123, 456, 789, 1024], 'results_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results', 'seed': 123, 'run_name': 'permuted_mnist_si_der_seed123', 'project_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project', 'workspace_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2', 'run_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123', 'log_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\logs', 'metrics_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\metrics', 'checkpoint_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\checkpoints', 'artifact_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\artifacts', 'figure_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\figures\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123'}
+[19:34:00] Device: cuda
+[19:34:00] Dataset: PermutedMNIST(tasks=10, classes_per_task=10, scenario=domain-il)
+[19:34:00] 
+============================================================
+ Task 1/10  | Classes (0, 10)
+============================================================
+[19:34:00] Task 0 baseline (chance): 10.00%
+[19:35:07] task=0  epoch=0  train_loss=0.4302
+[19:35:09] task=0  epoch=END  time_sec=66.7  acc_task0=96.15
+[19:35:09] 
+============================================================
+ Task 2/10  | Classes (0, 10)
+============================================================
+[19:35:09] Task 1 baseline (chance): 10.00%
+[19:35:12] Task 1 zero-shot (pre-train): 14.04%
+[19:36:35] task=1  epoch=0  train_loss=0.3427
+[19:36:41] task=1  epoch=END  time_sec=83.3  acc_task0=87.58  acc_task1=95.91
+[19:36:41] 
+============================================================
+ Task 3/10  | Classes (0, 10)
+============================================================
+[19:36:41] Task 2 baseline (chance): 10.00%
+[19:36:44] Task 2 zero-shot (pre-train): 10.12%
+[19:38:17] task=2  epoch=0  train_loss=0.3582
+[19:38:27] task=2  epoch=END  time_sec=93.6  acc_task0=75.6  acc_task1=87.44  acc_task2=95.75
+[19:38:27] 
+============================================================
+ Task 4/10  | Classes (0, 10)
+============================================================
+[19:38:27] Task 3 baseline (chance): 10.00%
+[19:38:31] Task 3 zero-shot (pre-train): 11.89%
+[19:40:00] task=3  epoch=0  train_loss=0.3716
+[19:40:11] task=3  epoch=END  time_sec=89.1  acc_task0=63.95  acc_task1=77.26  acc_task2=89.44  acc_task3=95.77
+[19:40:11] 
+============================================================
+ Task 5/10  | Classes (0, 10)
+============================================================
+[19:40:11] Task 4 baseline (chance): 10.00%
+[19:40:14] Task 4 zero-shot (pre-train): 14.03%
+[19:41:29] task=4  epoch=0  train_loss=0.3787
+[19:41:40] task=4  epoch=END  time_sec=75.1  acc_task0=62.68  acc_task1=73.99  acc_task2=79.25  acc_task3=88.12  acc_task4=95.7
+[19:41:40] 
+============================================================
+ Task 6/10  | Classes (0, 10)
+============================================================
+[19:41:40] Task 5 baseline (chance): 10.00%
+[19:41:43] Task 5 zero-shot (pre-train): 11.43%
+[19:42:52] task=5  epoch=0  train_loss=0.3927
+[19:43:06] task=5  epoch=END  time_sec=69.6  acc_task0=53.73  acc_task1=66.22  acc_task2=70.47  acc_task3=76.47  acc_task4=88.65  acc_task5=95.67
+[19:43:06] 
+============================================================
+ Task 7/10  | Classes (0, 10)
+============================================================
+[19:43:06] Task 6 baseline (chance): 10.00%
+[19:43:08] Task 6 zero-shot (pre-train): 14.94%
+[19:44:26] task=6  epoch=0  train_loss=0.402
+[19:44:45] task=6  epoch=END  time_sec=77.9  acc_task0=50.04  acc_task1=62.27  acc_task2=64.69  acc_task3=59.2  acc_task4=77.07  acc_task5=83.44  acc_task6=95.61
+[19:44:45] 
+============================================================
+ Task 8/10  | Classes (0, 10)
+============================================================
+[19:44:45] Task 7 baseline (chance): 10.00%
+[19:44:47] Task 7 zero-shot (pre-train): 12.28%
+[19:45:56] task=7  epoch=0  train_loss=0.3927
+[19:46:13] task=7  epoch=END  time_sec=68.9  acc_task0=51.06  acc_task1=56.92  acc_task2=65.96  acc_task3=64.57  acc_task4=74.39  acc_task5=75.95  acc_task6=89.73  acc_task7=95.7
+[19:46:13] 
+============================================================
+ Task 9/10  | Classes (0, 10)
+============================================================
+[19:46:13] Task 8 baseline (chance): 10.00%
+[19:46:16] Task 8 zero-shot (pre-train): 13.42%
+[19:47:25] task=8  epoch=0  train_loss=0.4025
+[19:47:45] task=8  epoch=END  time_sec=69.9  acc_task0=44.91  acc_task1=55.71  acc_task2=66.02  acc_task3=63.11  acc_task4=66.65  acc_task5=65.16  acc_task6=73.41  acc_task7=88.43  acc_task8=95.43
+[19:47:45] 
+============================================================
+ Task 10/10  | Classes (0, 10)
+============================================================
+[19:47:45] Task 9 baseline (chance): 10.00%
+[19:47:47] Task 9 zero-shot (pre-train): 13.07%
+[19:48:58] task=9  epoch=0  train_loss=0.4107
+[19:49:20] task=9  epoch=END  time_sec=70.5  acc_task0=36.81  acc_task1=46.97  acc_task2=54.97  acc_task3=49.76  acc_task4=61.36  acc_task5=55.77  acc_task6=63.75  acc_task7=75.01  acc_task8=88.57  acc_task9=95.77
+[19:49:20] 
+Final Metrics:
+  avg_accuracy         +62.8740
+  forgetting           +36.5244
+  backward_transfer    -36.5244
+  forward_transfer     +2.8022
+[19:49:21] 
+Done - run: permuted_mnist_si_der_seed123
+[19:49:21] Metrics: {'avg_accuracy': 62.874, 'forgetting': 36.5244, 'backward_transfer': -36.5244, 'forward_transfer': 2.8022}
+[19:49:21] Deleted 10 checkpoint(s) after successful completion.
+[20:18:51] Starting: permuted_mnist_si_der_seed123
+[20:18:51] Config: {'dataset': 'permuted_mnist', 'data_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project\\data_local', 'dataset_image_size': 32, 'dataset_out_channels': None, 'model': 'slim_resnet18', 'pretrained': False, 'model_image_size': None, 'method': 'si_der', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 2, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': False, 'disable_plots': False, 'resume': True, 'cleanup_checkpoints_on_success': True, 'result_group': 'runs', 'ablation_family': None, 'seeds': [42, 123, 456, 789, 1024], 'results_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results', 'seed': 123, 'run_name': 'permuted_mnist_si_der_seed123', 'project_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project', 'workspace_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2', 'run_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123', 'log_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\logs', 'metrics_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\metrics', 'checkpoint_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\checkpoints', 'artifact_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123\\artifacts', 'figure_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\figures\\epoch_1\\permuted_mnist\\hybrids\\si_der\\seed_123'}
+[20:18:51] Device: cuda
+[20:18:51] Dataset: PermutedMNIST(tasks=10, classes_per_task=10, scenario=domain-il)
+[20:18:52] 
+============================================================
+ Task 1/10  | Classes (0, 10)
+============================================================
+[20:18:52] Task 0 baseline (chance): 10.00%
+[20:20:03] task=0  epoch=0  train_loss=0.3407
+[20:20:11] task=0  epoch=END  time_sec=71.6  acc_task0=97.05
+[20:20:11] 
+============================================================
+ Task 2/10  | Classes (0, 10)
+============================================================
+[20:20:11] Task 1 baseline (chance): 10.00%
+[20:20:18] Task 1 zero-shot (pre-train): 14.37%
+[20:21:51] task=1  epoch=0  train_loss=0.2497
+[20:22:07] task=1  epoch=END  time_sec=93.0  acc_task0=92.97  acc_task1=97.05
+[20:22:07] 
+============================================================
+ Task 3/10  | Classes (0, 10)
+============================================================
+[20:22:07] Task 2 baseline (chance): 10.00%
+[20:22:14] Task 2 zero-shot (pre-train): 11.27%
+[20:23:48] task=2  epoch=0  train_loss=0.2236
+[20:24:11] task=2  epoch=END  time_sec=93.5  acc_task0=88.2  acc_task1=93.66  acc_task2=97.15
+[20:24:11] 
+============================================================
+ Task 4/10  | Classes (0, 10)
+============================================================
+[20:24:11] Task 3 baseline (chance): 10.00%
+[20:24:18] Task 3 zero-shot (pre-train): 13.78%
+[20:25:51] task=3  epoch=0  train_loss=0.2116
+[20:26:21] task=3  epoch=END  time_sec=92.9  acc_task0=83.63  acc_task1=85.21  acc_task2=93.96  acc_task3=97.18
+[20:26:22] 
+============================================================
+ Task 5/10  | Classes (0, 10)
+============================================================
+[20:26:22] Task 4 baseline (chance): 10.00%
+[20:26:29] Task 4 zero-shot (pre-train): 10.30%
+[20:28:02] task=4  epoch=0  train_loss=0.2056
+[20:28:39] task=4  epoch=END  time_sec=92.9  acc_task0=77.34  acc_task1=79.47  acc_task2=87.82  acc_task3=92.59  acc_task4=97.27
+[20:28:39] 
+============================================================
+ Task 6/10  | Classes (0, 10)
+============================================================
+[20:28:39] Task 5 baseline (chance): 10.00%
+[20:28:47] Task 5 zero-shot (pre-train): 7.48%
+[20:30:19] task=5  epoch=0  train_loss=0.2011
+[20:31:04] task=5  epoch=END  time_sec=91.8  acc_task0=72.9  acc_task1=72.86  acc_task2=84.41  acc_task3=87.43  acc_task4=92.73  acc_task5=97.3
+[20:31:04] 
+============================================================
+ Task 7/10  | Classes (0, 10)
+============================================================
+[20:31:04] Task 6 baseline (chance): 10.00%
+[20:31:11] Task 6 zero-shot (pre-train): 10.05%
+[20:32:43] task=6  epoch=0  train_loss=0.1971
+[20:33:35] task=6  epoch=END  time_sec=91.9  acc_task0=69.68  acc_task1=70.44  acc_task2=77.17  acc_task3=79.3  acc_task4=86.13  acc_task5=93.29  acc_task6=97.38
+[20:33:36] 
+============================================================
+ Task 8/10  | Classes (0, 10)
+============================================================
+[20:33:36] Task 7 baseline (chance): 10.00%
+[20:33:43] Task 7 zero-shot (pre-train): 11.98%
+[20:35:15] task=7  epoch=0  train_loss=0.1964
+[20:36:15] task=7  epoch=END  time_sec=92.0  acc_task0=64.32  acc_task1=65.26  acc_task2=73.56  acc_task3=73.63  acc_task4=75.03  acc_task5=86.48  acc_task6=94.0  acc_task7=97.38
+[20:36:15] 
+============================================================
+ Task 9/10  | Classes (0, 10)
+============================================================
+[20:36:15] Task 8 baseline (chance): 10.00%
+[20:36:23] Task 8 zero-shot (pre-train): 11.31%
+[20:37:56] task=8  epoch=0  train_loss=0.1959
+[20:39:03] task=8  epoch=END  time_sec=93.0  acc_task0=60.44  acc_task1=62.85  acc_task2=67.79  acc_task3=70.6  acc_task4=66.09  acc_task5=70.81  acc_task6=86.61  acc_task7=94.05  acc_task8=97.49
+[20:39:03] 
+============================================================
+ Task 10/10  | Classes (0, 10)
+============================================================
+[20:39:03] Task 9 baseline (chance): 10.00%
+[20:39:10] Task 9 zero-shot (pre-train): 12.96%
+[20:40:42] task=9  epoch=0  train_loss=0.1946
+[20:42:11] task=9  epoch=END  time_sec=91.4  acc_task0=50.39  acc_task1=63.9  acc_task2=64.67  acc_task3=70.03  acc_task4=60.3  acc_task5=62.27  acc_task6=75.08  acc_task7=89.44  acc_task8=94.74  acc_task9=97.38
+[20:42:11] 
+Final Metrics:
+  avg_accuracy         +72.8200
+  forgetting           +27.1589
+  backward_transfer    -27.1589
+  forward_transfer     +1.5000
+[20:42:11] 
+Done - run: permuted_mnist_si_der_seed123
+[20:42:11] Metrics: {'avg_accuracy': 72.82, 'forgetting': 27.1589, 'backward_transfer': -27.1589, 'forward_transfer': 1.5}
+[20:42:11] Deleted 10 checkpoint(s) after successful completion.

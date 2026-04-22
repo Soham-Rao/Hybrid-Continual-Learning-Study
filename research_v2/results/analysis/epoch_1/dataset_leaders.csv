@@ -1,0 +1,5 @@
+dataset,best_method,best_avg_accuracy_mean,best_forgetting_mean,best_runtime_hours_mean,best_estimated_memory_mb,top_cluster_methods,top_cluster_size,caveat_note
+permuted_mnist,joint_training,95.3738,1.19068,0.1777111111111111,2048.0,joint_training|xder|der|si_der|agem_distill|er_ewc|agem|fine_tune|lwf|ewc|progress_compress|icarl,12,Run log contains restarts; final metrics were read from the last completed metrics block.
+split_cifar10,joint_training,63.708000000000006,10.9575,0.015161111111111111,2048.0,joint_training|icarl|er_ewc|xder|progress_compress|si_der|agem_distill|ewc|der|agem|lwf|fine_tune,12,
+split_cifar100,joint_training,46.746,6.10104,0.01842777777777778,2048.0,joint_training|er_ewc|icarl|progress_compress|si_der|agem_distill|der|lwf|xder|agem|fine_tune|ewc,12,
+split_mini_imagenet,joint_training,45.18834,3.5473399999999997,0.22335555555555556,2048.0,joint_training|er_ewc|icarl|progress_compress|xder|agem_distill|si_der|ewc|der|fine_tune|agem|lwf,12,Run log contains restarts; final metrics were read from the last completed metrics block.

@@ -1,0 +1,173 @@
+[04:46:22] Starting: split_cifar100_xder_seed42
+[04:46:22] Config: {'dataset': 'split_cifar100', 'data_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project\\data_local', 'dataset_image_size': None, 'dataset_out_channels': None, 'model': 'slim_resnet18', 'pretrained': False, 'model_image_size': None, 'method': 'xder', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': True, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': False, 'disable_plots': False, 'resume': True, 'cleanup_checkpoints_on_success': True, 'result_group': 'runs', 'ablation_family': None, 'seeds': [42, 123, 456, 789, 1024], 'results_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results', 'seed': 42, 'run_name': 'split_cifar100_xder_seed42', 'project_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project', 'workspace_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2', 'run_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar100\\hybrids\\xder\\seed_42', 'log_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar100\\hybrids\\xder\\seed_42\\logs', 'metrics_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar100\\hybrids\\xder\\seed_42\\metrics', 'checkpoint_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar100\\hybrids\\xder\\seed_42\\checkpoints', 'artifact_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\runs\\epoch_1\\split_cifar100\\hybrids\\xder\\seed_42\\artifacts', 'figure_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\figures\\epoch_1\\split_cifar100\\hybrids\\xder\\seed_42'}
+[04:46:22] Device: cuda
+[04:46:24] Dataset: SplitCIFAR100(tasks=20, classes_per_task=5, scenario=class-il)
+[04:46:24] 
+============================================================
+ Task 1/20  | Classes (0, 5)
+============================================================
+[04:46:24] Task 0 baseline (chance): 20.00%
+[04:46:28] task=0  epoch=0  train_loss=2.4384
+[04:46:29] task=0  epoch=END  time_sec=3.8  acc_task0=52.8
+[04:46:29] 
+============================================================
+ Task 2/20  | Classes (5, 10)
+============================================================
+[04:46:29] Task 1 baseline (chance): 10.00%
+[04:46:29] Task 1 zero-shot (pre-train): 0.00%
+[04:46:33] task=1  epoch=0  train_loss=3.2254
+[04:46:34] task=1  epoch=END  time_sec=4.0  acc_task0=3.0  acc_task1=42.6
+[04:46:34] 
+============================================================
+ Task 3/20  | Classes (10, 15)
+============================================================
+[04:46:34] Task 2 baseline (chance): 6.67%
+[04:46:34] Task 2 zero-shot (pre-train): 0.00%
+[04:46:38] task=2  epoch=0  train_loss=3.8925
+[04:46:39] task=2  epoch=END  time_sec=3.7  acc_task0=1.0  acc_task1=1.8  acc_task2=49.2
+[04:46:39] 
+============================================================
+ Task 4/20  | Classes (15, 20)
+============================================================
+[04:46:39] Task 3 baseline (chance): 5.00%
+[04:46:39] Task 3 zero-shot (pre-train): 0.00%
+[04:46:44] task=3  epoch=0  train_loss=4.7147
+[04:46:45] task=3  epoch=END  time_sec=4.4  acc_task0=8.2  acc_task1=1.6  acc_task2=0.0  acc_task3=50.0
+[04:46:45] 
+============================================================
+ Task 5/20  | Classes (20, 25)
+============================================================
+[04:46:45] Task 4 baseline (chance): 4.00%
+[04:46:45] Task 4 zero-shot (pre-train): 0.00%
+[04:46:50] task=4  epoch=0  train_loss=6.4828
+[04:46:51] task=4  epoch=END  time_sec=4.4  acc_task0=0.0  acc_task1=2.4  acc_task2=0.2  acc_task3=5.2  acc_task4=49.0
+[04:46:52] 
+============================================================
+ Task 6/20  | Classes (25, 30)
+============================================================
+[04:46:52] Task 5 baseline (chance): 3.33%
+[04:46:52] Task 5 zero-shot (pre-train): 0.00%
+[04:46:56] task=5  epoch=0  train_loss=8.1542
+[04:46:58] task=5  epoch=END  time_sec=4.4  acc_task0=5.2  acc_task1=2.4  acc_task2=1.4  acc_task3=1.2  acc_task4=0.8  acc_task5=42.4
+[04:46:58] 
+============================================================
+ Task 7/20  | Classes (30, 35)
+============================================================
+[04:46:58] Task 6 baseline (chance): 2.86%
+[04:46:58] Task 6 zero-shot (pre-train): 0.00%
+[04:47:03] task=6  epoch=0  train_loss=6.7261
+[04:47:05] task=6  epoch=END  time_sec=4.8  acc_task0=13.2  acc_task1=3.2  acc_task2=1.4  acc_task3=1.2  acc_task4=6.8  acc_task5=0.6  acc_task6=52.6
+[04:47:05] 
+============================================================
+ Task 8/20  | Classes (35, 40)
+============================================================
+[04:47:05] Task 7 baseline (chance): 2.50%
+[04:47:05] Task 7 zero-shot (pre-train): 0.00%
+[04:47:09] task=7  epoch=0  train_loss=15.0248
+[04:47:11] task=7  epoch=END  time_sec=4.5  acc_task0=9.0  acc_task1=1.6  acc_task2=0.6  acc_task3=0.0  acc_task4=2.2  acc_task5=2.0  acc_task6=2.2  acc_task7=45.4
+[04:47:12] 
+============================================================
+ Task 9/20  | Classes (40, 45)
+============================================================
+[04:47:12] Task 8 baseline (chance): 2.22%
+[04:47:12] Task 8 zero-shot (pre-train): 0.00%
+[04:47:16] task=8  epoch=0  train_loss=91.6801
+[04:47:18] task=8  epoch=END  time_sec=4.4  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=26.4
+[04:47:18] 
+============================================================
+ Task 10/20  | Classes (45, 50)
+============================================================
+[04:47:18] Task 9 baseline (chance): 2.00%
+[04:47:19] Task 9 zero-shot (pre-train): 0.00%
+[04:47:23] task=9  epoch=0  train_loss=81.0702
+[04:47:25] task=9  epoch=END  time_sec=4.3  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.2  acc_task9=22.0
+[04:47:25] 
+============================================================
+ Task 11/20  | Classes (50, 55)
+============================================================
+[04:47:25] Task 10 baseline (chance): 1.82%
+[04:47:26] Task 10 zero-shot (pre-train): 0.00%
+[04:47:30] task=10  epoch=0  train_loss=42.658
+[04:47:33] task=10  epoch=END  time_sec=4.7  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.8  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=2.6  acc_task10=38.2
+[04:47:33] 
+============================================================
+ Task 12/20  | Classes (55, 60)
+============================================================
+[04:47:33] Task 11 baseline (chance): 1.67%
+[04:47:33] Task 11 zero-shot (pre-train): 0.00%
+[04:47:37] task=11  epoch=0  train_loss=41.0917
+[04:47:40] task=11  epoch=END  time_sec=4.4  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.0  acc_task10=0.0  acc_task11=38.6
+[04:47:40] 
+============================================================
+ Task 13/20  | Classes (60, 65)
+============================================================
+[04:47:40] Task 12 baseline (chance): 1.54%
+[04:47:40] Task 12 zero-shot (pre-train): 0.00%
+[04:47:45] task=12  epoch=0  train_loss=25.7383
+[04:47:47] task=12  epoch=END  time_sec=4.4  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.0  acc_task5=3.2  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.0  acc_task10=0.0  acc_task11=6.0  acc_task12=39.0
+[04:47:48] 
+============================================================
+ Task 14/20  | Classes (65, 70)
+============================================================
+[04:47:48] Task 13 baseline (chance): 1.43%
+[04:47:48] Task 13 zero-shot (pre-train): 0.00%
+[04:47:52] task=13  epoch=0  train_loss=24.0196
+[04:47:55] task=13  epoch=END  time_sec=4.5  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=8.8  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.0  acc_task10=0.0  acc_task11=0.0  acc_task12=0.4  acc_task13=38.4
+[04:47:55] 
+============================================================
+ Task 15/20  | Classes (70, 75)
+============================================================
+[04:47:55] Task 14 baseline (chance): 1.33%
+[04:47:55] Task 14 zero-shot (pre-train): 0.00%
+[04:48:00] task=14  epoch=0  train_loss=28.3539
+[04:48:03] task=14  epoch=END  time_sec=4.5  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.8  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.0  acc_task10=0.0  acc_task11=0.0  acc_task12=0.0  acc_task13=0.0  acc_task14=41.8
+[04:48:03] 
+============================================================
+ Task 16/20  | Classes (75, 80)
+============================================================
+[04:48:03] Task 15 baseline (chance): 1.25%
+[04:48:03] Task 15 zero-shot (pre-train): 0.00%
+[04:48:08] task=15  epoch=0  train_loss=26.5757
+[04:48:11] task=15  epoch=END  time_sec=4.4  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.0  acc_task10=0.0  acc_task11=0.0  acc_task12=0.0  acc_task13=0.0  acc_task14=11.6  acc_task15=29.0
+[04:48:11] 
+============================================================
+ Task 17/20  | Classes (80, 85)
+============================================================
+[04:48:11] Task 16 baseline (chance): 1.18%
+[04:48:11] Task 16 zero-shot (pre-train): 0.00%
+[04:48:16] task=16  epoch=0  train_loss=40.3334
+[04:48:19] task=16  epoch=END  time_sec=4.6  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=1.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.0  acc_task10=0.0  acc_task11=0.0  acc_task12=0.0  acc_task13=4.4  acc_task14=0.8  acc_task15=0.0  acc_task16=34.8
+[04:48:19] 
+============================================================
+ Task 18/20  | Classes (85, 90)
+============================================================
+[04:48:19] Task 17 baseline (chance): 1.11%
+[04:48:20] Task 17 zero-shot (pre-train): 0.00%
+[04:48:24] task=17  epoch=0  train_loss=39.6115
+[04:48:28] task=17  epoch=END  time_sec=4.5  acc_task0=0.0  acc_task1=0.0  acc_task2=0.2  acc_task3=0.0  acc_task4=0.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.2  acc_task10=0.2  acc_task11=0.0  acc_task12=0.6  acc_task13=0.0  acc_task14=5.0  acc_task15=0.0  acc_task16=0.6  acc_task17=37.2
+[04:48:28] 
+============================================================
+ Task 19/20  | Classes (90, 95)
+============================================================
+[04:48:28] Task 18 baseline (chance): 1.05%
+[04:48:28] Task 18 zero-shot (pre-train): 0.00%
+[04:48:32] task=18  epoch=0  train_loss=73.7034
+[04:48:36] task=18  epoch=END  time_sec=4.4  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.0  acc_task10=4.0  acc_task11=0.2  acc_task12=5.6  acc_task13=5.8  acc_task14=0.0  acc_task15=1.0  acc_task16=1.6  acc_task17=6.4  acc_task18=16.2
+[04:48:36] 
+============================================================
+ Task 20/20  | Classes (95, 100)
+============================================================
+[04:48:36] Task 19 baseline (chance): 1.00%
+[04:48:36] Task 19 zero-shot (pre-train): 0.00%
+[04:48:41] task=19  epoch=0  train_loss=149.0163
+[04:48:44] task=19  epoch=END  time_sec=4.3  acc_task0=0.0  acc_task1=0.0  acc_task2=0.0  acc_task3=0.0  acc_task4=0.0  acc_task5=0.0  acc_task6=0.0  acc_task7=0.0  acc_task8=0.0  acc_task9=0.6  acc_task10=0.0  acc_task11=0.0  acc_task12=0.0  acc_task13=0.0  acc_task14=0.0  acc_task15=0.0  acc_task16=0.0  acc_task17=0.0  acc_task18=0.0  acc_task19=24.4
+[04:48:45] 
+Final Metrics:
+  avg_accuracy         +1.2500
+  forgetting           +39.2105
+  backward_transfer    -39.2105
+  forward_transfer     -2.7345
+[04:48:46] 
+Done - run: split_cifar100_xder_seed42
+[04:48:46] Metrics: {'avg_accuracy': 1.25, 'forgetting': 39.2105, 'backward_transfer': -39.2105, 'forward_transfer': -2.7345}
+[04:48:46] Deleted 20 checkpoint(s) after successful completion.

@@ -1,0 +1,61 @@
+[18:45:51] Starting: split_cifar10_joint_training_resumecheck_seed123
+[18:45:51] Config: {'dataset': 'split_cifar10', 'data_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project\\data_local', 'dataset_image_size': None, 'dataset_out_channels': None, 'model': 'slim_resnet18', 'pretrained': False, 'model_image_size': None, 'method': 'joint_training', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': False, 'disable_plots': True, 'resume': False, 'cleanup_checkpoints_on_success': False, 'result_group': 'ablations', 'ablation_family': 'robustness', 'seeds': [42, 123, 456], 'results_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results', 'run_tag': 'resumecheck', 'robustness_stop_task': 1, 'stop_after_task': 1, 'seed': 123, 'run_name': 'split_cifar10_joint_training_resumecheck_seed123', 'project_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project', 'workspace_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2', 'run_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123', 'log_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\logs', 'metrics_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\metrics', 'checkpoint_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\checkpoints', 'artifact_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\artifacts', 'figure_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\figures\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123'}
+[18:45:51] Device: cuda
+[18:45:53] Dataset: SplitCIFAR10(tasks=5, classes_per_task=2, scenario=class-il)
+[18:45:53] 
+============================================================
+ Task 1/5  | Classes (0, 2)
+============================================================
+[18:45:53] Task 0 baseline (chance): 50.00%
+[18:46:06] task=0  epoch=0  train_loss=0.5361
+[18:46:21] task=0  epoch=END  time_sec=12.4  acc_task0=86.1
+[18:46:21] 
+============================================================
+ Task 2/5  | Classes (2, 4)
+============================================================
+[18:46:21] Task 1 baseline (chance): 25.00%
+[18:46:22] Task 1 zero-shot (pre-train): 1.05%
+[18:46:32] task=1  epoch=0  train_loss=0.579
+[18:46:52] task=1  epoch=END  time_sec=10.3  acc_task0=75.75  acc_task1=63.15
+[18:46:53] Planned early stop after task 1. Checkpoint saved for resume/restart robustness testing.
+[18:46:53] Run stopped intentionally before completion; final metrics and plots were skipped so this checkpoint can be resumed later.
+[18:46:53] Starting: split_cifar10_joint_training_resumecheck_seed123
+[18:46:53] Config: {'dataset': 'split_cifar10', 'data_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project\\data_local', 'dataset_image_size': None, 'dataset_out_channels': None, 'model': 'slim_resnet18', 'pretrained': False, 'model_image_size': None, 'method': 'joint_training', 'n_epochs': 1, 'batch_size': 32, 'num_workers': 0, 'lr': 0.03, 'momentum': 0.9, 'weight_decay': 0.0001, 'fp16': False, 'buffer_size': 200, 'ewc_lambda': 100.0, 'fisher_samples': 200, 'si_lambda': 1.0, 'si_xi': 0.1, 'der_alpha': 0.5, 'xder_beta': 0.5, 'lwf_lambda': 1.0, 'lwf_temp': 2.0, 'icarl_distill_w': 1.0, 'icarl_temp': 2.0, 'use_nmc': True, 'agem_mem_batch': 64, 'distill_lambda': 1.0, 'distill_temp': 2.0, 'pc_distill_w': 1.0, 'pc_ewc_lambda': 100.0, 'pc_compress_epochs': 3, 'er_replay_ratio': 0.5, 'joint_replay_epochs': 1, 'disable_tqdm': True, 'disable_checkpoints': False, 'disable_plots': True, 'resume': True, 'cleanup_checkpoints_on_success': True, 'result_group': 'ablations', 'ablation_family': 'robustness', 'seeds': [42, 123, 456], 'results_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results', 'run_tag': 'resumecheck', 'robustness_stop_task': 1, 'seed': 123, 'run_name': 'split_cifar10_joint_training_resumecheck_seed123', 'project_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\Project', 'workspace_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2', 'run_root': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123', 'log_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\logs', 'metrics_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\metrics', 'checkpoint_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\checkpoints', 'artifact_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123\\artifacts', 'figure_dir': 'F:\\Temp\\cf\\Catastrophic Forgetting\\research_v2\\results\\figures\\ablations\\epoch_1\\split_cifar10\\robustness\\joint_training__resumecheck\\seed_123'}
+[18:46:53] Device: cuda
+[18:46:55] Dataset: SplitCIFAR10(tasks=5, classes_per_task=2, scenario=class-il)
+[18:46:56] Resumed from checkpoint: F:\Temp\cf\Catastrophic Forgetting\research_v2\results\ablations\epoch_1\split_cifar10\robustness\joint_training__resumecheck\seed_123\checkpoints\split_cifar10_joint_training_resumecheck_seed123_task1.pt
+[18:46:56] Next task index: 2
+[18:46:56] 
+============================================================
+ Task 3/5  | Classes (4, 6)
+============================================================
+[18:46:56] Task 2 baseline (chance): 16.67%
+[18:46:57] Task 2 zero-shot (pre-train): 0.00%
+[18:47:09] task=2  epoch=0  train_loss=0.5404
+[18:47:36] task=2  epoch=END  time_sec=11.8  acc_task0=79.7  acc_task1=25.15  acc_task2=50.85
+[18:47:37] 
+============================================================
+ Task 4/5  | Classes (6, 8)
+============================================================
+[18:47:37] Task 3 baseline (chance): 12.50%
+[18:47:38] Task 3 zero-shot (pre-train): 0.00%
+[18:47:50] task=3  epoch=0  train_loss=0.4124
+[18:48:28] task=3  epoch=END  time_sec=11.9  acc_task0=78.6  acc_task1=47.55  acc_task2=52.65  acc_task3=60.45
+[18:48:28] 
+============================================================
+ Task 5/5  | Classes (8, 10)
+============================================================
+[18:48:28] Task 4 baseline (chance): 10.00%
+[18:48:29] Task 4 zero-shot (pre-train): 0.00%
+[18:48:43] task=4  epoch=0  train_loss=0.2892
+[18:49:27] task=4  epoch=END  time_sec=13.2  acc_task0=69.5  acc_task1=46.6  acc_task2=64.15  acc_task3=70.35  acc_task4=78.6
+[18:49:28] 
+Final Metrics:
+  avg_accuracy         +65.8400
+  forgetting           +8.2875
+  backward_transfer    -2.4875
+  forward_transfer     -15.7792
+[18:49:28] 
+Done - run: split_cifar10_joint_training_resumecheck_seed123
+[18:49:28] Metrics: {'avg_accuracy': 65.84, 'forgetting': 8.2875, 'backward_transfer': -2.4875, 'forward_transfer': -15.7792}
+[18:49:28] Deleted 5 checkpoint(s) after successful completion.
