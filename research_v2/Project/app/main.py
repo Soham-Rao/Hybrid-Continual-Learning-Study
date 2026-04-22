@@ -60,26 +60,22 @@ def _sidebar(bundle) -> dict:
         dataset = st.selectbox(
             "Dataset",
             options=datasets,
-            index=datasets.index(st.session_state["dashboard_dataset"]),
             format_func=lambda item: DATASET_LABELS.get(str(item), str(item)),
             key="dashboard_dataset",
         )
         families = st.multiselect(
             "Method families",
             options=["baseline", "hybrid"],
-            default=st.session_state["dashboard_families"],
             help="Use this to simplify the comparison panels without changing the underlying source tables.",
             key="dashboard_families",
         )
         include_joint = st.toggle(
             "Include joint training in general comparisons",
-            value=bool(st.session_state["dashboard_include_joint"]),
             help="Joint training remains excluded from Pareto views even when this toggle is on.",
             key="dashboard_include_joint",
         )
         top_cluster_only = st.toggle(
             "Show only top-cluster methods",
-            value=bool(st.session_state["dashboard_top_cluster_only"]),
             help="Limits method views to methods that are not significantly worse than the dataset leader.",
             key="dashboard_top_cluster_only",
         )
@@ -89,33 +85,28 @@ def _sidebar(bundle) -> dict:
             "Memory budget (MB)",
             min_value=16,
             max_value=4096,
-            value=int(st.session_state["dashboard_memory_budget_mb"]),
             step=16,
             key="dashboard_memory_budget_mb",
         )
         compute_budget = st.selectbox(
             "Compute budget",
             options=["low", "medium", "high"],
-            index=["low", "medium", "high"].index(str(st.session_state["dashboard_compute_budget"])),
             key="dashboard_compute_budget",
         )
         acceptable_forgetting = st.slider(
             "Acceptable forgetting",
             min_value=0,
             max_value=100,
-            value=int(st.session_state["dashboard_acceptable_forgetting"]),
             step=1,
             key="dashboard_acceptable_forgetting",
         )
         task_similarity = st.selectbox(
             "Task similarity",
             options=["low", "medium", "high"],
-            index=["low", "medium", "high"].index(str(st.session_state["dashboard_task_similarity"])),
             key="dashboard_task_similarity",
         )
         joint_retraining_allowed = st.toggle(
             "Allow joint retraining",
-            value=bool(st.session_state["dashboard_joint_allowed"]),
             key="dashboard_joint_allowed",
         )
 

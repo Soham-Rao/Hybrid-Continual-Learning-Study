@@ -280,9 +280,6 @@ def build_tradeoff_scatter(
 def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: dict[str, object] | None = None) -> str:
     if tree_df.empty:
         return "<div>No decision-tree data are available.</div>"
-    nodes: list[dict[str, object]] = []
-    links: list[dict[str, object]] = []
-
     dataset_key = str(tree_df.iloc[0]["dataset"])
     dataset_label = str(tree_df.iloc[0]["dataset_label"])
     active_path = active_path or {}
@@ -294,42 +291,6 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         "joint": str(active_path.get("joint_bucket_key", "")),
         "method": str(active_path.get("recommended_method", "")),
     }
-
-    def add_node(node_id: str, label: str, level_name: str, score: float, count: int, meta: dict[str, object], *, active: bool) -> None:
-        nodes.append(
-            {
-                "id": node_id,
-                "label": label,
-                "level": level_name,
-                "score": float(score),
-                "count": max(int(count), 1),
-                "color": "#8fdcc9" if active else "#cbd5e1",
-                "meta": meta,
-            }
-        )
-
-    def add_link(source_id: str, target_id: str, value: int, score: float, *, active: bool) -> None:
-        links.append(
-            {
-                "source_id": source_id,
-                "target_id": target_id,
-                "value": max(int(value), 1),
-                "score": float(score),
-                "color": "rgba(143, 220, 201, 0.88)" if active else "rgba(148, 163, 184, 0.46)",
-            }
-        )
-
-    root_id = f"dataset::{dataset_key}"
-    add_node(
-        root_id,
-        dataset_label,
-        "dataset",
-        float(tree_df["score"].mean()),
-        int(len(tree_df)),
-        {"dataset": dataset_key},
-        active=True,
-    )
-
     level_keys = [
         ("memory_bucket_label", "memory_bucket_key", "memory"),
         ("compute_bucket_label", "compute_bucket_key", "compute"),
@@ -339,98 +300,115 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         ("method_label", "recommended_method", "method"),
     ]
 
-    current_level = [(root_id, tree_df.copy(), {})]
-    for label_col, key_col, level_name in level_keys:
-        next_level: list[tuple[str, pd.DataFrame, dict[str, object]]] = []
-        for parent_id, subset, path_meta in current_level:
-            grouped = (
-                subset.groupby([label_col, key_col], dropna=False)
-                .agg(
-                    score=("score", "mean"),
-                    count=("case_id", "count"),
-                    avg_accuracy=("avg_accuracy_mean", "mean"),
-                    forgetting=("forgetting_mean", "mean"),
-                    runtime=("runtime_hours_mean", "mean"),
-                    memory=("estimated_memory_mb", "mean"),
-                )
-                .reset_index()
-                .sort_values(["score", "avg_accuracy"], ascending=[False, False])
-            )
-            for row in grouped.itertuples(index=False):
-                key = str(getattr(row, key_col))
-                label = str(getattr(row, label_col))
-                node_id = f"{parent_id}|{level_name}::{key}"
-                node_meta = {
-                    **path_meta,
-                    "dataset": dataset_key,
-                    f"{level_name}_key": key,
-                    f"{level_name}_label": label,
-                    "avg_accuracy_mean": float(row.avg_accuracy),
-                    "forgetting_mean": float(row.forgetting),
-                    "runtime_hours_mean": float(row.runtime),
-                    "estimated_memory_mb": float(row.memory),
-                }
-                is_active = not active_keys.get(level_name) or active_keys[level_name] == key
-                add_node(
-                    node_id,
-                    label,
-                    level_name,
-                    float(row.score),
-                    int(row.count),
-                    node_meta,
-                    active=is_active,
-                )
-                add_link(parent_id, node_id, int(row.count), float(row.score), active=is_active)
-                next_subset = subset[subset[key_col].astype(str) == key].copy()
-                next_level.append((node_id, next_subset, {**path_meta, f"{level_name}_key": key, f"{level_name}_label": label}))
-        current_level = next_level
-
-    node_df = pd.DataFrame(nodes).drop_duplicates(subset=["id"]).reset_index(drop=True)
-    meta_cols = sorted({key for meta in node_df["meta"] for key in meta.keys()})
-    for column in meta_cols:
-        node_df[column] = node_df["meta"].map(lambda item: item.get(column))
-    node_index = {node_id: idx for idx, node_id in enumerate(node_df["id"].tolist())}
-    link_df = pd.DataFrame(links)
-    if link_df.empty:
-        return None
-    link_df["source"] = link_df["source_id"].map(node_index)
-    link_df["target"] = link_df["target_id"].map(node_index)
-
-    for column in [
-        "dataset",
-        "memory_key",
-        "compute_key",
-        "forgetting_key",
-        "similarity_key",
-        "joint_key",
-        "method_key",
-        "avg_accuracy_mean",
-        "forgetting_mean",
-        "runtime_hours_mean",
-        "estimated_memory_mb",
-    ]:
-        if column not in node_df.columns:
-            node_df[column] = ""
-
-    node_customdata = node_df[
-        [
-            "level",
-            "memory_key",
-            "compute_key",
-            "forgetting_key",
-            "similarity_key",
-            "joint_key",
-            "method_key",
-            "avg_accuracy_mean",
-            "forgetting_mean",
-            "runtime_hours_mean",
-            "estimated_memory_mb",
-        ]
-    ].fillna("").to_numpy()
-
-    graph_nodes = []
     stage_order = ["dataset", "memory", "compute", "forgetting", "similarity", "joint", "method"]
     stage_index = {name: idx for idx, name in enumerate(stage_order)}
+    node_rows: list[dict[str, object]] = []
+
+    root_id = f"dataset::{dataset_key}"
+    node_rows.append(
+        {
+            "id": root_id,
+            "label": dataset_label,
+            "level": "dataset",
+            "stage_index": stage_index["dataset"],
+            "score": float(tree_df["score"].mean()),
+            "count": int(len(tree_df)),
+            "color": "#8fdcc9",
+            "meta": {
+                "dataset": dataset_key,
+                "avg_accuracy_mean": float(tree_df["avg_accuracy_mean"].mean()),
+                "forgetting_mean": float(tree_df["forgetting_mean"].mean()),
+                "runtime_hours_mean": float(tree_df["runtime_hours_mean"].mean()),
+                "estimated_memory_mb": float(tree_df["estimated_memory_mb"].mean()),
+            },
+        }
+    )
+
+    for label_col, key_col, level_name in level_keys:
+        grouped = (
+            tree_df.groupby([key_col, label_col], dropna=False)
+            .agg(
+                score=("score", "mean"),
+                count=("case_id", "count"),
+                avg_accuracy=("avg_accuracy_mean", "mean"),
+                forgetting=("forgetting_mean", "mean"),
+                runtime=("runtime_hours_mean", "mean"),
+                memory=("estimated_memory_mb", "mean"),
+            )
+            .reset_index()
+            .sort_values(["score", "avg_accuracy", label_col], ascending=[False, False, True])
+        )
+        for row in grouped.itertuples(index=False):
+            key = str(getattr(row, key_col))
+            label = str(getattr(row, label_col))
+            node_rows.append(
+                {
+                    "id": f"{level_name}::{key}",
+                    "label": label,
+                    "level": level_name,
+                    "stage_index": stage_index[level_name],
+                    "score": float(row.score),
+                    "count": max(int(row.count), 1),
+                    "color": "#8fdcc9" if active_keys.get(level_name) == key else "#cbd5e1",
+                    "meta": {
+                        "dataset": dataset_key,
+                        f"{level_name}_key": key,
+                        f"{level_name}_label": label,
+                        "avg_accuracy_mean": float(row.avg_accuracy),
+                        "forgetting_mean": float(row.forgetting),
+                        "runtime_hours_mean": float(row.runtime),
+                        "estimated_memory_mb": float(row.memory),
+                    },
+                }
+            )
+
+    node_df = pd.DataFrame(node_rows).drop_duplicates(subset=["id"]).reset_index(drop=True)
+    node_index = {node_id: idx for idx, node_id in enumerate(node_df["id"].tolist())}
+
+    link_rows: list[dict[str, object]] = []
+
+    def _pastel(case_id: int, stage_step: int) -> str:
+        hue = int((case_id * 37 + stage_step * 29) % 360)
+        return f"hsla({hue}, 72%, 78%, 0.34)"
+
+    for row in tree_df.itertuples(index=False):
+        case_id = int(getattr(row, "case_id"))
+        path_is_active = (
+            str(getattr(row, "memory_bucket_key")) == active_keys["memory"]
+            and str(getattr(row, "compute_bucket_key")) == active_keys["compute"]
+            and str(getattr(row, "forgetting_bucket_key")) == active_keys["forgetting"]
+            and str(getattr(row, "similarity_bucket_key")) == active_keys["similarity"]
+            and str(getattr(row, "joint_bucket_key")) == active_keys["joint"]
+            and str(getattr(row, "recommended_method")) == active_keys["method"]
+        )
+        transitions = [
+            (root_id, f"memory::{getattr(row, 'memory_bucket_key')}"),
+            (f"memory::{getattr(row, 'memory_bucket_key')}", f"compute::{getattr(row, 'compute_bucket_key')}"),
+            (f"compute::{getattr(row, 'compute_bucket_key')}", f"forgetting::{getattr(row, 'forgetting_bucket_key')}"),
+            (f"forgetting::{getattr(row, 'forgetting_bucket_key')}", f"similarity::{getattr(row, 'similarity_bucket_key')}"),
+            (f"similarity::{getattr(row, 'similarity_bucket_key')}", f"joint::{getattr(row, 'joint_bucket_key')}"),
+            (f"joint::{getattr(row, 'joint_bucket_key')}", f"method::{getattr(row, 'recommended_method')}"),
+        ]
+        for stage_step, (source_id, target_id) in enumerate(transitions, start=1):
+            link_rows.append(
+                {
+                    "id": f"link::{case_id}::{stage_step}",
+                    "case_id": case_id,
+                    "stage_step": stage_step,
+                    "source_id": str(source_id),
+                    "target_id": str(target_id),
+                    "value": 1,
+                    "score": float(getattr(row, "score")),
+                    "active": path_is_active,
+                    "fill": _pastel(case_id, stage_step),
+                }
+            )
+
+    link_df = pd.DataFrame(link_rows)
+    if link_df.empty:
+        return None
+
+    graph_nodes = []
     stage_width = 170
     node_width = 36
     y_padding = 8
@@ -441,7 +419,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
     for level_name in stage_order:
         stage_subset = node_df[node_df["level"].astype(str) == level_name].copy()
-        stage_subset = stage_subset.sort_values(["score", "label"], ascending=[False, True]).reset_index(drop=True)
+        stage_subset = stage_subset.sort_values(["score", "count", "label"], ascending=[False, False, True]).reset_index(drop=True)
         stage_total_height = float(stage_subset["count"].sum()) * global_scale + max(len(stage_subset) - 1, 0) * y_padding
         cursor_y = 30.0 + max((base_height - stage_total_height) / 2.0, 0.0)
         for _, row in stage_subset.iterrows():
@@ -458,11 +436,12 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
                     "score": float(row["score"]),
                     "count": int(row["count"]),
                     "color": row["color"],
+                    "active": row["color"] == "#8fdcc9",
                     "meta": {
-                        "avg_accuracy_mean": row.get("avg_accuracy_mean", ""),
-                        "forgetting_mean": row.get("forgetting_mean", ""),
-                        "runtime_hours_mean": row.get("runtime_hours_mean", ""),
-                        "estimated_memory_mb": row.get("estimated_memory_mb", ""),
+                        "avg_accuracy_mean": row["meta"].get("avg_accuracy_mean", ""),
+                        "forgetting_mean": row["meta"].get("forgetting_mean", ""),
+                        "runtime_hours_mean": row["meta"].get("runtime_hours_mean", ""),
+                        "estimated_memory_mb": row["meta"].get("estimated_memory_mb", ""),
                     },
                 }
             )
@@ -475,34 +454,57 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         int(max((node["y"] + node["height"]) for node in graph_nodes) + 80) if graph_nodes else base_height + 90,
     )
 
+    link_df["source_y_sort"] = link_df["source_id"].map(lambda item: float(node_layout[str(item)]["y"]))
+    link_df["target_y_sort"] = link_df["target_id"].map(lambda item: float(node_layout[str(item)]["y"]))
+    link_df = link_df.sort_values(["source_y_sort", "target_y_sort", "case_id", "stage_step"]).reset_index(drop=True)
+
+    outgoing_counts = link_df.groupby("source_id").size().to_dict()
+    incoming_counts = link_df.groupby("target_id").size().to_dict()
+    outgoing_cursor = {node_id: 0 for node_id in node_layout}
+    incoming_cursor = {node_id: 0 for node_id in node_layout}
+
     paths = []
-    link_cursor = {node_id: 0.0 for node_id in node_layout}
     for row in link_df.itertuples(index=False):
         source = node_layout.get(str(row.source_id))
         target = node_layout.get(str(row.target_id))
         if source is None or target is None:
             continue
-        thickness = max(float(row.value) * global_scale, 4.0)
-        sy = source["y"] + min(link_cursor[source["id"]] + (thickness / 2.0), max(source["height"] - 4.0, thickness / 2.0))
-        ty = target["y"] + min(link_cursor[target["id"]] + (thickness / 2.0), max(target["height"] - 4.0, thickness / 2.0))
-        link_cursor[source["id"]] += thickness
-        link_cursor[target["id"]] += thickness
+        source_slots = max(int(outgoing_counts.get(source["id"], 1)), 1)
+        target_slots = max(int(incoming_counts.get(target["id"], 1)), 1)
+        source_slot = float(source["height"]) / source_slots
+        target_slot = float(target["height"]) / target_slots
+        thickness = max(min(source_slot, target_slot) * 0.42, 1.1)
+        source_center = float(source["y"]) + (source_slot * (outgoing_cursor[source["id"]] + 0.5))
+        target_center = float(target["y"]) + (target_slot * (incoming_cursor[target["id"]] + 0.5))
+        outgoing_cursor[source["id"]] += 1
+        incoming_cursor[target["id"]] += 1
+        sy0 = source_center - (thickness / 2.0)
+        sy1 = source_center + (thickness / 2.0)
+        ty0 = target_center - (thickness / 2.0)
+        ty1 = target_center + (thickness / 2.0)
         x1 = source["x"] + source["width"]
         x2 = target["x"]
         cx1 = x1 + ((x2 - x1) * 0.42)
         cx2 = x1 + ((x2 - x1) * 0.58)
-        path_d = f"M{x1:.2f},{sy:.2f} C{cx1:.2f},{sy:.2f} {cx2:.2f},{ty:.2f} {x2:.2f},{ty:.2f}"
+        path_d = (
+            f"M{x1:.2f},{sy0:.2f} "
+            f"C{cx1:.2f},{sy0:.2f} {cx2:.2f},{ty0:.2f} {x2:.2f},{ty0:.2f} "
+            f"L{x2:.2f},{ty1:.2f} "
+            f"C{cx2:.2f},{ty1:.2f} {cx1:.2f},{sy1:.2f} {x1:.2f},{sy1:.2f} Z"
+        )
         paths.append(
             {
-                "id": f"link::{row.source_id}=>{row.target_id}",
+                "id": str(row.id),
+                "case_id": int(row.case_id),
+                "stage_step": int(row.stage_step),
                 "source_id": str(row.source_id),
                 "target_id": str(row.target_id),
                 "d": path_d,
-                "stroke": str(row.color),
+                "fill": "rgba(110,231,183,0.58)" if bool(row.active) else str(row.fill),
                 "stroke_width": thickness,
                 "value": int(row.value),
                 "score": float(row.score),
-                "active": "143, 220, 201" in str(row.color),
+                "active": bool(row.active),
             }
         )
 
@@ -556,6 +558,13 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         border-radius: 18px;
         background: linear-gradient(180deg, rgba(248,250,252,0.96), rgba(241,245,249,0.96));
         cursor: grab;
+        contain: strict;
+      }}
+      .alluvial-frame.is-moving text {{
+        opacity: 0.12;
+      }}
+      .alluvial-frame.is-moving path {{
+        filter: none !important;
       }}
       .alluvial-reset {{
         border: none;
@@ -627,9 +636,11 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       let momentumFrame = null;
       let lastMoveAt = 0;
       let selectedFlowId = null;
-      const activeStroke = "rgba(110,231,183,0.88)";
-      const contextStroke = "rgba(148,163,184,0.46)";
-      const selectedStroke = "rgba(251,191,36,0.96)";
+      let pendingTransform = false;
+      let interactionTimer = null;
+      const activeFill = "rgba(110,231,183,0.62)";
+      const contextFill = "rgba(148,163,184,0.26)";
+      const selectedFill = "rgba(251,191,36,0.78)";
       const activeNodeFill = "#8fdcc9";
       const contextNodeFill = "#cbd5e1";
       const selectedNodeFill = "#fcd34d";
@@ -637,6 +648,31 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       function setTransform() {{
         viewport.style.transformOrigin = "0 0";
         viewport.style.transform = `translate(${{tx}}px, ${{ty}}px) scale(${{scale}})`;
+      }}
+
+      function scheduleTransform() {{
+        if (pendingTransform) return;
+        pendingTransform = true;
+        requestAnimationFrame(() => {{
+          pendingTransform = false;
+          setTransform();
+        }});
+      }}
+
+      function setInteractiveMode(active) {{
+        if (active) {{
+          frame.classList.add("is-moving");
+          if (interactionTimer) {{
+            clearTimeout(interactionTimer);
+            interactionTimer = null;
+          }}
+          return;
+        }}
+        if (interactionTimer) clearTimeout(interactionTimer);
+        interactionTimer = setTimeout(() => {{
+          frame.classList.remove("is-moving");
+          interactionTimer = null;
+        }}, 120);
       }}
 
       function resetView() {{
@@ -648,7 +684,8 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         selectedFlowId = null;
         if (momentumFrame) cancelAnimationFrame(momentumFrame);
         applySelection(new Set());
-        setTransform();
+        setInteractiveMode(false);
+        scheduleTransform();
       }}
 
       function stopMomentum() {{
@@ -667,11 +704,13 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
           ty += velocityY;
           velocityX *= friction;
           velocityY *= friction;
-          setTransform();
+          setInteractiveMode(true);
+          scheduleTransform();
           if (Math.abs(velocityX) > minVelocity || Math.abs(velocityY) > minVelocity) {{
             momentumFrame = requestAnimationFrame(tick);
           }} else {{
             momentumFrame = null;
+            setInteractiveMode(false);
           }}
         }}
         momentumFrame = requestAnimationFrame(tick);
@@ -683,25 +722,15 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         return t;
       }}
 
-      const incomingByTarget = new Map();
+      const linksByCase = new Map();
       const pathElements = new Map();
       const nodeElements = new Map();
 
-      function registerIncoming(flow) {{
-        if (!incomingByTarget.has(flow.target_id)) {{
-          incomingByTarget.set(flow.target_id, []);
+      function registerCase(flow) {{
+        if (!linksByCase.has(flow.case_id)) {{
+          linksByCase.set(flow.case_id, []);
         }}
-        incomingByTarget.get(flow.target_id).push(flow);
-      }}
-
-      function collectAncestorLinks(targetNodeId, selected) {{
-        const incoming = incomingByTarget.get(targetNodeId) || [];
-        incoming.forEach((flow) => {{
-          if (!selected.has(flow.id)) {{
-            selected.add(flow.id);
-            collectAncestorLinks(flow.source_id, selected);
-          }}
-        }});
+        linksByCase.get(flow.case_id).push(flow);
       }}
 
       function selectedNodeIds(linkIds) {{
@@ -719,13 +748,13 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const highlightedNodes = selectedNodeIds(linkIds);
         pathElements.forEach((pathEl, linkId) => {{
           const flow = pathEl.__data;
-          const stroke = linkIds.size
-            ? (linkIds.has(linkId) ? selectedStroke : contextStroke)
-            : (flow.active ? activeStroke : contextStroke);
+          const fill = linkIds.size
+            ? (linkIds.has(linkId) ? selectedFill : contextFill)
+            : (flow.active ? activeFill : contextFill);
           const opacity = linkIds.size
-            ? (linkIds.has(linkId) ? "0.98" : "0.18")
-            : (flow.active ? "0.92" : "0.62");
-          pathEl.setAttribute("stroke", stroke);
+            ? (linkIds.has(linkId) ? "0.96" : "0.12")
+            : (flow.active ? "0.92" : "0.88");
+          pathEl.setAttribute("fill", fill);
           pathEl.setAttribute("opacity", opacity);
         }});
 
@@ -744,11 +773,13 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
       payload.stages.forEach((stage) => {{
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("class", "alluvial-stage-label");
         text.setAttribute("x", stage.x);
         text.setAttribute("y", 16);
         text.setAttribute("fill", darkMode ? "#e2e8f0" : "#334155");
         text.setAttribute("font-size", "13");
         text.setAttribute("font-weight", "700");
+        text.style.pointerEvents = "none";
         text.textContent = stage.label;
         viewport.appendChild(text);
       }});
@@ -757,12 +788,10 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.__data = flow;
         path.setAttribute("d", flow.d);
-        path.setAttribute("fill", "none");
-        path.setAttribute("stroke", flow.stroke);
-        path.setAttribute("stroke-width", flow.stroke_width);
-        path.setAttribute("stroke-linecap", "round");
-        path.setAttribute("opacity", flow.active ? "0.92" : "0.62");
-        path.appendChild(titleElement(`Flow count: ${{flow.value}} | Mean score: ${{flow.score.toFixed(2)}}`));
+        path.setAttribute("fill", flow.fill);
+        path.setAttribute("stroke", darkMode ? "rgba(248,250,252,0.08)" : "rgba(15,23,42,0.06)");
+        path.setAttribute("stroke-width", "0.8");
+        path.setAttribute("opacity", flow.active ? "0.92" : "0.88");
         path.style.cursor = "pointer";
         path.addEventListener("click", (event) => {{
           event.stopPropagation();
@@ -771,12 +800,15 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
             applySelection(new Set());
             return;
           }}
-          const selected = new Set([flow.id]);
-          collectAncestorLinks(flow.source_id, selected);
+          const selected = new Set(
+            (linksByCase.get(flow.case_id) || [])
+              .filter((item) => item.stage_step <= flow.stage_step)
+              .map((item) => item.id)
+          );
           selectedFlowId = flow.id;
           applySelection(selected);
         }});
-        registerIncoming(flow);
+        registerCase(flow);
         pathElements.set(flow.id, path);
         viewport.appendChild(path);
       }});
@@ -799,19 +831,18 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         rect.setAttribute("stroke-width", "1");
 
         const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("class", "alluvial-node-label");
         label.setAttribute("x", node.x + node.width + 8);
         label.setAttribute("y", node.y + Math.min(Math.max(node.height / 2, 14), node.height - 4));
         label.setAttribute("dominant-baseline", "middle");
         label.setAttribute("fill", darkMode ? "#f8fafc" : "#0f172a");
         label.setAttribute("font-size", "12");
         label.setAttribute("font-weight", node.color === "#0f766e" ? "700" : "500");
+        label.style.pointerEvents = "none";
         label.textContent = node.label;
 
         group.appendChild(rect);
         group.appendChild(label);
-        group.appendChild(titleElement(
-          `${{node.label}}\\nStage: ${{node.level}}\\nMean accuracy: ${{Number(node.meta.avg_accuracy_mean || 0).toFixed(2)}}\\nMean forgetting: ${{Number(node.meta.forgetting_mean || 0).toFixed(2)}}\\nMean runtime (h): ${{Number(node.meta.runtime_hours_mean || 0).toFixed(2)}}\\nMean memory proxy (MB): ${{Number(node.meta.estimated_memory_mb || 0).toFixed(2)}}`
-        ));
         nodeElements.set(node.id, group);
         viewport.appendChild(group);
       }});
@@ -822,6 +853,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
         stopMomentum();
+        setInteractiveMode(true);
         const direction = event.deltaY < 0 ? 1.18 : 0.84;
         const nextScale = Math.min(Math.max(scale * direction, 0.3), 18.0);
         const worldX = (mouseX - tx) / scale;
@@ -829,7 +861,8 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         tx = mouseX - (worldX * nextScale);
         ty = mouseY - (worldY * nextScale);
         scale = nextScale;
-        setTransform();
+        scheduleTransform();
+        setInteractiveMode(false);
       }}, {{ passive: false }});
 
       frame.addEventListener("mousedown", (event) => {{
@@ -841,6 +874,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         velocityY = 0;
         lastMoveAt = performance.now();
         frame.style.cursor = "grabbing";
+        setInteractiveMode(true);
       }});
 
       window.addEventListener("mousemove", (event) => {{
@@ -857,19 +891,20 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         lastX = event.clientX;
         lastY = event.clientY;
         lastMoveAt = now;
-        setTransform();
+        scheduleTransform();
       }});
 
       window.addEventListener("mouseup", () => {{
         if (dragging) startMomentum();
         dragging = false;
         frame.style.cursor = "grab";
+        if (!momentumFrame) setInteractiveMode(false);
       }});
 
       frame.addEventListener("dblclick", resetView);
       if (reset) reset.addEventListener("click", resetView);
       applySelection(new Set());
-      setTransform();
+      scheduleTransform();
     }})();
     </script>
     """
