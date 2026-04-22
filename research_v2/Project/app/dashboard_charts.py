@@ -560,11 +560,20 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         cursor: grab;
         contain: strict;
       }}
+      .alluvial-scene {{
+        position: relative;
+        transform-origin: 0 0;
+        will-change: transform;
+      }}
+      .alluvial-canvas, .alluvial-svg {{
+        position: absolute;
+        inset: 0;
+      }}
+      .alluvial-canvas {{
+        pointer-events: none;
+      }}
       .alluvial-frame.is-moving text {{
         opacity: 0.12;
-      }}
-      .alluvial-frame.is-moving path {{
-        filter: none !important;
       }}
       .alluvial-reset {{
         border: none;
@@ -610,9 +619,12 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         </div>
       </div>
       <div id="alluvial-frame" class="alluvial-frame">
-        <svg id="alluvial-svg" viewBox="0 0 {svg_width} {svg_height}" style="width:100%; height:100%; user-select:none;">
-          <g id="alluvial-viewport"></g>
-        </svg>
+        <div id="alluvial-scene" class="alluvial-scene" style="width:{svg_width}px; height:{svg_height}px;">
+          <canvas id="alluvial-canvas" class="alluvial-canvas" width="{svg_width}" height="{svg_height}" style="width:{svg_width}px; height:{svg_height}px;"></canvas>
+          <svg id="alluvial-svg" class="alluvial-svg" viewBox="0 0 {svg_width} {svg_height}" style="width:{svg_width}px; height:{svg_height}px; user-select:none;">
+            <g id="alluvial-viewport"></g>
+          </svg>
+        </div>
       </div>
     </div>
     <script>
@@ -621,8 +633,12 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       const svg = document.getElementById("alluvial-svg");
       const viewport = document.getElementById("alluvial-viewport");
       const frame = document.getElementById("alluvial-frame");
+      const scene = document.getElementById("alluvial-scene");
+      const canvas = document.getElementById("alluvial-canvas");
       const reset = document.getElementById("alluvial-reset");
-      if (!svg || !viewport || !frame) return;
+      if (!svg || !viewport || !frame || !scene || !canvas) return;
+      const ctx = canvas.getContext("2d", {{ alpha: true }});
+      if (!ctx) return;
 
       const darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       let scale = 1.0;
@@ -631,6 +647,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       let dragging = false;
       let lastX = 0;
       let lastY = 0;
+      let dragDistance = 0;
       let velocityX = 0;
       let velocityY = 0;
       let momentumFrame = null;
@@ -644,10 +661,10 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       const activeNodeFill = "#8fdcc9";
       const contextNodeFill = "#cbd5e1";
       const selectedNodeFill = "#fcd34d";
+      const flowStroke = darkMode ? "rgba(248,250,252,0.08)" : "rgba(15,23,42,0.06)";
 
       function setTransform() {{
-        viewport.style.transformOrigin = "0 0";
-        viewport.style.transform = `translate(${{tx}}px, ${{ty}}px) scale(${{scale}})`;
+        scene.style.transform = `translate(${{tx}}px, ${{ty}}px) scale(${{scale}})`;
       }}
 
       function scheduleTransform() {{
@@ -656,6 +673,14 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         requestAnimationFrame(() => {{
           pendingTransform = false;
           setTransform();
+          drawFlows(selectedFlowId
+            ? new Set(
+                (linksByCase.get(flowById.get(selectedFlowId)?.case_id) || [])
+                  .filter((item) => item.stage_step <= (flowById.get(selectedFlowId)?.stage_step || 0))
+                  .map((item) => item.id)
+              )
+            : new Set()
+          );
         }});
       }}
 
@@ -722,8 +747,12 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         return t;
       }}
 
+      const flows = payload.paths.map((flow) => ({{
+        ...flow,
+        path2d: new Path2D(flow.d),
+      }}));
+      const flowById = new Map(flows.map((flow) => [flow.id, flow]));
       const linksByCase = new Map();
-      const pathElements = new Map();
       const nodeElements = new Map();
 
       function registerCase(flow) {{
@@ -736,7 +765,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       function selectedNodeIds(linkIds) {{
         const ids = new Set();
         linkIds.forEach((linkId) => {{
-          const flow = pathElements.get(linkId)?.__data;
+          const flow = flowById.get(linkId);
           if (!flow) return;
           ids.add(flow.source_id);
           ids.add(flow.target_id);
@@ -744,20 +773,29 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         return ids;
       }}
 
-      function applySelection(linkIds) {{
-        const highlightedNodes = selectedNodeIds(linkIds);
-        pathElements.forEach((pathEl, linkId) => {{
-          const flow = pathEl.__data;
+      function drawFlows(linkIds) {{
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        flows.forEach((flow) => {{
           const fill = linkIds.size
-            ? (linkIds.has(linkId) ? selectedFill : contextFill)
+            ? (linkIds.has(flow.id) ? selectedFill : contextFill)
             : (flow.active ? activeFill : contextFill);
           const opacity = linkIds.size
-            ? (linkIds.has(linkId) ? "0.96" : "0.12")
-            : (flow.active ? "0.92" : "0.88");
-          pathEl.setAttribute("fill", fill);
-          pathEl.setAttribute("opacity", opacity);
+            ? (linkIds.has(flow.id) ? 0.96 : 0.12)
+            : (flow.active ? 0.92 : 0.88);
+          ctx.save();
+          ctx.globalAlpha = opacity;
+          ctx.fillStyle = fill;
+          ctx.strokeStyle = flowStroke;
+          ctx.lineWidth = 0.8;
+          ctx.fill(flow.path2d);
+          ctx.stroke(flow.path2d);
+          ctx.restore();
         }});
+      }}
 
+      function applySelection(linkIds) {{
+        drawFlows(linkIds);
+        const highlightedNodes = selectedNodeIds(linkIds);
         nodeElements.forEach((groupEl, nodeId) => {{
           const rect = groupEl.querySelector("rect");
           const label = groupEl.querySelector("text");
@@ -784,34 +822,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         viewport.appendChild(text);
       }});
 
-      payload.paths.forEach((flow) => {{
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.__data = flow;
-        path.setAttribute("d", flow.d);
-        path.setAttribute("fill", flow.fill);
-        path.setAttribute("stroke", darkMode ? "rgba(248,250,252,0.08)" : "rgba(15,23,42,0.06)");
-        path.setAttribute("stroke-width", "0.8");
-        path.setAttribute("opacity", flow.active ? "0.92" : "0.88");
-        path.style.cursor = "pointer";
-        path.addEventListener("click", (event) => {{
-          event.stopPropagation();
-          if (selectedFlowId === flow.id) {{
-            selectedFlowId = null;
-            applySelection(new Set());
-            return;
-          }}
-          const selected = new Set(
-            (linksByCase.get(flow.case_id) || [])
-              .filter((item) => item.stage_step <= flow.stage_step)
-              .map((item) => item.id)
-          );
-          selectedFlowId = flow.id;
-          applySelection(selected);
-        }});
-        registerCase(flow);
-        pathElements.set(flow.id, path);
-        viewport.appendChild(path);
-      }});
+      flows.forEach((flow) => registerCase(flow));
 
       payload.nodes.forEach((node) => {{
         const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -847,6 +858,45 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         viewport.appendChild(group);
       }});
 
+      function worldPointFromEvent(event) {{
+        const rect = frame.getBoundingClientRect();
+        const localX = event.clientX - rect.left;
+        const localY = event.clientY - rect.top;
+        return {{
+          worldX: (localX - tx) / scale,
+          worldY: (localY - ty) / scale,
+        }};
+      }}
+
+      function hitFlowAtEvent(event) {{
+        const {{ worldX, worldY }} = worldPointFromEvent(event);
+        for (let i = flows.length - 1; i >= 0; i -= 1) {{
+          const flow = flows[i];
+          if (ctx.isPointInPath(flow.path2d, worldX, worldY)) {{
+            return flow;
+          }}
+        }}
+        return null;
+      }}
+
+      frame.addEventListener("click", (event) => {{
+        if (dragDistance > 6) return;
+        const hit = hitFlowAtEvent(event);
+        if (!hit) return;
+        if (selectedFlowId === hit.id) {{
+          selectedFlowId = null;
+          applySelection(new Set());
+          return;
+        }}
+        const selected = new Set(
+          (linksByCase.get(hit.case_id) || [])
+            .filter((item) => item.stage_step <= hit.stage_step)
+            .map((item) => item.id)
+        );
+        selectedFlowId = hit.id;
+        applySelection(selected);
+      }});
+
       frame.addEventListener("wheel", (event) => {{
         event.preventDefault();
         const rect = svg.getBoundingClientRect();
@@ -865,11 +915,24 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         setInteractiveMode(false);
       }}, {{ passive: false }});
 
+      frame.addEventListener("mousemove", (event) => {{
+        if (dragging) return;
+        const hit = hitFlowAtEvent(event);
+        frame.style.cursor = hit ? "pointer" : "grab";
+      }});
+
+      frame.addEventListener("mouseleave", () => {{
+        if (!dragging) {{
+          frame.style.cursor = "grab";
+        }}
+      }});
+
       frame.addEventListener("mousedown", (event) => {{
         stopMomentum();
         dragging = true;
         lastX = event.clientX;
         lastY = event.clientY;
+        dragDistance = 0;
         velocityX = 0;
         velocityY = 0;
         lastMoveAt = performance.now();
@@ -882,6 +945,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const now = performance.now();
         const dx = event.clientX - lastX;
         const dy = event.clientY - lastY;
+        dragDistance += Math.abs(dx) + Math.abs(dy);
         const dt = Math.max(now - lastMoveAt, 8);
         const panBoost = Math.min(3.0 + (scale * 0.22), 7.0);
         tx += dx * panBoost;
