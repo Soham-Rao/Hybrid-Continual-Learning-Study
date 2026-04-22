@@ -494,11 +494,15 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         path_d = f"M{x1:.2f},{sy:.2f} C{cx1:.2f},{sy:.2f} {cx2:.2f},{ty:.2f} {x2:.2f},{ty:.2f}"
         paths.append(
             {
+                "id": f"link::{row.source_id}=>{row.target_id}",
+                "source_id": str(row.source_id),
+                "target_id": str(row.target_id),
                 "d": path_d,
                 "stroke": str(row.color),
                 "stroke_width": thickness,
                 "value": int(row.value),
                 "score": float(row.score),
+                "active": "143, 220, 201" in str(row.color),
             }
         )
 
@@ -592,6 +596,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(110,231,183,0.88);"></span>active path</span>
           <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(203,213,225,0.92);"></span>context flows</span>
+          <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(251,191,36,0.95);"></span>clicked lineage</span>
           <button id="alluvial-reset" class="alluvial-reset">Reset view</button>
         </div>
       </div>
@@ -621,6 +626,13 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       let velocityY = 0;
       let momentumFrame = null;
       let lastMoveAt = 0;
+      let selectedFlowId = null;
+      const activeStroke = "rgba(110,231,183,0.88)";
+      const contextStroke = "rgba(148,163,184,0.46)";
+      const selectedStroke = "rgba(251,191,36,0.96)";
+      const activeNodeFill = "#8fdcc9";
+      const contextNodeFill = "#cbd5e1";
+      const selectedNodeFill = "#fcd34d";
 
       function setTransform() {{
         viewport.style.transformOrigin = "0 0";
@@ -633,7 +645,9 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         ty = 24;
         velocityX = 0;
         velocityY = 0;
+        selectedFlowId = null;
         if (momentumFrame) cancelAnimationFrame(momentumFrame);
+        applySelection(new Set());
         setTransform();
       }}
 
@@ -669,6 +683,65 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         return t;
       }}
 
+      const incomingByTarget = new Map();
+      const pathElements = new Map();
+      const nodeElements = new Map();
+
+      function registerIncoming(flow) {{
+        if (!incomingByTarget.has(flow.target_id)) {{
+          incomingByTarget.set(flow.target_id, []);
+        }}
+        incomingByTarget.get(flow.target_id).push(flow);
+      }}
+
+      function collectAncestorLinks(targetNodeId, selected) {{
+        const incoming = incomingByTarget.get(targetNodeId) || [];
+        incoming.forEach((flow) => {{
+          if (!selected.has(flow.id)) {{
+            selected.add(flow.id);
+            collectAncestorLinks(flow.source_id, selected);
+          }}
+        }});
+      }}
+
+      function selectedNodeIds(linkIds) {{
+        const ids = new Set();
+        linkIds.forEach((linkId) => {{
+          const flow = pathElements.get(linkId)?.__data;
+          if (!flow) return;
+          ids.add(flow.source_id);
+          ids.add(flow.target_id);
+        }});
+        return ids;
+      }}
+
+      function applySelection(linkIds) {{
+        const highlightedNodes = selectedNodeIds(linkIds);
+        pathElements.forEach((pathEl, linkId) => {{
+          const flow = pathEl.__data;
+          const stroke = linkIds.size
+            ? (linkIds.has(linkId) ? selectedStroke : contextStroke)
+            : (flow.active ? activeStroke : contextStroke);
+          const opacity = linkIds.size
+            ? (linkIds.has(linkId) ? "0.98" : "0.18")
+            : (flow.active ? "0.92" : "0.62");
+          pathEl.setAttribute("stroke", stroke);
+          pathEl.setAttribute("opacity", opacity);
+        }});
+
+        nodeElements.forEach((groupEl, nodeId) => {{
+          const rect = groupEl.querySelector("rect");
+          const label = groupEl.querySelector("text");
+          const node = groupEl.__data;
+          if (!rect || !label) return;
+          const fill = linkIds.size
+            ? (highlightedNodes.has(nodeId) ? selectedNodeFill : contextNodeFill)
+            : (node.active ? activeNodeFill : contextNodeFill);
+          rect.setAttribute("fill", fill);
+          label.setAttribute("font-weight", highlightedNodes.has(nodeId) || node.active ? "700" : "500");
+        }});
+      }}
+
       payload.stages.forEach((stage) => {{
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.setAttribute("x", stage.x);
@@ -682,18 +755,38 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
       payload.paths.forEach((flow) => {{
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.__data = flow;
         path.setAttribute("d", flow.d);
         path.setAttribute("fill", "none");
         path.setAttribute("stroke", flow.stroke);
         path.setAttribute("stroke-width", flow.stroke_width);
         path.setAttribute("stroke-linecap", "round");
-        path.setAttribute("opacity", flow.stroke.includes("110,231,183") ? "0.92" : "0.62");
+        path.setAttribute("opacity", flow.active ? "0.92" : "0.62");
         path.appendChild(titleElement(`Flow count: ${{flow.value}} | Mean score: ${{flow.score.toFixed(2)}}`));
+        path.style.cursor = "pointer";
+        path.addEventListener("click", (event) => {{
+          event.stopPropagation();
+          if (selectedFlowId === flow.id) {{
+            selectedFlowId = null;
+            applySelection(new Set());
+            return;
+          }}
+          const selected = new Set([flow.id]);
+          collectAncestorLinks(flow.source_id, selected);
+          selectedFlowId = flow.id;
+          applySelection(selected);
+        }});
+        registerIncoming(flow);
+        pathElements.set(flow.id, path);
         viewport.appendChild(path);
       }});
 
       payload.nodes.forEach((node) => {{
         const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.__data = {{
+          id: node.id,
+          active: node.color === activeNodeFill,
+        }};
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         rect.setAttribute("x", node.x);
         rect.setAttribute("y", node.y);
@@ -719,6 +812,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         group.appendChild(titleElement(
           `${{node.label}}\\nStage: ${{node.level}}\\nMean accuracy: ${{Number(node.meta.avg_accuracy_mean || 0).toFixed(2)}}\\nMean forgetting: ${{Number(node.meta.forgetting_mean || 0).toFixed(2)}}\\nMean runtime (h): ${{Number(node.meta.runtime_hours_mean || 0).toFixed(2)}}\\nMean memory proxy (MB): ${{Number(node.meta.estimated_memory_mb || 0).toFixed(2)}}`
         ));
+        nodeElements.set(node.id, group);
         viewport.appendChild(group);
       }});
 
@@ -774,6 +868,7 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
       frame.addEventListener("dblclick", resetView);
       if (reset) reset.addEventListener("click", resetView);
+      applySelection(new Set());
       setTransform();
     }})();
     </script>
