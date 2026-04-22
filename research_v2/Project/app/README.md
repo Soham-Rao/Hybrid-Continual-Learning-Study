@@ -1,6 +1,28 @@
-# App Workspace
+# Dashboard v2 Workspace
 
-This folder is reserved for the future v2 dashboard and any small local
-research-facing interfaces that consume v2-only analysis artifacts.
+This folder contains the v2 research workbench dashboard for the continual
+learning study. The dashboard is:
 
-Nothing from the v1 deadline dashboard should be treated as final here.
+- read-only
+- sourced only from generated v2 artifacts
+- intended for local exploration with Streamlit
+
+## Run
+
+From the repository root:
+
+```powershell
+streamlit run ".\research_v2\Project\app\main.py"
+```
+
+## Required artifact roots
+
+- `research_v2/results/analysis/epoch_1`
+- `research_v2/results/analysis/ablations/epoch_1`
+- `research_v2/results/figures/epoch_1/analysis`
+
+## Notes
+
+- The dashboard prefers interactive Plotly charts rebuilt from CSV artifacts.
+- Static Phase 7 PNGs are kept as archival fallback visuals.
+- Phase 6 ablations are shown only as contextual evidence, not as the main study leaderboard.

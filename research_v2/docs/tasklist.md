@@ -140,31 +140,31 @@ This is the real study workspace. All baselines, hybrids, and planned ablations 
 - [x] Resume/restart robustness checks on representative methods
 - [x] Runtime / memory sensitivity summaries
 
-## Phase 7 — Statistical Analysis And Study Outputs (v2 version of old Phase 5)
-- [ ] Aggregate v2 raw results into a clean master results table
-- [ ] Generate paper-ready summary tables for the full v2 epoch-1 matrix
-- [ ] Run pairwise significance testing with correction
-- [ ] Run effect size reporting
-- [ ] Run method ranking tests across datasets
-- [ ] Generate accuracy / forgetting / runtime / memory trade-off plots
-- [ ] Generate dataset leader summaries with caveat notes
-- [ ] Produce a final v2 analysis report sourced only from v2 evidence
+## Phase 7 — Statistical Analysis And Study Outputs (v2 version of old Phase 5) ✅ COMPLETE
+- [x] Aggregate v2 raw results into a clean master results table
+- [x] Generate paper-ready summary tables for the full v2 epoch-1 matrix
+- [x] Run pairwise significance testing with correction
+- [x] Run effect size reporting
+- [x] Run method ranking tests across datasets
+- [x] Generate accuracy / forgetting / runtime / memory trade-off plots
+- [x] Generate dataset leader summaries with caveat notes
+- [x] Produce a final v2 analysis report sourced only from v2 evidence
 
-## Phase 8 — Recommendation Engine v2
-- [ ] Redesign recommendation inputs around the final v2 result space
-- [ ] Rebuild recommendation scoring / policy from v2 evidence only
-- [ ] Validate recommendation outputs against the final summary tables
-- [ ] Create representative recommendation case studies
-- [ ] Document what the recommendation engine can and cannot claim
+## Phase 8 — Recommendation Engine v2 ✅ COMPLETE
+- [x] Redesign recommendation inputs around the final v2 result space
+- [x] Rebuild recommendation scoring / policy from v2 evidence only
+- [x] Validate recommendation outputs against the final summary tables
+- [x] Create representative recommendation case studies
+- [x] Document what the recommendation engine can and cannot claim
 
-## Phase 9 — Dashboard v2 (v2 version of old Phase 6)
-- [ ] Design a cleaner research-facing dashboard structure for v2
-- [ ] Connect dashboard data loading to v2 analysis artifacts only
-- [ ] Rebuild recommendation panel using the v2 engine
-- [ ] Rebuild method comparison workspace using v2 tables
-- [ ] Rebuild visual panels using v2 figures
-- [ ] Rebuild report/about panel using v2 study outputs
-- [ ] Validate local runtime and presentation flow on this machine
+## Phase 9 — Dashboard v2 (v2 version of old Phase 6) ✅ COMPLETE
+- [x] Design a cleaner research-facing dashboard structure for v2
+- [x] Connect dashboard data loading to v2 analysis artifacts only
+- [x] Rebuild recommendation panel using the v2 engine
+- [x] Rebuild method comparison workspace using v2 tables
+- [x] Rebuild visual panels using v2 figures
+- [x] Rebuild report/about panel using v2 study outputs
+- [x] Validate local runtime and presentation flow on this machine
 
 ## Phase 10 — Higher-Epoch Campaign
 - [ ] Rerun the primary matrix at epoch 5
