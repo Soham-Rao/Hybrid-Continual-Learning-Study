@@ -23,6 +23,14 @@ def test_chart_focus_detects_named_tradeoff_views() -> None:
     assert _chart_focus_from_text("explain accuracy vs forgetting chart") == "accuracy_forgetting"
     assert _chart_focus_from_text("explain accuracy vs estimated memory chart") == "accuracy_memory"
     assert _chart_focus_from_text("show me the score breakdown") == "score_breakdown"
+    assert _chart_focus_from_text("explain the shortlist chart") == "shortlist"
+    assert _chart_focus_from_text("explain the decision tree alluvial flow") == "decision_flow"
+    assert _chart_focus_from_text("what does the Holm-adjusted significance matrix mean") == "significance"
+    assert _chart_focus_from_text("walk me through the rank-biserial effect-size matrix") == "effect"
+    assert _chart_focus_from_text("explain the pareto frontier") == "pareto"
+    assert _chart_focus_from_text("what is the friedman average-rank chart showing") == "friedman_rank"
+    assert _chart_focus_from_text("explain the ablation runtime chart") == "ablation_runtime"
+    assert _chart_focus_from_text("explain the resume robustness chart") == "robustness"
 
 
 def test_format_inferred_settings_includes_assumptions_and_scope_notes() -> None:

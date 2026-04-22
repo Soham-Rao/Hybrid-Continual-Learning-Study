@@ -80,3 +80,20 @@ def test_chart_explanation_draft_uses_chart_specific_template() -> None:
     assert "highest-accuracy method" in text
     assert "lowest-forgetting method" in text
     assert "xder" in text and "der" in text
+
+
+def test_chart_explanation_draft_covers_decision_flow_specific_language() -> None:
+    facts = ChartExplanationFacts(
+        chart_focus="decision_flow",
+        dataset="split_cifar10",
+        winner={"method": "er_ewc", "avg_accuracy_mean": 62.1, "forgetting_mean": 15.2, "runtime_hours_mean": 0.3, "estimated_memory_mb": 64.0},
+        best_accuracy={"method": "joint_training", "avg_accuracy_mean": 88.0},
+        lowest_forgetting={"method": "joint_training", "forgetting_mean": 1.0},
+        fastest={"method": "lwf", "runtime_hours_mean": 0.12},
+        smallest_memory={"method": "agem", "estimated_memory_mb": 0.8},
+        shortlist_summary="icarl, xder",
+    )
+    text = chart_explanation_draft(facts)
+    assert "decision-flow chart" in text
+    assert "Green flow" in text or "Green flows" in text
+    assert "deterministic scorer" in text

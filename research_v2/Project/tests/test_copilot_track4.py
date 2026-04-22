@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.copilot import CopilotEngine, CopilotSettings, OllamaClient, infer_settings_from_text
 from src.copilot.actions import looks_like_settings_query
+from src.copilot.knowledge_base import HARDWARE_CARDS
 from src.recommendation.engine import RecommendationRequest
 
 
@@ -30,6 +31,11 @@ def test_infer_settings_maps_gt210_description_to_low_compute_and_1gb_budget() -
 
 def test_looks_like_settings_query_catches_gpu_shorthand_requests() -> None:
     assert looks_like_settings_query("i have a gt210 what do you think i should do") is True
+
+
+def test_hardware_cards_live_in_the_shared_knowledge_base() -> None:
+    for alias in ("gt210", "rtx 3050", "iris xe", "cpu only", "ryzen 7"):
+        assert alias in HARDWARE_CARDS
 
 
 def test_infer_settings_preserves_current_values_when_text_is_vague() -> None:

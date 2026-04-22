@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 
 from src.recommendation.engine import RecommendationRequest
+from .knowledge_base import HARDWARE_CARDS, SETTINGS_QUERY_TERMS
 
 
 DATASET_ALIASES = {
@@ -26,43 +27,16 @@ DATASET_ALIASES = {
     "mnist": "permuted_mnist",
 }
 
-GPU_HINTS = {
-    "gt210": {"memory_budget_mb": 1024.0, "compute_budget": "low", "assumption": "Assumed GT 210 implies roughly 1 GB usable graphics memory and a low compute budget."},
-    "gt 210": {"memory_budget_mb": 1024.0, "compute_budget": "low", "assumption": "Assumed GT 210 implies roughly 1 GB usable graphics memory and a low compute budget."},
-    "gt 730": {"memory_budget_mb": 1024.0, "compute_budget": "low", "assumption": "Assumed GT 730 implies a low compute budget and about 1 GB of practical memory headroom."},
-    "mx130": {"memory_budget_mb": 1024.0, "compute_budget": "low", "assumption": "Assumed MX130 implies a low compute laptop GPU with about 1 GB of practical headroom."},
-    "mx150": {"memory_budget_mb": 2048.0, "compute_budget": "low", "assumption": "Assumed MX150 implies a low-to-mid laptop GPU with roughly 2 GB class memory."},
-    "gtx 1050": {"memory_budget_mb": 2048.0, "compute_budget": "low", "assumption": "Assumed GTX 1050 implies a modest discrete GPU and a low compute budget."},
-    "gtx 1050 ti": {"memory_budget_mb": 4096.0, "compute_budget": "low", "assumption": "Assumed GTX 1050 Ti implies about 4 GB of memory with a still modest compute budget."},
-    "gtx 1650": {"memory_budget_mb": 4096.0, "compute_budget": "low", "assumption": "Assumed GTX 1650 implies about 4 GB memory and a low-to-mid local compute budget."},
-    "rtx 2050": {"memory_budget_mb": 4096.0, "compute_budget": "medium", "assumption": "Assumed RTX 2050 implies an entry modern RTX laptop setup with about 4 GB memory."},
-    "rtx 3050": {"memory_budget_mb": 4096.0, "compute_budget": "medium", "assumption": "Assumed RTX 3050 implies around 4 GB graphics memory and a medium compute budget."},
-    "rtx 4050": {"memory_budget_mb": 6144.0, "compute_budget": "medium", "assumption": "Assumed RTX 4050 implies a mid-range local setup with roughly 6 GB graphics memory."},
-    "rtx 4060": {"memory_budget_mb": 8192.0, "compute_budget": "high", "assumption": "Assumed RTX 4060 implies a stronger local setup with about 8 GB graphics memory."},
-    "rtx 4070": {"memory_budget_mb": 8192.0, "compute_budget": "high", "assumption": "Assumed RTX 4070 implies a high compute local setup with about 8 GB graphics memory."},
-    "rtx 4090": {"memory_budget_mb": 16384.0, "compute_budget": "high", "assumption": "Assumed RTX 4090 implies a very high local compute budget and abundant graphics memory."},
-    "intel hd 620": {"memory_budget_mb": 512.0, "compute_budget": "low", "assumption": "Assumed Intel HD 620 implies integrated graphics and a very constrained compute budget."},
-    "uhd 620": {"memory_budget_mb": 512.0, "compute_budget": "low", "assumption": "Assumed Intel UHD 620 implies integrated graphics and a very constrained compute budget."},
-    "iris xe": {"memory_budget_mb": 1024.0, "compute_budget": "low", "assumption": "Assumed Intel Iris Xe implies integrated graphics with limited practical memory headroom."},
-}
-
-CPU_HINTS = {
-    "cpu only": {"compute_budget": "low", "assumption": "Interpreted 'CPU only' as a low compute setting for continual-learning training."},
-    "without gpu": {"compute_budget": "low", "assumption": "Interpreted the no-GPU description as a low compute setting."},
-    "i3": {"compute_budget": "low", "assumption": "Used a conservative estimate for an Intel i3-class CPU."},
-    "ryzen 3": {"compute_budget": "low", "assumption": "Used a conservative estimate for a Ryzen 3-class CPU."},
-    "i5": {"compute_budget": "medium", "assumption": "Used a moderate estimate for an Intel i5-class CPU."},
-    "ryzen 5": {"compute_budget": "medium", "assumption": "Used a moderate estimate for a Ryzen 5-class CPU."},
-    "i7": {"compute_budget": "high", "assumption": "Used a stronger estimate for an Intel i7-class CPU."},
-    "ryzen 7": {"compute_budget": "high", "assumption": "Used a stronger estimate for a Ryzen 7-class CPU."},
-}
-
 OUT_OF_SCOPE_DATASETS = {
     "fashion mnist": "Dataset is outside the exact evaluated scope; any suggestion is only an approximate mapping to the nearest supported benchmark.",
     "tiny imagenet": "Dataset is outside the exact evaluated scope; any suggestion is only an approximate mapping to the nearest supported benchmark.",
     "imagenet": "Full ImageNet is outside the exact evaluated scope; any suggestion is only an approximate mapping to the nearest supported benchmark.",
     "coco": "COCO is outside the exact evaluated scope; any suggestion is only an approximate mapping to the nearest supported benchmark.",
 }
+
+
+def _contains_alias(lowered: str, alias: str) -> bool:
+    return re.search(rf"(?<!\\w){re.escape(alias)}(?!\\w)", lowered) is not None
 
 OUT_OF_SCOPE_MODELS = {
     "vit": "Transformer backbone mentions are only partially inside scope because the main compulsory study used slim_resnet18.",
@@ -86,29 +60,9 @@ class InferredSettingsResult:
 
 def looks_like_settings_query(text: str) -> bool:
     lowered = text.lower()
-    direct_terms = (
-        "gpu",
-        "vram",
-        "ram",
-        "memory",
-        "compute",
-        "retrain",
-        "retention",
-        "forgetting",
-        "laptop",
-        "cpu",
-        "hardware",
-        "budget",
-        "what should i do",
-        "what should i use",
-        "suggest settings",
-        "infer my settings",
-    )
-    if any(term in lowered for term in direct_terms):
+    if any(term in lowered for term in SETTINGS_QUERY_TERMS):
         return True
-    if any(alias in lowered for alias in GPU_HINTS):
-        return True
-    if any(alias in lowered for alias in CPU_HINTS):
+    if any(_contains_alias(lowered, alias) for alias in HARDWARE_CARDS):
         return True
     if any(alias in lowered for alias in DATASET_ALIASES):
         return True
@@ -128,8 +82,8 @@ def _first_dataset_match(text: str) -> str | None:
 def _parse_memory_budget_mb(text: str) -> tuple[float | None, list[str]]:
     lowered = text.lower()
     assumptions: list[str] = []
-    for alias, hint in GPU_HINTS.items():
-        if alias in lowered:
+    for alias, hint in HARDWARE_CARDS.items():
+        if _contains_alias(lowered, alias) and hint.get("memory_budget_mb") is not None:
             assumptions.append(str(hint["assumption"]))
             return float(hint["memory_budget_mb"]), assumptions
 
@@ -156,11 +110,8 @@ def _parse_memory_budget_mb(text: str) -> tuple[float | None, list[str]]:
 def _parse_compute_budget(text: str) -> tuple[str | None, list[str]]:
     lowered = text.lower()
     assumptions: list[str] = []
-    for alias, hint in GPU_HINTS.items():
-        if alias in lowered:
-            return str(hint["compute_budget"]), assumptions
-    for alias, hint in CPU_HINTS.items():
-        if alias in lowered:
+    for alias, hint in HARDWARE_CARDS.items():
+        if _contains_alias(lowered, alias):
             assumptions.append(str(hint["assumption"]))
             return str(hint["compute_budget"]), assumptions
     if any(token in lowered for token in ["old laptop", "very weak", "weak gpu", "cheap gpu", "low-end", "slow machine"]):
@@ -219,7 +170,7 @@ def _parse_joint_allowed(text: str) -> tuple[bool | None, list[str]]:
 def _scope_notes(text: str) -> list[str]:
     lowered = text.lower()
     notes: list[str] = []
-    if any(alias in lowered for alias in GPU_HINTS) or any(alias in lowered for alias in CPU_HINTS) or "ram" in lowered:
+    if any(_contains_alias(lowered, alias) for alias in HARDWARE_CARDS) or "ram" in lowered:
         notes.append(
             "Hardware-based settings are heuristic estimates derived from the description and are not exact benchmark conditions that were directly tested in the study."
         )

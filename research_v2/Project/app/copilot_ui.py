@@ -13,7 +13,14 @@ from app.copilot_prompt_templates import build_prompt_templates
 from app.copilot_runtime import get_copilot_engine, get_copilot_settings, get_copilot_status
 from app.dashboard_data import DATASET_LABELS
 from src.copilot import InferredSettingsResult
-from src.copilot.knowledge_base import ChartExplanationFacts, chart_explanation_draft
+from src.copilot.knowledge_base import (
+    CHART_ALIASES,
+    ChartExplanationFacts,
+    HARDWARE_CARDS,
+    SETTINGS_QUERY_TERMS,
+    chart_explanation_draft,
+    chart_focus_from_text,
+)
 from src.recommendation.engine import RecommendationEngine, RecommendationRequest
 
 
@@ -38,36 +45,9 @@ def init_copilot_state() -> None:
 
 def _looks_like_settings_query(text: str) -> bool:
     lowered = text.lower()
-    direct_terms = (
-        "gpu",
-        "vram",
-        "ram",
-        "memory",
-        "compute",
-        "retrain",
-        "retention",
-        "forgetting",
-        "laptop",
-        "cpu",
-        "hardware",
-        "budget",
-        "what should i do",
-        "what should i use",
-        "suggest settings",
-        "infer my settings",
-        "gt210",
-        "gt 210",
-        "gtx",
-        "rtx",
-        "mx130",
-        "mx150",
-        "intel hd",
-        "iris xe",
-        "uhd 620",
-        "cpu only",
-        "without gpu",
-    )
-    return any(term in lowered for term in direct_terms)
+    if any(term in lowered for term in SETTINGS_QUERY_TERMS):
+        return True
+    return any(alias in lowered for alias in HARDWARE_CARDS)
 
 
 def infer_copilot_intent(text: str) -> str:
@@ -81,11 +61,10 @@ def infer_copilot_intent(text: str) -> str:
         "dashboard showing",
         "visible chart",
         "current chart",
-        "score breakdown",
-        "heatmap",
         "scatter",
-        "pareto",
+        "heatmap",
     ]
+    chart_terms.extend(alias for aliases in CHART_ALIASES.values() for alias in aliases)
     if any(term in lowered for term in chart_terms):
         return "interpret_chart"
     if _looks_like_settings_query(text):
@@ -94,16 +73,7 @@ def infer_copilot_intent(text: str) -> str:
 
 
 def _chart_focus_from_text(text: str) -> str:
-    lowered = text.lower()
-    if "score breakdown" in lowered or "score contribution" in lowered or "breakdown" in lowered:
-        return "score_breakdown"
-    if "accuracy" in lowered and "forgetting" in lowered:
-        return "accuracy_forgetting"
-    if "accuracy" in lowered and ("runtime" in lowered or "time" in lowered or "speed" in lowered):
-        return "accuracy_runtime"
-    if "accuracy" in lowered and ("memory" in lowered or "proxy memory" in lowered or "estimated memory" in lowered):
-        return "accuracy_memory"
-    return "generic"
+    return chart_focus_from_text(text)
 
 
 def _append_message(role: str, content: str) -> None:
