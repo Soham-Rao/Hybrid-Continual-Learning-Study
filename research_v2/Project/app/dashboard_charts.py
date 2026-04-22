@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import math
 from typing import Iterable, Sequence
 
 import pandas as pd
@@ -30,32 +32,81 @@ def _plotly():
     return px, go
 
 
-TEXT_POSITIONS = [
-    "top center",
-    "bottom center",
-    "middle left",
-    "middle right",
-    "top left",
-    "top right",
-    "bottom left",
-    "bottom right",
+ANNOTATION_OFFSETS = [
+    (0, -26),
+    (26, 0),
+    (-26, 0),
+    (0, 26),
+    (24, -24),
+    (-24, -24),
+    (24, 24),
+    (-24, 24),
+    (40, -8),
+    (-40, -8),
+    (40, 18),
+    (-40, 18),
 ]
 
 
-def _assign_text_positions(df: pd.DataFrame, x_col: str, y_col: str) -> pd.Series:
+def _status_symbol(status: str) -> str:
+    symbol_map = {"Leader": "diamond", "Top Cluster": "circle", "Other": "x"}
+    return symbol_map.get(str(status), "circle")
+
+
+def _cluster_offsets(df: pd.DataFrame, x_col: str, y_col: str, *, log_x: bool = False) -> pd.DataFrame:
     if df.empty:
-        return pd.Series(dtype="object")
-    rounded = df.copy()
-    rounded["_x_bucket"] = pd.to_numeric(rounded[x_col], errors="coerce").round(3)
-    rounded["_y_bucket"] = pd.to_numeric(rounded[y_col], errors="coerce").round(3)
-    positions = []
-    seen: dict[tuple[float, float], int] = {}
-    for _, row in rounded.iterrows():
-        key = (float(row["_x_bucket"]) if pd.notna(row["_x_bucket"]) else float("nan"), float(row["_y_bucket"]) if pd.notna(row["_y_bucket"]) else float("nan"))
-        idx = seen.get(key, 0)
-        positions.append(TEXT_POSITIONS[idx % len(TEXT_POSITIONS)])
-        seen[key] = idx + 1
-    return pd.Series(positions, index=df.index)
+        return pd.DataFrame(columns=["ax", "ay"])
+    source = df.copy()
+    x_values = pd.to_numeric(source[x_col], errors="coerce").fillna(0.0)
+    y_values = pd.to_numeric(source[y_col], errors="coerce").fillna(0.0)
+    if log_x:
+        x_values = x_values.clip(lower=0.01).map(lambda item: math.log10(float(item)))
+
+    x_span = max(float(x_values.max() - x_values.min()), 1e-6)
+    y_span = max(float(y_values.max() - y_values.min()), 1e-6)
+    x_norm = (x_values - float(x_values.min())) / x_span
+    y_norm = (y_values - float(y_values.min())) / y_span
+    x_bucket = (x_norm / 0.08).round().astype(int)
+    y_bucket = (y_norm / 0.08).round().astype(int)
+
+    rows = []
+    seen: dict[tuple[int, int], int] = {}
+    for idx, key in zip(source.index, zip(x_bucket, y_bucket)):
+        offset_idx = seen.get(key, 0)
+        ring = offset_idx // len(ANNOTATION_OFFSETS)
+        dx, dy = ANNOTATION_OFFSETS[offset_idx % len(ANNOTATION_OFFSETS)]
+        scale = 1 + (0.45 * ring)
+        rows.append({"index": idx, "ax": int(dx * scale), "ay": int(dy * scale)})
+        seen[key] = offset_idx + 1
+    return pd.DataFrame(rows).set_index("index")
+
+
+def _build_scatter_annotations(df: pd.DataFrame, x_col: str, y_col: str, *, log_x: bool = False) -> list[dict[str, object]]:
+    if df.empty:
+        return []
+    offsets = _cluster_offsets(df, x_col, y_col, log_x=log_x)
+    annotations: list[dict[str, object]] = []
+    for row in df.itertuples():
+        offset = offsets.loc[row.Index] if row.Index in offsets.index else pd.Series({"ax": 20, "ay": -20})
+        annotations.append(
+            {
+                "x": getattr(row, x_col),
+                "y": getattr(row, y_col),
+                "text": str(row.method_label),
+                "showarrow": True,
+                "arrowhead": 0,
+                "arrowwidth": 0.8,
+                "arrowcolor": "rgba(100, 116, 139, 0.65)",
+                "ax": int(offset["ax"]),
+                "ay": int(offset["ay"]),
+                "bgcolor": "rgba(248, 250, 252, 0.86)",
+                "bordercolor": "rgba(148, 163, 184, 0.45)",
+                "borderpad": 2,
+                "font": {"size": 10, "color": "#0f172a"},
+                "opacity": 0.94,
+            }
+        )
+    return annotations
 
 
 def build_recommendation_breakdown(candidate: dict) -> object:
@@ -170,36 +221,48 @@ def build_tradeoff_scatter(
         else "Other",
         axis=1,
     )
-    source["text_position"] = _assign_text_positions(source, x_col, y_col)
-    symbol_map = {"Leader": "diamond", "Top Cluster": "circle", "Other": "x"}
-    fig = go.Figure()
-    for row in source.itertuples(index=False):
-        fig.add_trace(
+    log_x = x_col == "estimated_memory_mb"
+    source["marker_color"] = source["method_family"].map(lambda item: FAMILY_COLORS.get(str(item), FAMILY_COLORS["other"]))
+    source["marker_symbol"] = source["status"].map(_status_symbol)
+    customdata = source[
+        [
+            "method_label",
+            "status",
+            "method_family",
+            "runtime_hours_mean",
+            "estimated_memory_mb",
+            "leader_flag",
+            "top_cluster_flag",
+        ]
+    ].to_numpy()
+    fig = go.Figure(
+        data=[
             go.Scatter(
-                x=[getattr(row, x_col)],
-                y=[getattr(row, y_col)],
-                mode="markers+text",
-                text=[row.method_label],
-                textposition=getattr(row, "text_position"),
+                x=source[x_col],
+                y=source[y_col],
+                mode="markers",
                 marker=dict(
-                    size=11,
-                    color=FAMILY_COLORS.get(str(row.method_family), FAMILY_COLORS["other"]),
-                    symbol=symbol_map.get(str(row.status), "circle"),
+                    size=12,
+                    color=source["marker_color"],
+                    symbol=source["marker_symbol"],
                     line=dict(width=1, color="#ffffff"),
                 ),
-                name=str(row.method_label),
+                customdata=customdata,
                 hovertemplate=(
-                    "<b>%{text}</b><br>"
+                    "<b>%{customdata[0]}</b><br>"
                     f"{x_title}: %{{x:.3f}}<br>"
                     f"{y_title}: %{{y:.3f}}<br>"
-                    f"Leader: {bool(getattr(row, 'leader_flag', False))}<br>"
-                    f"Top Cluster: {bool(getattr(row, 'top_cluster_flag', False))}<br>"
-                    f"Runtime (h): {float(getattr(row, 'runtime_hours_mean', float('nan'))):.3f}<br>"
-                    f"Memory Proxy (MB): {float(getattr(row, 'estimated_memory_mb', float('nan'))):.3f}<extra>{row.method_family}</extra>"
+                    "Status: %{customdata[1]}<br>"
+                    "Family: %{customdata[2]}<br>"
+                    "Runtime (h): %{customdata[3]:.3f}<br>"
+                    "Memory Proxy (MB): %{customdata[4]:.3f}<br>"
+                    "Leader: %{customdata[5]}<br>"
+                    "Top Cluster: %{customdata[6]}<extra></extra>"
                 ),
                 showlegend=False,
             )
-        )
+        ]
+    )
     fig.update_layout(
         title=title,
         height=430,
@@ -207,8 +270,1468 @@ def build_tradeoff_scatter(
         xaxis_title=x_title,
         yaxis_title=y_title,
         legend_title="Method Family",
+        annotations=_build_scatter_annotations(source.reset_index(), x_col, y_col, log_x=log_x),
     )
+    if log_x:
+        fig.update_xaxes(type="log")
     return fig
+
+
+def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: dict[str, object] | None = None) -> str:
+    if tree_df.empty:
+        return "<div>No decision-tree data are available.</div>"
+    dataset_key = str(tree_df.iloc[0]["dataset"])
+    dataset_label = str(tree_df.iloc[0]["dataset_label"])
+    active_path = active_path or {}
+    active_keys = {
+        "memory": str(active_path.get("memory_bucket_key", "")),
+        "compute": str(active_path.get("compute_bucket_key", "")),
+        "forgetting": str(active_path.get("forgetting_bucket_key", "")),
+        "similarity": str(active_path.get("similarity_bucket_key", "")),
+        "joint": str(active_path.get("joint_bucket_key", "")),
+        "method": str(active_path.get("recommended_method", "")),
+    }
+    level_keys = [
+        ("memory_bucket_label", "memory_bucket_key", "memory"),
+        ("compute_bucket_label", "compute_bucket_key", "compute"),
+        ("forgetting_bucket_label", "forgetting_bucket_key", "forgetting"),
+        ("similarity_bucket_label", "similarity_bucket_key", "similarity"),
+        ("joint_bucket_label", "joint_bucket_key", "joint"),
+        ("method_label", "recommended_method", "method"),
+    ]
+
+    stage_order = ["dataset", "memory", "compute", "forgetting", "similarity", "joint", "method"]
+    stage_index = {name: idx for idx, name in enumerate(stage_order)}
+    node_rows: list[dict[str, object]] = []
+
+    root_id = f"dataset::{dataset_key}"
+    node_rows.append(
+        {
+            "id": root_id,
+            "label": dataset_label,
+            "level": "dataset",
+            "stage_index": stage_index["dataset"],
+            "score": float(tree_df["score"].mean()),
+            "count": int(len(tree_df)),
+            "color": "#8fdcc9",
+            "meta": {
+                "dataset": dataset_key,
+                "avg_accuracy_mean": float(tree_df["avg_accuracy_mean"].mean()),
+                "forgetting_mean": float(tree_df["forgetting_mean"].mean()),
+                "runtime_hours_mean": float(tree_df["runtime_hours_mean"].mean()),
+                "estimated_memory_mb": float(tree_df["estimated_memory_mb"].mean()),
+            },
+        }
+    )
+
+    for label_col, key_col, level_name in level_keys[:-1]:
+        grouped = (
+            tree_df.groupby([key_col, label_col], dropna=False)
+            .agg(
+                score=("score", "mean"),
+                count=("case_id", "count"),
+                avg_accuracy=("avg_accuracy_mean", "mean"),
+                forgetting=("forgetting_mean", "mean"),
+                runtime=("runtime_hours_mean", "mean"),
+                memory=("estimated_memory_mb", "mean"),
+            )
+            .reset_index()
+            .sort_values(["score", "avg_accuracy", label_col], ascending=[False, False, True])
+        )
+        for row in grouped.itertuples(index=False):
+            key = str(getattr(row, key_col))
+            label = str(getattr(row, label_col))
+            node_rows.append(
+                {
+                    "id": f"{level_name}::{key}",
+                    "label": label,
+                    "level": level_name,
+                    "stage_index": stage_index[level_name],
+                    "score": float(row.score),
+                    "count": max(int(row.count), 1),
+                    "color": "#8fdcc9" if active_keys.get(level_name) == key else "#cbd5e1",
+                    "meta": {
+                        "dataset": dataset_key,
+                        f"{level_name}_key": key,
+                        f"{level_name}_label": label,
+                        "avg_accuracy_mean": float(row.avg_accuracy),
+                        "forgetting_mean": float(row.forgetting),
+                        "runtime_hours_mean": float(row.runtime),
+                        "estimated_memory_mb": float(row.memory),
+                    },
+                }
+            )
+
+    method_node_rows: list[dict[str, object]] = []
+    for rank in range(1, 4):
+        method_col = f"candidate_method_{rank}"
+        label_col = f"candidate_method_label_{rank}"
+        score_col = f"candidate_score_{rank}"
+        if method_col not in tree_df.columns:
+            continue
+        subset = tree_df[tree_df[method_col].astype(str) != ""].copy()
+        if subset.empty:
+            continue
+        grouped = (
+            subset.groupby([method_col, label_col], dropna=False)
+            .agg(
+                score=(score_col, "mean"),
+                count=("case_id", "count"),
+                avg_accuracy=("avg_accuracy_mean", "mean"),
+                forgetting=("forgetting_mean", "mean"),
+                runtime=("runtime_hours_mean", "mean"),
+                memory=("estimated_memory_mb", "mean"),
+            )
+            .reset_index()
+            .sort_values(["score", "avg_accuracy", label_col], ascending=[False, False, True])
+        )
+        for row in grouped.itertuples(index=False):
+            method_key = str(getattr(row, method_col))
+            method_node_rows.append(
+                {
+                    "id": f"method::{method_key}",
+                    "label": str(getattr(row, label_col)),
+                    "level": "method",
+                    "stage_index": stage_index["method"],
+                    "score": float(row.score),
+                    "count": max(int(row.count), 1),
+                    "color": "#8fdcc9" if active_keys.get("method") == method_key else "#cbd5e1",
+                    "meta": {
+                        "dataset": dataset_key,
+                        "method_key": method_key,
+                        "method_label": str(getattr(row, label_col)),
+                        "avg_accuracy_mean": float(row.avg_accuracy),
+                        "forgetting_mean": float(row.forgetting),
+                        "runtime_hours_mean": float(row.runtime),
+                        "estimated_memory_mb": float(row.memory),
+                    },
+                }
+            )
+    node_rows.extend(method_node_rows)
+
+    node_df = pd.DataFrame(node_rows).drop_duplicates(subset=["id"]).reset_index(drop=True)
+    node_index = {node_id: idx for idx, node_id in enumerate(node_df["id"].tolist())}
+
+    link_rows: list[dict[str, object]] = []
+
+    def _pastel(case_id: int, stage_step: int) -> str:
+        hue = int((case_id * 37 + stage_step * 29) % 360)
+        return f"hsla({hue}, 72%, 78%, 0.34)"
+
+    for row in tree_df.itertuples(index=False):
+        case_id = int(getattr(row, "case_id"))
+        path_is_active = (
+            str(getattr(row, "memory_bucket_key")) == active_keys["memory"]
+            and str(getattr(row, "compute_bucket_key")) == active_keys["compute"]
+            and str(getattr(row, "forgetting_bucket_key")) == active_keys["forgetting"]
+            and str(getattr(row, "similarity_bucket_key")) == active_keys["similarity"]
+            and str(getattr(row, "joint_bucket_key")) == active_keys["joint"]
+        )
+        transitions = [
+            (root_id, f"memory::{getattr(row, 'memory_bucket_key')}"),
+            (f"memory::{getattr(row, 'memory_bucket_key')}", f"compute::{getattr(row, 'compute_bucket_key')}"),
+            (f"compute::{getattr(row, 'compute_bucket_key')}", f"forgetting::{getattr(row, 'forgetting_bucket_key')}"),
+            (f"forgetting::{getattr(row, 'forgetting_bucket_key')}", f"similarity::{getattr(row, 'similarity_bucket_key')}"),
+            (f"similarity::{getattr(row, 'similarity_bucket_key')}", f"joint::{getattr(row, 'joint_bucket_key')}"),
+        ]
+        for stage_step, (source_id, target_id) in enumerate(transitions, start=1):
+            link_rows.append(
+                {
+                    "id": f"link::{case_id}::{stage_step}",
+                    "case_id": case_id,
+                    "stage_step": stage_step,
+                    "source_id": str(source_id),
+                    "target_id": str(target_id),
+                    "value": 1,
+                    "score": float(getattr(row, "score")),
+                    "active": path_is_active,
+                    "fill": _pastel(case_id, stage_step),
+                }
+            )
+        for rank in range(1, 4):
+            method_key = str(getattr(row, f"candidate_method_{rank}", "") or "")
+            if not method_key:
+                continue
+            method_active = path_is_active and method_key == active_keys["method"]
+            link_rows.append(
+                {
+                    "id": f"link::{case_id}::method::{rank}",
+                    "case_id": case_id,
+                    "stage_step": 6,
+                    "source_id": f"joint::{getattr(row, 'joint_bucket_key')}",
+                    "target_id": f"method::{method_key}",
+                    "value": 1,
+                    "score": float(getattr(row, f'candidate_score_{rank}', getattr(row, 'score')) or 0.0),
+                    "active": method_active,
+                    "fill": _pastel(case_id, 6 + rank),
+                }
+            )
+
+    link_df = pd.DataFrame(link_rows)
+    if link_df.empty:
+        return None
+
+    graph_nodes = []
+    stage_width = 170
+    node_width = 36
+    y_padding = 8
+    base_height = 760
+    total_cases = max(float(tree_df["case_id"].nunique() if "case_id" in tree_df.columns else len(tree_df)), 1.0)
+    max_stage_nodes = max(int((node_df["level"].astype(str) == level_name).sum()) for level_name in stage_order)
+    global_scale = max((base_height - ((max_stage_nodes + 1) * y_padding)) / total_cases, 2.2)
+
+    for level_name in stage_order:
+        stage_subset = node_df[node_df["level"].astype(str) == level_name].copy()
+        stage_subset = stage_subset.sort_values(["score", "count", "label"], ascending=[False, False, True]).reset_index(drop=True)
+        stage_total_height = float(stage_subset["count"].sum()) * global_scale + max(len(stage_subset) - 1, 0) * y_padding
+        cursor_y = 30.0 + max((base_height - stage_total_height) / 2.0, 0.0)
+        for _, row in stage_subset.iterrows():
+            height = max(float(row["count"]) * global_scale, 10.0)
+            graph_nodes.append(
+                {
+                    "id": row["id"],
+                    "label": row["label"],
+                    "level": level_name,
+                    "x": 30 + (stage_index[level_name] * stage_width),
+                    "y": cursor_y,
+                    "width": node_width,
+                    "height": height,
+                    "score": float(row["score"]),
+                    "count": int(row["count"]),
+                    "color": row["color"],
+                    "active": row["color"] == "#8fdcc9",
+                    "meta": {
+                        "avg_accuracy_mean": row["meta"].get("avg_accuracy_mean", ""),
+                        "forgetting_mean": row["meta"].get("forgetting_mean", ""),
+                        "runtime_hours_mean": row["meta"].get("runtime_hours_mean", ""),
+                        "estimated_memory_mb": row["meta"].get("estimated_memory_mb", ""),
+                    },
+                }
+            )
+            cursor_y += height + y_padding
+
+    node_layout = {item["id"]: item for item in graph_nodes}
+    svg_width = ((len(stage_order) - 1) * stage_width) + 300
+    svg_height = max(
+        base_height + 90,
+        int(max((node["y"] + node["height"]) for node in graph_nodes) + 80) if graph_nodes else base_height + 90,
+    )
+
+    link_df["source_y_sort"] = link_df["source_id"].map(lambda item: float(node_layout[str(item)]["y"]))
+    link_df["target_y_sort"] = link_df["target_id"].map(lambda item: float(node_layout[str(item)]["y"]))
+    link_df = link_df.sort_values(["source_y_sort", "target_y_sort", "case_id", "stage_step"]).reset_index(drop=True)
+
+    outgoing_counts = link_df.groupby("source_id").size().to_dict()
+    incoming_counts = link_df.groupby("target_id").size().to_dict()
+    outgoing_cursor = {node_id: 0 for node_id in node_layout}
+    incoming_cursor = {node_id: 0 for node_id in node_layout}
+
+    paths = []
+    for row in link_df.itertuples(index=False):
+        source = node_layout.get(str(row.source_id))
+        target = node_layout.get(str(row.target_id))
+        if source is None or target is None:
+            continue
+        source_slots = max(int(outgoing_counts.get(source["id"], 1)), 1)
+        target_slots = max(int(incoming_counts.get(target["id"], 1)), 1)
+        source_slot = float(source["height"]) / source_slots
+        target_slot = float(target["height"]) / target_slots
+        thickness = max(min(source_slot, target_slot) * 0.42, 1.1)
+        source_center = float(source["y"]) + (source_slot * (outgoing_cursor[source["id"]] + 0.5))
+        target_center = float(target["y"]) + (target_slot * (incoming_cursor[target["id"]] + 0.5))
+        outgoing_cursor[source["id"]] += 1
+        incoming_cursor[target["id"]] += 1
+        sy0 = source_center - (thickness / 2.0)
+        sy1 = source_center + (thickness / 2.0)
+        ty0 = target_center - (thickness / 2.0)
+        ty1 = target_center + (thickness / 2.0)
+        x1 = source["x"] + source["width"]
+        x2 = target["x"]
+        cx1 = x1 + ((x2 - x1) * 0.42)
+        cx2 = x1 + ((x2 - x1) * 0.58)
+        path_d = (
+            f"M{x1:.2f},{sy0:.2f} "
+            f"C{cx1:.2f},{sy0:.2f} {cx2:.2f},{ty0:.2f} {x2:.2f},{ty0:.2f} "
+            f"L{x2:.2f},{ty1:.2f} "
+            f"C{cx2:.2f},{ty1:.2f} {cx1:.2f},{sy1:.2f} {x1:.2f},{sy1:.2f} Z"
+        )
+        paths.append(
+            {
+                "id": str(row.id),
+                "case_id": int(row.case_id),
+                "stage_step": int(row.stage_step),
+                "source_id": str(row.source_id),
+                "target_id": str(row.target_id),
+                "d": path_d,
+                "fill": "rgba(110,231,183,0.58)" if bool(row.active) else str(row.fill),
+                "stroke_width": thickness,
+                "value": int(row.value),
+                "score": float(row.score),
+                "active": bool(row.active),
+                "bounds": {
+                    "min_x": float(min(x1, x2)),
+                    "max_x": float(max(x1, x2)),
+                    "min_y": float(min(sy0, sy1, ty0, ty1)) - 3.0,
+                    "max_y": float(max(sy0, sy1, ty0, ty1)) + 3.0,
+                },
+            }
+        )
+
+    stage_titles = [
+        {"label": "Dataset", "x": 30},
+        {"label": "Memory", "x": 30 + stage_width},
+        {"label": "Compute", "x": 30 + (stage_width * 2)},
+        {"label": "Retention", "x": 30 + (stage_width * 3)},
+        {"label": "Similarity", "x": 30 + (stage_width * 4)},
+        {"label": "Joint", "x": 30 + (stage_width * 5)},
+        {"label": "Method", "x": 30 + (stage_width * 6)},
+    ]
+
+    payload = {
+        "title": title,
+        "width": svg_width,
+        "height": svg_height,
+        "viewport_storage_key": f"decision-viewport::{dataset_key}",
+        "nodes": graph_nodes,
+        "paths": paths,
+        "stages": stage_titles,
+    }
+
+    return f"""
+    <style>
+      .alluvial-shell {{
+        background: rgba(255,255,255,0.68);
+        border: 1px solid rgba(148,163,184,0.22);
+        border-radius: 24px;
+        padding: 14px 14px 10px 14px;
+        box-shadow: 0 18px 40px rgba(15,23,42,0.08);
+      }}
+      .alluvial-title {{
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: #0f172a;
+      }}
+      .alluvial-subtitle, .alluvial-legend {{
+        font-size: 0.82rem;
+        color: #475569;
+      }}
+      .alluvial-chip {{
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        display: inline-block;
+      }}
+      .alluvial-frame {{
+        width: 100%;
+        height: 720px;
+        overflow: hidden;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(248,250,252,0.96), rgba(241,245,249,0.96));
+        cursor: grab;
+        contain: strict;
+      }}
+      .alluvial-scene {{
+        position: relative;
+        transform-origin: 0 0;
+        will-change: transform;
+      }}
+      .alluvial-canvas, .alluvial-svg {{
+        position: absolute;
+        inset: 0;
+      }}
+      .alluvial-canvas {{
+        pointer-events: none;
+      }}
+      .alluvial-frame.is-moving text {{
+        opacity: 0.12;
+      }}
+      .alluvial-reset {{
+        border: none;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: 0.35rem 0.8rem;
+        cursor: pointer;
+        font-size: 0.82rem;
+      }}
+      @media (prefers-color-scheme: dark) {{
+        .alluvial-shell {{
+          background: rgba(15,23,42,0.82);
+          border-color: rgba(148,163,184,0.18);
+          box-shadow: 0 18px 40px rgba(2,6,23,0.34);
+        }}
+        .alluvial-title {{
+          color: #f8fafc;
+        }}
+        .alluvial-subtitle, .alluvial-legend {{
+          color: #cbd5e1;
+        }}
+        .alluvial-frame {{
+          background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(22,33,54,0.98));
+        }}
+        .alluvial-reset {{
+          background: #1e3a8a;
+          color: #dbeafe;
+        }}
+      }}
+    </style>
+    <div class="alluvial-shell">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;">
+        <div>
+          <div class="alluvial-title">{title}</div>
+          <div class="alluvial-subtitle">Drag to pan. Use the mouse wheel or trackpad to zoom. Double-click reset if needed.</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(110,231,183,0.88);"></span>active path</span>
+          <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(203,213,225,0.92);"></span>context flows</span>
+          <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(251,191,36,0.95);"></span>clicked lineage</span>
+          <button id="alluvial-reset" class="alluvial-reset">Reset view</button>
+        </div>
+      </div>
+      <div id="alluvial-frame" class="alluvial-frame">
+        <div id="alluvial-scene" class="alluvial-scene" style="width:{svg_width}px; height:{svg_height}px;">
+          <canvas id="alluvial-canvas" class="alluvial-canvas" width="{svg_width}" height="{svg_height}" style="width:{svg_width}px; height:{svg_height}px;"></canvas>
+          <svg id="alluvial-svg" class="alluvial-svg" viewBox="0 0 {svg_width} {svg_height}" style="width:{svg_width}px; height:{svg_height}px; user-select:none;">
+            <g id="alluvial-viewport"></g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <script>
+    (function() {{
+      const payload = {json.dumps(payload)};
+      const svg = document.getElementById("alluvial-svg");
+      const viewport = document.getElementById("alluvial-viewport");
+      const frame = document.getElementById("alluvial-frame");
+      const scene = document.getElementById("alluvial-scene");
+      const canvas = document.getElementById("alluvial-canvas");
+      const reset = document.getElementById("alluvial-reset");
+      if (!svg || !viewport || !frame || !scene || !canvas) return;
+      const ctx = canvas.getContext("2d", {{ alpha: true }});
+      if (!ctx) return;
+
+      const darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      let scale = 1.0;
+      let tx = 20;
+      let ty = 24;
+      let targetScale = scale;
+      let targetTx = tx;
+      let targetTy = ty;
+      let dragging = false;
+      let lastX = 0;
+      let lastY = 0;
+      let dragDistance = 0;
+      let velocityX = 0;
+      let velocityY = 0;
+      let momentumFrame = null;
+      let lastMoveAt = 0;
+      let selectedFlowId = null;
+      let pendingTransform = false;
+      let transformAnimationFrame = null;
+      let interactionTimer = null;
+      let hoverAnimationFrame = null;
+      let hoverEvent = null;
+      let currentSelection = new Set();
+      const activeFill = "rgba(110,231,183,0.62)";
+      const contextFill = "rgba(148,163,184,0.26)";
+      const selectedFill = "rgba(251,191,36,0.78)";
+      const activeNodeFill = "#8fdcc9";
+      const contextNodeFill = "#cbd5e1";
+      const selectedNodeFill = "#fcd34d";
+      const flowStroke = darkMode ? "rgba(248,250,252,0.08)" : "rgba(15,23,42,0.06)";
+      const sceneWidth = payload.width;
+      const sceneHeight = payload.height;
+      const viewPadding = 40;
+      const viewportStorageKey = payload.viewport_storage_key || "decision-viewport";
+
+      function loadViewportState() {{
+        try {{
+          const raw = window.sessionStorage.getItem(viewportStorageKey);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (
+            typeof parsed !== "object" || parsed === null
+            || !Number.isFinite(parsed.scale)
+            || !Number.isFinite(parsed.tx)
+            || !Number.isFinite(parsed.ty)
+          ) {{
+            return null;
+          }}
+          return parsed;
+        }} catch (error) {{
+          return null;
+        }}
+      }}
+
+      function saveViewportState() {{
+        try {{
+          window.sessionStorage.setItem(
+            viewportStorageKey,
+            JSON.stringify({{ scale, tx, ty }})
+          );
+        }} catch (error) {{
+          // ignore storage errors and keep the graph interactive
+        }}
+      }}
+
+      function clampTransformState(nextTx, nextTy, nextScale) {{
+        const frameWidth = frame.clientWidth || sceneWidth;
+        const frameHeight = frame.clientHeight || sceneHeight;
+        const scaledWidth = sceneWidth * nextScale;
+        const scaledHeight = sceneHeight * nextScale;
+
+        let minTx = frameWidth - scaledWidth - viewPadding;
+        let maxTx = viewPadding;
+        let minTy = frameHeight - scaledHeight - viewPadding;
+        let maxTy = viewPadding;
+
+        if (scaledWidth <= frameWidth - (viewPadding * 2)) {{
+          minTx = maxTx = (frameWidth - scaledWidth) / 2;
+        }}
+        if (scaledHeight <= frameHeight - (viewPadding * 2)) {{
+          minTy = maxTy = (frameHeight - scaledHeight) / 2;
+        }}
+
+        return {{
+          tx: Math.min(maxTx, Math.max(minTx, nextTx)),
+          ty: Math.min(maxTy, Math.max(minTy, nextTy)),
+        }};
+      }}
+
+      function setTransform() {{
+        scene.style.transform = `translate(${{tx}}px, ${{ty}}px) scale(${{scale}})`;
+      }}
+
+      function scheduleTransform() {{
+        if (pendingTransform) return;
+        pendingTransform = true;
+        requestAnimationFrame(() => {{
+          pendingTransform = false;
+          setTransform();
+          saveViewportState();
+        }});
+      }}
+
+      function animateToTarget() {{
+        transformAnimationFrame = null;
+        const clampedTarget = clampTransformState(targetTx, targetTy, targetScale);
+        targetTx = clampedTarget.tx;
+        targetTy = clampedTarget.ty;
+        const scaleDelta = targetScale - scale;
+        const txDelta = targetTx - tx;
+        const tyDelta = targetTy - ty;
+        const scaleDone = Math.abs(scaleDelta) < 0.0008;
+        const txDone = Math.abs(txDelta) < 0.35;
+        const tyDone = Math.abs(tyDelta) < 0.35;
+        if (scaleDone && txDone && tyDone) {{
+          scale = targetScale;
+          tx = targetTx;
+          ty = targetTy;
+          scheduleTransform();
+          setInteractiveMode(false);
+          return;
+        }}
+        scale += scaleDelta * 0.18;
+        tx += txDelta * 0.22;
+        ty += tyDelta * 0.22;
+        const clampedCurrent = clampTransformState(tx, ty, scale);
+        tx = clampedCurrent.tx;
+        ty = clampedCurrent.ty;
+        scheduleTransform();
+        transformAnimationFrame = requestAnimationFrame(animateToTarget);
+      }}
+
+      function ensureTransformAnimation() {{
+        if (transformAnimationFrame) return;
+        transformAnimationFrame = requestAnimationFrame(animateToTarget);
+      }}
+
+      function setInteractiveMode(active) {{
+        if (active) {{
+          frame.classList.add("is-moving");
+          if (interactionTimer) {{
+            clearTimeout(interactionTimer);
+            interactionTimer = null;
+          }}
+          return;
+        }}
+        if (interactionTimer) clearTimeout(interactionTimer);
+        interactionTimer = setTimeout(() => {{
+          frame.classList.remove("is-moving");
+          interactionTimer = null;
+        }}, 120);
+      }}
+
+      function resetView() {{
+        scale = 1.0;
+        tx = 20;
+        ty = 24;
+        targetScale = scale;
+        targetTx = tx;
+        targetTy = ty;
+        const clampedReset = clampTransformState(targetTx, targetTy, targetScale);
+        tx = clampedReset.tx;
+        ty = clampedReset.ty;
+        targetTx = clampedReset.tx;
+        targetTy = clampedReset.ty;
+        velocityX = 0;
+        velocityY = 0;
+        selectedFlowId = null;
+        if (momentumFrame) cancelAnimationFrame(momentumFrame);
+        if (transformAnimationFrame) cancelAnimationFrame(transformAnimationFrame);
+        transformAnimationFrame = null;
+        applySelection(new Set());
+        setInteractiveMode(false);
+        scheduleTransform();
+      }}
+
+      function stopMomentum() {{
+        if (momentumFrame) {{
+          cancelAnimationFrame(momentumFrame);
+          momentumFrame = null;
+        }}
+      }}
+
+      function startMomentum() {{
+        stopMomentum();
+        const friction = 0.9;
+        const minVelocity = 0.08;
+        function tick() {{
+          const proposedTx = tx + velocityX;
+          const proposedTy = ty + velocityY;
+          const clamped = clampTransformState(proposedTx, proposedTy, scale);
+          if (Math.abs(clamped.tx - proposedTx) > 0.2) {{
+            velocityX = 0;
+          }}
+          if (Math.abs(clamped.ty - proposedTy) > 0.2) {{
+            velocityY = 0;
+          }}
+          tx = clamped.tx;
+          ty = clamped.ty;
+          targetTx = tx;
+          targetTy = ty;
+          targetScale = scale;
+          velocityX *= friction;
+          velocityY *= friction;
+          setInteractiveMode(true);
+          scheduleTransform();
+          if (Math.abs(velocityX) > minVelocity || Math.abs(velocityY) > minVelocity) {{
+            momentumFrame = requestAnimationFrame(tick);
+          }} else {{
+            momentumFrame = null;
+            setInteractiveMode(false);
+          }}
+        }}
+        momentumFrame = requestAnimationFrame(tick);
+      }}
+
+      function titleElement(text) {{
+        const t = document.createElementNS("http://www.w3.org/2000/svg", "title");
+        t.textContent = text;
+        return t;
+      }}
+
+      const flows = payload.paths.map((flow) => ({{
+        ...flow,
+        path2d: new Path2D(flow.d),
+      }}));
+      const flowById = new Map(flows.map((flow) => [flow.id, flow]));
+      const linksByCase = new Map();
+      const nodeElements = new Map();
+      const labelElements = new Map();
+      const stageLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const nodeLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const labelLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      viewport.appendChild(stageLayer);
+      viewport.appendChild(nodeLayer);
+      viewport.appendChild(labelLayer);
+
+      function registerCase(flow) {{
+        if (!linksByCase.has(flow.case_id)) {{
+          linksByCase.set(flow.case_id, []);
+        }}
+        linksByCase.get(flow.case_id).push(flow);
+      }}
+
+      function selectedNodeIds(linkIds) {{
+        const ids = new Set();
+        linkIds.forEach((linkId) => {{
+          const flow = flowById.get(linkId);
+          if (!flow) return;
+          ids.add(flow.source_id);
+          ids.add(flow.target_id);
+        }});
+        return ids;
+      }}
+
+      function drawFlows(linkIds) {{
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        flows.forEach((flow) => {{
+          const fill = linkIds.size
+            ? (linkIds.has(flow.id) ? selectedFill : contextFill)
+            : (flow.active ? activeFill : contextFill);
+          const opacity = linkIds.size
+            ? (linkIds.has(flow.id) ? 0.96 : 0.12)
+            : (flow.active ? 0.92 : 0.88);
+          ctx.save();
+          ctx.globalAlpha = opacity;
+          ctx.fillStyle = fill;
+          ctx.strokeStyle = flowStroke;
+          ctx.lineWidth = 0.8;
+          ctx.fill(flow.path2d);
+          ctx.stroke(flow.path2d);
+          ctx.restore();
+        }});
+      }}
+
+      function applySelection(linkIds) {{
+        currentSelection = new Set(linkIds);
+        drawFlows(linkIds);
+        const highlightedNodes = selectedNodeIds(linkIds);
+        nodeElements.forEach((groupEl, nodeId) => {{
+          const rect = groupEl.querySelector("rect");
+          const label = labelElements.get(nodeId);
+          const node = groupEl.__data;
+          if (!rect || !label) return;
+          const fill = linkIds.size
+            ? (highlightedNodes.has(nodeId) ? selectedNodeFill : contextNodeFill)
+            : (node.active ? activeNodeFill : contextNodeFill);
+          rect.setAttribute("fill", fill);
+          label.setAttribute("font-weight", highlightedNodes.has(nodeId) || node.active ? "700" : "500");
+        }});
+      }}
+
+      payload.stages.forEach((stage) => {{
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("class", "alluvial-stage-label");
+        text.setAttribute("x", stage.x);
+        text.setAttribute("y", 16);
+        text.setAttribute("fill", darkMode ? "#e2e8f0" : "#334155");
+        text.setAttribute("font-size", "13");
+        text.setAttribute("font-weight", "700");
+        text.style.pointerEvents = "none";
+        text.textContent = stage.label;
+        stageLayer.appendChild(text);
+      }});
+
+      flows.forEach((flow) => registerCase(flow));
+
+      payload.nodes.forEach((node) => {{
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.__data = {{
+          id: node.id,
+          active: node.color === activeNodeFill,
+        }};
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", node.x);
+        rect.setAttribute("y", node.y);
+        rect.setAttribute("rx", "8");
+        rect.setAttribute("ry", "8");
+        rect.setAttribute("width", node.width);
+        rect.setAttribute("height", node.height);
+        rect.setAttribute("fill", node.color);
+        rect.setAttribute("stroke", darkMode ? "rgba(226,232,240,0.16)" : "rgba(100,116,139,0.22)");
+        rect.setAttribute("stroke-width", "1");
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("class", "alluvial-node-label");
+        label.setAttribute("x", node.x + node.width + 8);
+        label.setAttribute("y", node.y + Math.min(Math.max(node.height / 2, 14), node.height - 4));
+        label.setAttribute("dominant-baseline", "middle");
+        label.setAttribute("fill", darkMode ? "#f8fafc" : "#0f172a");
+        label.setAttribute("font-size", "12");
+        label.setAttribute("font-weight", node.color === "#0f766e" ? "700" : "500");
+        label.style.pointerEvents = "none";
+        label.textContent = node.label;
+
+        group.appendChild(rect);
+        nodeElements.set(node.id, group);
+        labelElements.set(node.id, label);
+        nodeLayer.appendChild(group);
+        labelLayer.appendChild(label);
+      }});
+
+      function worldPointFromEvent(event) {{
+        const rect = frame.getBoundingClientRect();
+        const localX = event.clientX - rect.left;
+        const localY = event.clientY - rect.top;
+        return {{
+          worldX: (localX - tx) / scale,
+          worldY: (localY - ty) / scale,
+        }};
+      }}
+
+      function hitFlowAtEvent(event) {{
+        const {{ worldX, worldY }} = worldPointFromEvent(event);
+        for (let i = flows.length - 1; i >= 0; i -= 1) {{
+          const flow = flows[i];
+          const bounds = flow.bounds;
+          if (worldX < bounds.min_x || worldX > bounds.max_x || worldY < bounds.min_y || worldY > bounds.max_y) {{
+            continue;
+          }}
+          if (ctx.isPointInPath(flow.path2d, worldX, worldY)) {{
+            return flow;
+          }}
+        }}
+        return null;
+      }}
+
+      frame.addEventListener("click", (event) => {{
+        if (dragDistance > 6) return;
+        const hit = hitFlowAtEvent(event);
+        if (!hit) return;
+        if (selectedFlowId === hit.id) {{
+          selectedFlowId = null;
+          applySelection(new Set());
+          return;
+        }}
+        const selected = new Set(
+          (linksByCase.get(hit.case_id) || [])
+            .filter((item) => item.stage_step <= hit.stage_step)
+            .map((item) => item.id)
+        );
+        selectedFlowId = hit.id;
+        applySelection(selected);
+      }});
+
+      frame.addEventListener("wheel", (event) => {{
+        event.preventDefault();
+        const rect = svg.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        stopMomentum();
+        setInteractiveMode(true);
+        const deltaModeFactor = event.deltaMode === 1 ? 18 : event.deltaMode === 2 ? 120 : 1;
+        const normalizedDelta = Math.max(-180, Math.min(180, event.deltaY * deltaModeFactor));
+        const zoomFactor = Math.exp(-normalizedDelta * 0.00105);
+        const baseScale = targetScale;
+        const baseTx = targetTx;
+        const baseTy = targetTy;
+        const nextScale = Math.min(Math.max(baseScale * zoomFactor, 0.3), 18.0);
+        const worldX = (mouseX - baseTx) / baseScale;
+        const worldY = (mouseY - baseTy) / baseScale;
+        const anchorX = mouseX - (worldX * nextScale);
+        const anchorY = mouseY - (worldY * nextScale);
+        const clampedTarget = clampTransformState(anchorX, anchorY, nextScale);
+        targetTx = clampedTarget.tx;
+        targetTy = clampedTarget.ty;
+        targetScale = nextScale;
+        ensureTransformAnimation();
+      }}, {{ passive: false }});
+
+      frame.addEventListener("mousemove", (event) => {{
+        if (dragging) return;
+        hoverEvent = event;
+        if (hoverAnimationFrame) return;
+        hoverAnimationFrame = requestAnimationFrame(() => {{
+          hoverAnimationFrame = null;
+          const hit = hoverEvent ? hitFlowAtEvent(hoverEvent) : null;
+          frame.style.cursor = hit ? "pointer" : "grab";
+        }});
+      }});
+
+      frame.addEventListener("mouseleave", () => {{
+        if (!dragging) {{
+          frame.style.cursor = "grab";
+        }}
+      }});
+
+      frame.addEventListener("mousedown", (event) => {{
+        stopMomentum();
+        if (transformAnimationFrame) {{
+          cancelAnimationFrame(transformAnimationFrame);
+          transformAnimationFrame = null;
+        }}
+        targetScale = scale;
+        targetTx = tx;
+        targetTy = ty;
+        dragging = true;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        dragDistance = 0;
+        velocityX = 0;
+        velocityY = 0;
+        lastMoveAt = performance.now();
+        frame.style.cursor = "grabbing";
+        setInteractiveMode(true);
+      }});
+
+      window.addEventListener("mousemove", (event) => {{
+        if (!dragging) return;
+        const now = performance.now();
+        const dx = event.clientX - lastX;
+        const dy = event.clientY - lastY;
+        dragDistance += Math.abs(dx) + Math.abs(dy);
+        const dt = Math.max(now - lastMoveAt, 8);
+        const panGain = 1.08;
+        const proposedTx = tx + (dx * panGain);
+        const proposedTy = ty + (dy * panGain);
+        const clampedPan = clampTransformState(proposedTx, proposedTy, scale);
+        tx = clampedPan.tx;
+        ty = clampedPan.ty;
+        targetTx = tx;
+        targetTy = ty;
+        targetScale = scale;
+        velocityX = (dx * panGain) / dt * 18;
+        velocityY = (dy * panGain) / dt * 18;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        lastMoveAt = now;
+        scheduleTransform();
+      }});
+
+      window.addEventListener("mouseup", () => {{
+        if (dragging) startMomentum();
+        dragging = false;
+        frame.style.cursor = "grab";
+        if (!momentumFrame) setInteractiveMode(false);
+      }});
+
+      frame.addEventListener("dblclick", resetView);
+      if (reset) reset.addEventListener("click", resetView);
+      const savedViewport = loadViewportState();
+      if (savedViewport) {{
+        const restored = clampTransformState(savedViewport.tx, savedViewport.ty, savedViewport.scale);
+        scale = savedViewport.scale;
+        tx = restored.tx;
+        ty = restored.ty;
+        targetScale = scale;
+        targetTx = tx;
+        targetTy = ty;
+      }}
+      applySelection(new Set());
+      scheduleTransform();
+    }})();
+    </script>
+    """
+
+
+def build_decision_flow_chart(tree_df: pd.DataFrame, title: str, active_path: dict[str, object] | None = None) -> str:
+    if tree_df.empty:
+        return "<div>No decision-tree data are available.</div>"
+
+    active_path = active_path or {}
+    active_keys = {
+        "dataset": str(tree_df.iloc[0]["dataset"]),
+        "memory": str(active_path.get("memory_bucket_key", "")),
+        "compute": str(active_path.get("compute_bucket_key", "")),
+        "forgetting": str(active_path.get("forgetting_bucket_key", "")),
+        "similarity": str(active_path.get("similarity_bucket_key", "")),
+        "joint": str(active_path.get("joint_bucket_key", "")),
+        "method": str(active_path.get("recommended_method", "")),
+    }
+    stage_defs = [
+        ("dataset", "dataset", "dataset_label"),
+        ("memory", "memory_bucket_key", "memory_bucket_label"),
+        ("compute", "compute_bucket_key", "compute_bucket_label"),
+        ("forgetting", "forgetting_bucket_key", "forgetting_bucket_label"),
+        ("similarity", "similarity_bucket_key", "similarity_bucket_label"),
+        ("joint", "joint_bucket_key", "joint_bucket_label"),
+        ("method", "recommended_method", "method_label"),
+    ]
+    active_node_color = "#8fdcc9"
+    context_node_color = "#cbd5e1"
+    active_line_color = "rgba(143, 220, 201, 0.92)"
+    context_line_color = "rgba(148, 163, 184, 0.44)"
+
+    def _stats(df: pd.DataFrame) -> dict[str, float]:
+        return {
+            "avg_accuracy_mean": float(df["avg_accuracy_mean"].mean()),
+            "forgetting_mean": float(df["forgetting_mean"].mean()),
+            "runtime_hours_mean": float(df["runtime_hours_mean"].mean()),
+            "estimated_memory_mb": float(df["estimated_memory_mb"].mean()),
+            "score": float(df["score"].mean()) if "score" in df.columns else 0.0,
+        }
+
+    node_rows: list[dict[str, object]] = []
+    link_rows: list[dict[str, object]] = []
+    for stage_name, key_col, label_col in stage_defs:
+        grouped = (
+            tree_df.groupby([key_col, label_col], dropna=False)
+            .apply(lambda df: pd.Series({**_stats(df), "count": int(len(df))}))
+            .reset_index()
+            .sort_values(["score", label_col], ascending=[False, True])
+            .reset_index(drop=True)
+        )
+        for row in grouped.itertuples(index=False):
+            key = str(getattr(row, key_col))
+            node_rows.append(
+                {
+                    "id": f"{stage_name}::{key}",
+                    "stage": stage_name,
+                    "key": key,
+                    "label": str(getattr(row, label_col)),
+                    "count": int(row.count),
+                    "score": float(row.score),
+                    "avg_accuracy_mean": float(row.avg_accuracy_mean),
+                    "forgetting_mean": float(row.forgetting_mean),
+                    "runtime_hours_mean": float(row.runtime_hours_mean),
+                    "estimated_memory_mb": float(row.estimated_memory_mb),
+                    "color": active_node_color if active_keys.get(stage_name, "") == key else context_node_color,
+                }
+            )
+
+    for idx in range(len(stage_defs) - 1):
+        src_stage, src_key_col, src_label_col = stage_defs[idx]
+        dst_stage, dst_key_col, dst_label_col = stage_defs[idx + 1]
+        grouped = (
+            tree_df.groupby([src_key_col, src_label_col, dst_key_col, dst_label_col], dropna=False)
+            .apply(lambda df: pd.Series({"count": int(len(df)), "score": float(df["score"].mean()) if "score" in df.columns else 0.0}))
+            .reset_index()
+        )
+        for row in grouped.itertuples(index=False):
+            src_key = str(getattr(row, src_key_col))
+            dst_key = str(getattr(row, dst_key_col))
+            link_rows.append(
+                {
+                    "id": f"{src_stage}::{src_key}->{dst_stage}::{dst_key}",
+                    "source_id": f"{src_stage}::{src_key}",
+                    "target_id": f"{dst_stage}::{dst_key}",
+                    "count": int(row.count),
+                    "score": float(row.score),
+                    "active": active_keys.get(src_stage, "") == src_key and active_keys.get(dst_stage, "") == dst_key,
+                }
+            )
+
+    node_df = pd.DataFrame(node_rows)
+    link_df = pd.DataFrame(link_rows)
+    if node_df.empty or link_df.empty:
+        return "<div>No decision-tree data are available.</div>"
+
+    stage_order = [item[0] for item in stage_defs]
+    stage_index = {name: idx for idx, name in enumerate(stage_order)}
+    stage_width = 170
+    node_width = 42
+    min_gap = 6.0
+    base_height = 780.0
+    total_cases = max(float(len(tree_df)), 1.0)
+    max_stage_nodes = max(int((node_df["stage"].astype(str) == stage).sum()) for stage in stage_order)
+    global_scale = max((base_height - ((max_stage_nodes - 1) * min_gap)) / total_cases, 1.8)
+    stage_span = (total_cases * global_scale) + ((max_stage_nodes - 1) * min_gap)
+
+    graph_nodes: list[dict[str, object]] = []
+    for stage_name in stage_order:
+        stage_subset = node_df[node_df["stage"].astype(str) == stage_name].copy()
+        stage_subset = stage_subset.sort_values(["score", "label"], ascending=[False, True]).reset_index(drop=True)
+        gap = 0.0 if len(stage_subset) <= 1 else max((stage_span - (total_cases * global_scale)) / (len(stage_subset) - 1), min_gap)
+        cursor_y = 36.0
+        for row in stage_subset.itertuples(index=False):
+            height = max(float(row.count) * global_scale, 10.0)
+            graph_nodes.append(
+                {
+                    "id": row.id,
+                    "stage": row.stage,
+                    "key": row.key,
+                    "label": row.label,
+                    "x": 36 + (stage_index[str(row.stage)] * stage_width),
+                    "y": cursor_y,
+                    "width": node_width,
+                    "height": height,
+                    "count": int(row.count),
+                    "score": float(row.score),
+                    "color": row.color,
+                    "avg_accuracy_mean": float(row.avg_accuracy_mean),
+                    "forgetting_mean": float(row.forgetting_mean),
+                    "runtime_hours_mean": float(row.runtime_hours_mean),
+                    "estimated_memory_mb": float(row.estimated_memory_mb),
+                }
+            )
+            cursor_y += height + gap
+
+    node_layout = {node["id"]: node for node in graph_nodes}
+    svg_width = ((len(stage_order) - 1) * stage_width) + 350
+    svg_height = int(stage_span + 120)
+
+    link_cursor = {node_id: 0.0 for node_id in node_layout}
+    graph_paths: list[dict[str, object]] = []
+    for row in link_df.itertuples(index=False):
+        source = node_layout.get(str(row.source_id))
+        target = node_layout.get(str(row.target_id))
+        if source is None or target is None:
+            continue
+        thickness = max(float(row.count) * global_scale, 4.0)
+        sy = source["y"] + min(link_cursor[source["id"]] + (thickness / 2.0), max(source["height"] - thickness / 2.0, thickness / 2.0))
+        ty = target["y"] + min(link_cursor[target["id"]] + (thickness / 2.0), max(target["height"] - thickness / 2.0, thickness / 2.0))
+        link_cursor[source["id"]] += thickness
+        link_cursor[target["id"]] += thickness
+        x1 = source["x"] + source["width"]
+        x2 = target["x"]
+        cx1 = x1 + ((x2 - x1) * 0.38)
+        cx2 = x1 + ((x2 - x1) * 0.62)
+        graph_paths.append(
+            {
+                "id": row.id,
+                "source_id": row.source_id,
+                "target_id": row.target_id,
+                "d": f"M{x1:.2f},{sy:.2f} C{cx1:.2f},{sy:.2f} {cx2:.2f},{ty:.2f} {x2:.2f},{ty:.2f}",
+                "stroke": active_line_color if bool(row.active) else context_line_color,
+                "stroke_width": thickness,
+                "count": int(row.count),
+                "score": float(row.score),
+                "active": bool(row.active),
+            }
+        )
+
+    stage_titles = [
+        {"label": "Dataset", "x": 36},
+        {"label": "Memory", "x": 36 + stage_width},
+        {"label": "Compute", "x": 36 + (stage_width * 2)},
+        {"label": "Retention", "x": 36 + (stage_width * 3)},
+        {"label": "Similarity", "x": 36 + (stage_width * 4)},
+        {"label": "Joint", "x": 36 + (stage_width * 5)},
+        {"label": "Method", "x": 36 + (stage_width * 6)},
+    ]
+
+    payload = {
+        "title": title,
+        "width": svg_width,
+        "height": svg_height,
+        "nodes": graph_nodes,
+        "paths": graph_paths,
+        "stages": stage_titles,
+    }
+
+    return f"""
+    <style>
+      .alluvial-shell {{
+        background: rgba(255,255,255,0.68);
+        border: 1px solid rgba(148,163,184,0.22);
+        border-radius: 24px;
+        padding: 14px 14px 10px 14px;
+        box-shadow: 0 18px 40px rgba(15,23,42,0.08);
+      }}
+      .alluvial-title {{
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: #0f172a;
+      }}
+      .alluvial-subtitle, .alluvial-legend {{
+        font-size: 0.82rem;
+        color: #475569;
+      }}
+      .alluvial-chip {{
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        display: inline-block;
+      }}
+      .alluvial-frame {{
+        width: 100%;
+        height: 720px;
+        overflow: hidden;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(248,250,252,0.96), rgba(241,245,249,0.96));
+        cursor: grab;
+      }}
+      .alluvial-reset {{
+        border: none;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: 0.35rem 0.8rem;
+        cursor: pointer;
+        font-size: 0.82rem;
+      }}
+      @media (prefers-color-scheme: dark) {{
+        .alluvial-shell {{
+          background: rgba(15,23,42,0.82);
+          border-color: rgba(148,163,184,0.18);
+          box-shadow: 0 18px 40px rgba(2,6,23,0.34);
+        }}
+        .alluvial-title {{
+          color: #f8fafc;
+        }}
+        .alluvial-subtitle, .alluvial-legend {{
+          color: #cbd5e1;
+        }}
+        .alluvial-frame {{
+          background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(22,33,54,0.98));
+        }}
+        .alluvial-reset {{
+          background: #1e3a8a;
+          color: #dbeafe;
+        }}
+      }}
+    </style>
+    <div class="alluvial-shell">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;">
+        <div>
+          <div class="alluvial-title">{title}</div>
+          <div class="alluvial-subtitle">Drag to pan. Use the mouse wheel or trackpad to zoom. Double-click reset if needed.</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(143,220,201,0.92);"></span>active path</span>
+          <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(203,213,225,0.92);"></span>context flows</span>
+          <span class="alluvial-legend" style="display:inline-flex; align-items:center; gap:6px;"><span class="alluvial-chip" style="background:rgba(251,191,36,0.95);"></span>clicked lineage</span>
+          <button id="alluvial-reset" class="alluvial-reset">Reset view</button>
+        </div>
+      </div>
+      <div id="alluvial-frame" class="alluvial-frame">
+        <svg id="alluvial-svg" viewBox="0 0 {svg_width} {svg_height}" style="width:100%; height:100%; user-select:none;">
+          <g id="alluvial-viewport"></g>
+        </svg>
+      </div>
+    </div>
+    <script>
+    (function() {{
+      const payload = {json.dumps(payload)};
+      const svg = document.getElementById("alluvial-svg");
+      const viewport = document.getElementById("alluvial-viewport");
+      const frame = document.getElementById("alluvial-frame");
+      const reset = document.getElementById("alluvial-reset");
+      if (!svg || !viewport || !frame) return;
+
+      const darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const activeStroke = "rgba(143,220,201,0.92)";
+      const contextStroke = "rgba(148,163,184,0.44)";
+      const selectedStroke = "rgba(251,191,36,0.96)";
+      const activeNodeFill = "#8fdcc9";
+      const contextNodeFill = "#cbd5e1";
+      const selectedNodeFill = "#fcd34d";
+      let scale = 1.0;
+      let tx = 20;
+      let ty = 24;
+      let dragging = false;
+      let lastX = 0;
+      let lastY = 0;
+      let velocityX = 0;
+      let velocityY = 0;
+      let momentumFrame = null;
+      let lastMoveAt = 0;
+
+      function setTransform() {{
+        viewport.style.transformOrigin = "0 0";
+        viewport.style.transform = `translate(${{tx}}px, ${{ty}}px) scale(${{scale}})`;
+      }}
+
+      function resetView() {{
+        scale = 1.0;
+        tx = 20;
+        ty = 24;
+        velocityX = 0;
+        velocityY = 0;
+        if (momentumFrame) cancelAnimationFrame(momentumFrame);
+        applySelection(new Set());
+        setTransform();
+      }}
+
+      function stopMomentum() {{
+        if (momentumFrame) {{
+          cancelAnimationFrame(momentumFrame);
+          momentumFrame = null;
+        }}
+      }}
+
+      function startMomentum() {{
+        stopMomentum();
+        const friction = 0.92;
+        const minVelocity = 0.12;
+        function tick() {{
+          tx += velocityX;
+          ty += velocityY;
+          velocityX *= friction;
+          velocityY *= friction;
+          setTransform();
+          if (Math.abs(velocityX) > minVelocity || Math.abs(velocityY) > minVelocity) {{
+            momentumFrame = requestAnimationFrame(tick);
+          }} else {{
+            momentumFrame = null;
+          }}
+        }}
+        momentumFrame = requestAnimationFrame(tick);
+      }}
+
+      function titleElement(text) {{
+        const t = document.createElementNS("http://www.w3.org/2000/svg", "title");
+        t.textContent = text;
+        return t;
+      }}
+
+      const incomingByTarget = new Map();
+      const pathElements = new Map();
+      const nodeElements = new Map();
+
+      function registerIncoming(link) {{
+        if (!incomingByTarget.has(link.target_id)) incomingByTarget.set(link.target_id, []);
+        incomingByTarget.get(link.target_id).push(link);
+      }}
+
+      function collectAncestorLinks(targetNodeId, selected) {{
+        const incoming = incomingByTarget.get(targetNodeId) || [];
+        incoming.forEach((link) => {{
+          if (!selected.has(link.id)) {{
+            selected.add(link.id);
+            collectAncestorLinks(link.source_id, selected);
+          }}
+        }});
+      }}
+
+      function selectedNodeIds(linkIds) {{
+        const ids = new Set();
+        linkIds.forEach((linkId) => {{
+          const link = pathElements.get(linkId)?.__data;
+          if (!link) return;
+          ids.add(link.source_id);
+          ids.add(link.target_id);
+        }});
+        return ids;
+      }}
+
+      function applySelection(linkIds) {{
+        const highlightedNodes = selectedNodeIds(linkIds);
+        pathElements.forEach((pathEl, linkId) => {{
+          const link = pathEl.__data;
+          const color = linkIds.size ? (linkIds.has(linkId) ? selectedStroke : contextStroke) : (link.active ? activeStroke : contextStroke);
+          const opacity = linkIds.size ? (linkIds.has(linkId) ? "1" : "0.16") : (link.active ? "0.92" : "0.56");
+          pathEl.setAttribute("stroke", color);
+          pathEl.setAttribute("opacity", opacity);
+        }});
+        nodeElements.forEach((groupEl, nodeId) => {{
+          const rect = groupEl.querySelector("rect");
+          const label = groupEl.querySelector("text");
+          const node = groupEl.__data;
+          if (!rect || !label) return;
+          const fill = linkIds.size ? (highlightedNodes.has(nodeId) ? selectedNodeFill : contextNodeFill) : (node.color === activeNodeFill ? activeNodeFill : contextNodeFill);
+          rect.setAttribute("fill", fill);
+          label.setAttribute("font-weight", highlightedNodes.has(nodeId) || fill === activeNodeFill ? "700" : "500");
+        }});
+      }}
+
+      payload.stages.forEach((stage) => {{
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", stage.x);
+        text.setAttribute("y", 16);
+        text.setAttribute("fill", darkMode ? "#e2e8f0" : "#334155");
+        text.setAttribute("font-size", "13");
+        text.setAttribute("font-weight", "700");
+        text.textContent = stage.label;
+        viewport.appendChild(text);
+      }});
+
+      payload.paths.forEach((flow) => {{
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.__data = flow;
+        path.setAttribute("d", flow.d);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", flow.stroke);
+        path.setAttribute("stroke-width", flow.stroke_width);
+        path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("opacity", flow.active ? "0.92" : "0.56");
+        path.appendChild(titleElement(`Flow count: ${{flow.count}} | Mean score: ${{flow.score.toFixed(2)}}`));
+        path.style.cursor = "pointer";
+        path.addEventListener("click", (event) => {{
+          event.stopPropagation();
+          const selected = new Set([flow.id]);
+          collectAncestorLinks(flow.source_id, selected);
+          applySelection(selected);
+        }});
+        registerIncoming(flow);
+        pathElements.set(flow.id, path);
+        viewport.appendChild(path);
+      }});
+
+      payload.nodes.forEach((node) => {{
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.__data = node;
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", node.x);
+        rect.setAttribute("y", node.y);
+        rect.setAttribute("rx", "8");
+        rect.setAttribute("ry", "8");
+        rect.setAttribute("width", node.width);
+        rect.setAttribute("height", node.height);
+        rect.setAttribute("fill", node.color);
+        rect.setAttribute("stroke", darkMode ? "rgba(226,232,240,0.16)" : "rgba(100,116,139,0.22)");
+        rect.setAttribute("stroke-width", "1");
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", node.x + node.width + 8);
+        label.setAttribute("y", node.y + Math.min(Math.max(node.height / 2, 14), node.height - 4));
+        label.setAttribute("dominant-baseline", "middle");
+        label.setAttribute("fill", darkMode ? "#f8fafc" : "#0f172a");
+        label.setAttribute("font-size", "12");
+        label.setAttribute("font-weight", node.color === activeNodeFill ? "700" : "500");
+        label.textContent = node.label;
+
+        group.appendChild(rect);
+        group.appendChild(label);
+        group.appendChild(titleElement(
+          `${{node.label}}\\nStage: ${{node.stage}}\\nMean accuracy: ${{Number(node.avg_accuracy_mean || 0).toFixed(2)}}\\nMean forgetting: ${{Number(node.forgetting_mean || 0).toFixed(2)}}\\nMean runtime (h): ${{Number(node.runtime_hours_mean || 0).toFixed(2)}}\\nMean memory proxy (MB): ${{Number(node.estimated_memory_mb || 0).toFixed(2)}}`
+        ));
+        group.style.cursor = "pointer";
+        group.addEventListener("click", (event) => {{
+          event.stopPropagation();
+          const selected = new Set();
+          collectAncestorLinks(node.id, selected);
+          applySelection(selected);
+        }});
+        nodeElements.set(node.id, group);
+        viewport.appendChild(group);
+      }});
+
+      frame.addEventListener("click", (event) => {{
+        if (event.target === frame || event.target === svg) {{
+          applySelection(new Set());
+        }}
+      }});
+
+      frame.addEventListener("wheel", (event) => {{
+        event.preventDefault();
+        const rect = svg.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        stopMomentum();
+        const direction = event.deltaY < 0 ? 1.18 : 0.84;
+        const nextScale = Math.min(Math.max(scale * direction, 0.3), 18.0);
+        const worldX = (mouseX - tx) / scale;
+        const worldY = (mouseY - ty) / scale;
+        tx = mouseX - (worldX * nextScale);
+        ty = mouseY - (worldY * nextScale);
+        scale = nextScale;
+        setTransform();
+      }}, {{ passive: false }});
+
+      frame.addEventListener("mousedown", (event) => {{
+        stopMomentum();
+        dragging = true;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        velocityX = 0;
+        velocityY = 0;
+        lastMoveAt = performance.now();
+        frame.style.cursor = "grabbing";
+      }});
+
+      window.addEventListener("mousemove", (event) => {{
+        if (!dragging) return;
+        const now = performance.now();
+        const dx = event.clientX - lastX;
+        const dy = event.clientY - lastY;
+        const dt = Math.max(now - lastMoveAt, 8);
+        const panBoost = Math.min(3.0 + (scale * 0.22), 7.0);
+        tx += dx * panBoost;
+        ty += dy * panBoost;
+        velocityX = (dx * panBoost) / dt * 22;
+        velocityY = (dy * panBoost) / dt * 22;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        lastMoveAt = now;
+        setTransform();
+      }});
+
+      window.addEventListener("mouseup", () => {{
+        if (dragging) startMomentum();
+        dragging = false;
+        frame.style.cursor = "grab";
+      }});
+
+      frame.addEventListener("dblclick", resetView);
+      if (reset) reset.addEventListener("click", resetView);
+      applySelection(new Set());
+      setTransform();
+    }})();
+    </script>
+    """
 
 
 def build_matrix_heatmap(

@@ -7,6 +7,7 @@ from typing import Dict, Sequence
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 from src.recommendation.engine import RecommendationEngine, RecommendationRequest
 
@@ -14,6 +15,7 @@ from app.dashboard_charts import (
     build_ablation_memory_chart,
     build_ablation_runtime_chart,
     build_cross_dataset_heatmap,
+    build_decision_tree_chart,
     build_friedman_rank_chart,
     build_grouped_metric_bars,
     build_matrix_heatmap,
@@ -37,9 +39,11 @@ from app.dashboard_data import (
     build_top_cluster_membership,
     case_study_options,
     comparison_table,
+    build_decision_tree_rows,
     dataset_leader_rows,
     dataset_snapshot,
     filter_profiles,
+    request_bucket_state,
     sanitize_user_text,
     static_dataset_figures,
     strip_markdown_section,
@@ -361,6 +365,92 @@ def render_recommendation_tab(bundle: DashboardBundle, request: RecommendationRe
             case_rows = bundle.recommendation_cases[bundle.recommendation_cases["case_id"] == int(selected_case)].copy()
             if not case_rows.empty:
                 st.caption(case_rows.iloc[0]["summary_rationale"])
+
+
+def render_decision_tree_tab(bundle: DashboardBundle, request: RecommendationRequest) -> None:
+    render_note(
+        "This decision-tree view adds an interactive recommendation layer on top of the same evidence and scoring used by the recommendation panel."
+    )
+    if bundle.recommendation_profiles.empty:
+        st.info("Recommendation profiles are unavailable.")
+        return
+
+    tree_df = build_decision_tree_rows(bundle.recommendation_profiles, request.dataset)
+    if tree_df.empty:
+        st.info("No decision-tree data are available for the selected dataset.")
+        return
+
+    engine = RecommendationEngine(bundle.recommendation_profiles)
+    result = engine.recommend(request, top_k=3)
+    active_path = request_bucket_state(request)
+    candidate_subset = tree_df[
+        (tree_df["memory_bucket_key"].astype(str) == str(active_path["memory_bucket_key"]))
+        & (tree_df["compute_bucket_key"].astype(str) == str(active_path["compute_bucket_key"]))
+        & (tree_df["forgetting_bucket_key"].astype(str) == str(active_path["forgetting_bucket_key"]))
+        & (tree_df["similarity_bucket_key"].astype(str) == str(active_path["similarity_bucket_key"]))
+        & (tree_df["joint_bucket_key"].astype(str) == str(active_path["joint_bucket_key"]))
+    ].copy()
+    graph_candidates: list[str] = []
+    if not candidate_subset.empty:
+        row = candidate_subset.iloc[0]
+        for rank in range(1, 4):
+            candidate_method = str(row.get(f"candidate_method_{rank}", "") or "")
+            if candidate_method:
+                graph_candidates.append(candidate_method)
+    active_path["recommended_method"] = (
+        str(result["recommended_method"])
+        if str(result["recommended_method"]) in graph_candidates
+        else (graph_candidates[0] if graph_candidates else str(result["recommended_method"]))
+    )
+    current_path = pd.DataFrame(
+        [
+            {"Stage": "Dataset", "Current choice": DATASET_LABELS.get(str(request.dataset), str(request.dataset))},
+            {"Stage": "Memory", "Current choice": f"{int(request.memory_budget_mb)} MB"},
+            {"Stage": "Compute", "Current choice": str(request.compute_budget).title()},
+            {"Stage": "Retention", "Current choice": f"Target <= {int(request.acceptable_forgetting or 0)}"},
+            {"Stage": "Similarity", "Current choice": str(request.task_similarity).title()},
+            {"Stage": "Joint", "Current choice": "Allowed" if request.joint_retraining_allowed else "Not allowed"},
+            {"Stage": "Outcome", "Current choice": str(result['recommended_method'])},
+        ]
+    )
+
+    components.html(
+        build_decision_tree_chart(
+            tree_df,
+            f"Decision Flow for {DATASET_LABELS.get(str(request.dataset), str(request.dataset))}",
+            active_path=active_path,
+        ),
+        height=790,
+        scrolling=False,
+    )
+
+    render_how_to_read(
+        "Green flows trace the current recommendation path under the active controls. Grey flows keep the broader decision context visible so you can compare nearby alternatives."
+    )
+
+    lower = st.columns([0.95, 1.05], gap="large")
+    with lower[0]:
+        render_note("This table shows the exact path currently traced through the alluvial decision flow.")
+        st.dataframe(current_path, width="stretch", hide_index=True)
+    with lower[1]:
+        best = result["shortlist"][0]
+        st.subheader("Active Recommendation at This Path")
+        st.markdown(
+            f"""
+            <div class="glass-card">
+                <div style="font-size:0.82rem; letter-spacing:0.08em; text-transform:uppercase; color:#f8fafc;">Current leaf</div>
+                <h2 style="margin:0.15rem 0 0.35rem 0;">{best['method']}</h2>
+                <div style="color:#f8fafc; font-size:0.98rem;">{result['rationale']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        render_plot(
+            build_recommendation_breakdown(best),
+            "This breakdown confirms that the tree and the recommendation panel are reading from the same scoring policy.",
+            "The tree is only a visual decision layer; the underlying scores are still coming from the same recommendation engine.",
+            key="decision_tree_breakdown",
+        )
 
 
 def render_comparison_tab(

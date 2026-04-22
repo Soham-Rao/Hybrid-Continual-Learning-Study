@@ -11,6 +11,7 @@ from app.dashboard_data import (
     DashboardBundle,
     artifact_status_rows,
     build_effect_matrix,
+    build_decision_tree_rows,
     build_pairwise_matrix,
     build_rank_dataframe,
     build_top_cluster_membership,
@@ -23,8 +24,10 @@ from app.dashboard_data import (
 )
 from app.dashboard_charts import (
     build_cross_dataset_heatmap,
+    build_decision_tree_chart,
     build_grouped_metric_bars,
     build_recommendation_breakdown,
+    build_tradeoff_scatter,
 )
 from app.main import main as dashboard_main
 from src.recommendation.engine import RecommendationEngine, RecommendationRequest
@@ -118,3 +121,37 @@ def test_chart_builders_return_plotly_figures_for_real_artifacts() -> None:
     assert fig1 is not None
     assert fig2 is not None
     assert fig3 is not None
+
+
+def test_decision_tree_data_and_chart_build_for_real_dataset() -> None:
+    bundle = load_dashboard_bundle()
+    request = RecommendationRequest(
+        dataset="permuted_mnist",
+        memory_budget_mb=256.0,
+        compute_budget="medium",
+        acceptable_forgetting=20.0,
+        task_similarity="medium",
+        joint_retraining_allowed=False,
+    )
+    tree_df = build_decision_tree_rows(bundle.recommendation_profiles, request.dataset)
+    html = build_decision_tree_chart(tree_df, "Decision Tree")
+
+    assert not tree_df.empty
+    assert isinstance(html, str)
+    assert "alluvial-svg" in html
+
+
+def test_tradeoff_scatter_uses_log_memory_axis_and_annotations() -> None:
+    bundle = load_dashboard_bundle()
+    subset = filter_profiles(bundle.recommendation_profiles, dataset="split_cifar10", include_joint=False)
+    fig = build_tradeoff_scatter(
+        subset,
+        "estimated_memory_mb",
+        "avg_accuracy_mean",
+        "Accuracy vs Memory Proxy",
+        "Estimated Memory (MB)",
+        "Average Accuracy",
+    )
+    assert fig is not None
+    assert fig.layout.xaxis.type == "log"
+    assert len(fig.layout.annotations) >= len(subset)

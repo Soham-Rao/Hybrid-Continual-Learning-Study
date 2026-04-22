@@ -14,6 +14,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from app.dashboard_data import DATASET_LABELS, dataset_options, load_dashboard_bundle
 from app.dashboard_views import (
     render_artifact_library_tab,
+    render_decision_tree_tab,
     inject_css,
     render_comparison_tab,
     render_dataset_visuals_tab,
@@ -41,6 +42,17 @@ def _bundle():
 def _sidebar(bundle) -> dict:
     datasets = dataset_options(bundle.recommendation_profiles if not bundle.recommendation_profiles.empty else bundle.summary)
     default_dataset = "split_mini_imagenet" if "split_mini_imagenet" in datasets else datasets[0]
+    st.session_state.setdefault("dashboard_dataset", default_dataset)
+    st.session_state.setdefault("dashboard_families", ["baseline", "hybrid"])
+    st.session_state.setdefault("dashboard_include_joint", True)
+    st.session_state.setdefault("dashboard_top_cluster_only", False)
+    st.session_state.setdefault("dashboard_memory_budget_mb", 256)
+    st.session_state.setdefault("dashboard_compute_budget", "medium")
+    st.session_state.setdefault("dashboard_acceptable_forgetting", 20)
+    st.session_state.setdefault("dashboard_task_similarity", "medium")
+    st.session_state.setdefault("dashboard_joint_allowed", False)
+    if st.session_state["dashboard_dataset"] not in datasets:
+        st.session_state["dashboard_dataset"] = default_dataset
     with st.sidebar:
         st.title("Dashboard")
         st.caption("Research workbench powered by finalized study artifacts.")
@@ -48,32 +60,55 @@ def _sidebar(bundle) -> dict:
         dataset = st.selectbox(
             "Dataset",
             options=datasets,
-            index=datasets.index(default_dataset),
             format_func=lambda item: DATASET_LABELS.get(str(item), str(item)),
+            key="dashboard_dataset",
         )
         families = st.multiselect(
             "Method families",
             options=["baseline", "hybrid"],
-            default=["baseline", "hybrid"],
             help="Use this to simplify the comparison panels without changing the underlying source tables.",
+            key="dashboard_families",
         )
         include_joint = st.toggle(
             "Include joint training in general comparisons",
-            value=True,
             help="Joint training remains excluded from Pareto views even when this toggle is on.",
+            key="dashboard_include_joint",
         )
         top_cluster_only = st.toggle(
             "Show only top-cluster methods",
-            value=False,
             help="Limits method views to methods that are not significantly worse than the dataset leader.",
+            key="dashboard_top_cluster_only",
         )
 
         st.subheader("Recommendation Inputs")
-        memory_budget_mb = st.slider("Memory budget (MB)", min_value=16, max_value=4096, value=256, step=16)
-        compute_budget = st.selectbox("Compute budget", options=["low", "medium", "high"], index=1)
-        acceptable_forgetting = st.slider("Acceptable forgetting", min_value=0, max_value=100, value=20, step=1)
-        task_similarity = st.selectbox("Task similarity", options=["low", "medium", "high"], index=1)
-        joint_retraining_allowed = st.toggle("Allow joint retraining", value=False)
+        memory_budget_mb = st.slider(
+            "Memory budget (MB)",
+            min_value=16,
+            max_value=4096,
+            step=16,
+            key="dashboard_memory_budget_mb",
+        )
+        compute_budget = st.selectbox(
+            "Compute budget",
+            options=["low", "medium", "high"],
+            key="dashboard_compute_budget",
+        )
+        acceptable_forgetting = st.slider(
+            "Acceptable forgetting",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="dashboard_acceptable_forgetting",
+        )
+        task_similarity = st.selectbox(
+            "Task similarity",
+            options=["low", "medium", "high"],
+            key="dashboard_task_similarity",
+        )
+        joint_retraining_allowed = st.toggle(
+            "Allow joint retraining",
+            key="dashboard_joint_allowed",
+        )
 
         with st.expander("Glossary", expanded=False):
             st.markdown(
@@ -109,10 +144,12 @@ def main() -> None:
     render_hero(bundle)
     state = _sidebar(bundle)
 
-    tabs = st.tabs(["Recommendation", "Method Comparison", "Dataset Visuals", "Report / About", "Library"])
+    tabs = st.tabs(["Recommendation", "Decision Tree", "Method Comparison", "Dataset Visuals", "Report / About", "Library"])
     with tabs[0]:
         render_recommendation_tab(bundle, state["request"])
     with tabs[1]:
+        render_decision_tree_tab(bundle, state["request"])
+    with tabs[2]:
         render_comparison_tab(
             bundle,
             dataset=state["dataset"],
@@ -120,16 +157,16 @@ def main() -> None:
             include_joint=state["include_joint"],
             top_cluster_only=state["top_cluster_only"],
         )
-    with tabs[2]:
+    with tabs[3]:
         render_dataset_visuals_tab(
             bundle,
             dataset=state["dataset"],
             families=state["families"],
             include_joint=state["include_joint"],
         )
-    with tabs[3]:
-        render_report_tab(bundle, dataset=state["dataset"], include_joint=state["include_joint"])
     with tabs[4]:
+        render_report_tab(bundle, dataset=state["dataset"], include_joint=state["include_joint"])
+    with tabs[5]:
         render_artifact_library_tab(bundle, dataset=state["dataset"])
 
 
