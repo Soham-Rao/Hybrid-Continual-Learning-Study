@@ -675,6 +675,33 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
       const contextNodeFill = "#cbd5e1";
       const selectedNodeFill = "#fcd34d";
       const flowStroke = darkMode ? "rgba(248,250,252,0.08)" : "rgba(15,23,42,0.06)";
+      const sceneWidth = payload.width;
+      const sceneHeight = payload.height;
+      const viewPadding = 40;
+
+      function clampTransformState(nextTx, nextTy, nextScale) {{
+        const frameWidth = frame.clientWidth || sceneWidth;
+        const frameHeight = frame.clientHeight || sceneHeight;
+        const scaledWidth = sceneWidth * nextScale;
+        const scaledHeight = sceneHeight * nextScale;
+
+        let minTx = frameWidth - scaledWidth - viewPadding;
+        let maxTx = viewPadding;
+        let minTy = frameHeight - scaledHeight - viewPadding;
+        let maxTy = viewPadding;
+
+        if (scaledWidth <= frameWidth - (viewPadding * 2)) {{
+          minTx = maxTx = (frameWidth - scaledWidth) / 2;
+        }}
+        if (scaledHeight <= frameHeight - (viewPadding * 2)) {{
+          minTy = maxTy = (frameHeight - scaledHeight) / 2;
+        }}
+
+        return {{
+          tx: Math.min(maxTx, Math.max(minTx, nextTx)),
+          ty: Math.min(maxTy, Math.max(minTy, nextTy)),
+        }};
+      }}
 
       function setTransform() {{
         scene.style.transform = `translate(${{tx}}px, ${{ty}}px) scale(${{scale}})`;
@@ -691,6 +718,9 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
 
       function animateToTarget() {{
         transformAnimationFrame = null;
+        const clampedTarget = clampTransformState(targetTx, targetTy, targetScale);
+        targetTx = clampedTarget.tx;
+        targetTy = clampedTarget.ty;
         const scaleDelta = targetScale - scale;
         const txDelta = targetTx - tx;
         const tyDelta = targetTy - ty;
@@ -708,6 +738,9 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         scale += scaleDelta * 0.18;
         tx += txDelta * 0.22;
         ty += tyDelta * 0.22;
+        const clampedCurrent = clampTransformState(tx, ty, scale);
+        tx = clampedCurrent.tx;
+        ty = clampedCurrent.ty;
         scheduleTransform();
         transformAnimationFrame = requestAnimationFrame(animateToTarget);
       }}
@@ -740,6 +773,11 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         targetScale = scale;
         targetTx = tx;
         targetTy = ty;
+        const clampedReset = clampTransformState(targetTx, targetTy, targetScale);
+        tx = clampedReset.tx;
+        ty = clampedReset.ty;
+        targetTx = clampedReset.tx;
+        targetTy = clampedReset.ty;
         velocityX = 0;
         velocityY = 0;
         selectedFlowId = null;
@@ -969,13 +1007,9 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const worldY = (mouseY - baseTy) / baseScale;
         const anchorX = mouseX - (worldX * nextScale);
         const anchorY = mouseY - (worldY * nextScale);
-        const frameCenterX = rect.width / 2;
-        const frameCenterY = rect.height / 2;
-        const centeredX = frameCenterX - (worldX * nextScale);
-        const centeredY = frameCenterY - (worldY * nextScale);
-        const centerPull = 0.32;
-        targetTx = anchorX + ((centeredX - anchorX) * centerPull);
-        targetTy = anchorY + ((centeredY - anchorY) * centerPull);
+        const clampedTarget = clampTransformState(anchorX, anchorY, nextScale);
+        targetTx = clampedTarget.tx;
+        targetTy = clampedTarget.ty;
         targetScale = nextScale;
         ensureTransformAnimation();
       }}, {{ passive: false }});
@@ -1024,9 +1058,12 @@ def build_decision_tree_chart(tree_df: pd.DataFrame, title: str, active_path: di
         const dy = event.clientY - lastY;
         dragDistance += Math.abs(dx) + Math.abs(dy);
         const dt = Math.max(now - lastMoveAt, 8);
-        const panBoost = Math.min(3.0 + (scale * 0.22), 7.0);
+        const panBoost = Math.min(2.6 + (scale * 0.18), 6.1);
         tx += dx * panBoost;
         ty += dy * panBoost;
+        const clampedPan = clampTransformState(tx, ty, scale);
+        tx = clampedPan.tx;
+        ty = clampedPan.ty;
         targetTx = tx;
         targetTy = ty;
         targetScale = scale;
