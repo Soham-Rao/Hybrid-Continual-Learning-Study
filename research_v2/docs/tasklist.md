@@ -115,30 +115,52 @@ This is the real study workspace. All baselines, hybrids, and planned ablations 
 
 ## Phase 5 — Optional Backbone Attempts
 ### ViT-Small
+- [ ] Begin only after the full-dataset ablation extension is complete
 - [ ] Attempt the planned study workflow on `vit_small_patch16_224`
 - [ ] Keep results only if runs are stable and usable
 - [ ] Document reasons if skipped or abandoned
 
 ### ConvNeXt-Tiny
+- [ ] Begin only after the full-dataset ablation extension is complete
 - [ ] Attempt the planned study workflow on `convnext_tiny`
 - [ ] Keep results only if runs are stable and usable
 - [ ] Document reasons if skipped or abandoned
 
 ## Phase 6 — Ablation Studies v2
+**Ablation scope note**
+- [x] Lock the ablation study scope to the representative pair: Permuted MNIST and Split CIFAR-10
+- [x] Use the representative pair to establish the initial mechanism and sensitivity picture quickly and affordably
+
 ### Interaction ablations
 - [x] Define the exact interaction ablation matrix for each hybrid
-- [x] Run interaction ablations on the selected datasets under the final v2 policy
+- [x] Run interaction ablations on Permuted MNIST and Split CIFAR-10 under the final v2 policy
 - [x] Aggregate component-level results and interpret mechanism contributions
 
 ### Hyperparameter ablations
-- [x] Buffer size sweeps
-- [x] Regularization / distillation weight sweeps
-- [x] Method-specific trade-off parameter sweeps
+- [x] Buffer size sweeps on Split CIFAR-10
+- [x] Regularization / distillation weight sweeps on Split CIFAR-10
+- [x] Method-specific trade-off parameter sweeps on Split CIFAR-10
 
 ### Stress / sensitivity ablations
-- [x] Task-count or task-length variants where meaningful
-- [x] Resume/restart robustness checks on representative methods
+- [x] Task-count or task-length variants on Permuted MNIST where meaningful
+- [x] Resume/restart robustness checks on representative Permuted MNIST and Split CIFAR-10 methods
 - [x] Runtime / memory sensitivity summaries
+
+### Readiness for longer campaigns
+- [x] Make the representative-dataset ablation scope explicit before epoch-5 and epoch-10 reruns begin
+- [x] Keep the initial ablation findings as mechanism/context evidence pending the full-dataset ablation extension
+
+## Phase 6B — Full-Dataset Ablation Extension Before Longer Campaigns
+- [ ] Expand the ablation program to Split CIFAR-100 before optional backbone attempts begin
+- [ ] Expand the ablation program to Split Mini-ImageNet before optional backbone attempts begin
+- [ ] Run the selected interaction ablations on Split CIFAR-100
+- [ ] Run the selected interaction ablations on Split Mini-ImageNet
+- [ ] Run the selected buffer / weight / trade-off sweeps on Split CIFAR-100 where methodologically meaningful
+- [ ] Run the selected buffer / weight / trade-off sweeps on Split Mini-ImageNet where methodologically meaningful
+- [ ] Run representative robustness checks on Split CIFAR-100
+- [ ] Run representative robustness checks on Split Mini-ImageNet
+- [ ] Regenerate ablation analysis outputs after the four-dataset extension is complete
+- [ ] Freeze the paper-facing ablation scope across all four core datasets before any epoch-5 or epoch-10 reruns begin
 
 ## Phase 7 — Statistical Analysis And Study Outputs (v2 version of old Phase 5) ✅ COMPLETE
 - [x] Aggregate v2 raw results into a clean master results table
@@ -167,6 +189,7 @@ This is the real study workspace. All baselines, hybrids, and planned ablations 
 - [x] Validate local runtime and presentation flow on this machine
 
 ## Phase 10 — Higher-Epoch Campaign
+- [ ] Begin only after the full-dataset ablation extension is complete
 - [ ] Rerun the primary matrix at epoch 5
 - [ ] Aggregate and compare against epoch-1 conclusions
 - [ ] Rerun the primary matrix at epoch 10
