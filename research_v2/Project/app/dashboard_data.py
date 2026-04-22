@@ -8,6 +8,7 @@ from typing import Dict, Iterable, List, Sequence
 
 import pandas as pd
 
+from src.recommendation.engine import RecommendationEngine, RecommendationRequest
 from src.utils.paths import RESULTS_ROOT
 
 
@@ -58,6 +59,46 @@ DATASET_LABELS = {
     "split_cifar100": "Split CIFAR-100",
     "split_mini_imagenet": "Split Mini-ImageNet",
 }
+
+MEMORY_BUCKETS = [
+    {"key": "mem_tight", "label": "Tight Memory (<=64 MB)", "min": 0.0, "max": 64.0, "center": 32.0},
+    {"key": "mem_balanced", "label": "Balanced Memory (65-256 MB)", "min": 65.0, "max": 256.0, "center": 128.0},
+    {"key": "mem_roomy", "label": "Roomy Memory (257-1024 MB)", "min": 257.0, "max": 1024.0, "center": 512.0},
+    {"key": "mem_wide", "label": "Wide Memory (>1024 MB)", "min": 1025.0, "max": None, "center": 2048.0},
+]
+
+FORGETTING_BUCKETS = [
+    {"key": "forgetting_strict", "label": "Strict Retention (<=15)", "min": 0.0, "max": 15.0, "center": 10.0},
+    {"key": "forgetting_balanced", "label": "Balanced Retention (16-35)", "min": 16.0, "max": 35.0, "center": 25.0},
+    {"key": "forgetting_flexible", "label": "Flexible Retention (>35)", "min": 36.0, "max": None, "center": 50.0},
+]
+
+COMPUTE_BUCKETS = [
+    {"key": "low", "label": "Low Compute"},
+    {"key": "medium", "label": "Medium Compute"},
+    {"key": "high", "label": "High Compute"},
+]
+
+SIMILARITY_BUCKETS = [
+    {"key": "low", "label": "Low Similarity"},
+    {"key": "medium", "label": "Medium Similarity"},
+    {"key": "high", "label": "High Similarity"},
+]
+
+JOINT_BUCKETS = [
+    {"key": "joint_off", "label": "Joint Retraining Off", "value": False},
+    {"key": "joint_on", "label": "Joint Retraining On", "value": True},
+]
+
+TREE_LEVELS = [
+    ("dataset_label", "Dataset"),
+    ("memory_bucket_label", "Memory"),
+    ("compute_bucket_label", "Compute"),
+    ("forgetting_bucket_label", "Retention"),
+    ("similarity_bucket_label", "Task Similarity"),
+    ("joint_bucket_label", "Joint Retraining"),
+    ("method_label", "Recommended Method"),
+]
 
 PRIMARY_ARTIFACTS = {
     "summary": PRIMARY_ANALYSIS_DIR / "paper_ready_summary.csv",
@@ -241,6 +282,210 @@ def sanitize_user_text(text: str) -> str:
         out = out.replace(src, dst)
     out = out.replace("  ", " ").replace("`", "`")
     return out
+
+
+def _bucket_label(value: float, buckets: Sequence[Dict[str, object]], default_label: str) -> str:
+    numeric = float(value)
+    for bucket in buckets:
+        lower = float(bucket["min"])
+        upper = bucket["max"]
+        if upper is None and numeric >= lower:
+            return str(bucket["label"])
+        if upper is not None and lower <= numeric <= float(upper):
+            return str(bucket["label"])
+    return default_label
+
+
+def _bucket_key(value: float, buckets: Sequence[Dict[str, object]], default_key: str) -> str:
+    numeric = float(value)
+    for bucket in buckets:
+        lower = float(bucket["min"])
+        upper = bucket["max"]
+        if upper is None and numeric >= lower:
+            return str(bucket["key"])
+        if upper is not None and lower <= numeric <= float(upper):
+            return str(bucket["key"])
+    return default_key
+
+
+def memory_bucket_label(value: float) -> str:
+    return _bucket_label(value, MEMORY_BUCKETS, str(MEMORY_BUCKETS[-1]["label"]))
+
+
+def memory_bucket_key(value: float) -> str:
+    return _bucket_key(value, MEMORY_BUCKETS, str(MEMORY_BUCKETS[-1]["key"]))
+
+
+def forgetting_bucket_label(value: float) -> str:
+    return _bucket_label(value, FORGETTING_BUCKETS, str(FORGETTING_BUCKETS[-1]["label"]))
+
+
+def forgetting_bucket_key(value: float) -> str:
+    return _bucket_key(value, FORGETTING_BUCKETS, str(FORGETTING_BUCKETS[-1]["key"]))
+
+
+def representative_memory_budget(bucket_key: str) -> float:
+    for bucket in MEMORY_BUCKETS:
+        if str(bucket["key"]) == str(bucket_key):
+            return float(bucket["center"])
+    return float(MEMORY_BUCKETS[1]["center"])
+
+
+def representative_acceptable_forgetting(bucket_key: str) -> float:
+    for bucket in FORGETTING_BUCKETS:
+        if str(bucket["key"]) == str(bucket_key):
+            return float(bucket["center"])
+    return float(FORGETTING_BUCKETS[1]["center"])
+
+
+def request_bucket_state(request: RecommendationRequest) -> Dict[str, object]:
+    return {
+        "dataset": str(request.dataset),
+        "dataset_label": DATASET_LABELS.get(str(request.dataset), str(request.dataset)),
+        "memory_bucket_key": memory_bucket_key(float(request.memory_budget_mb)),
+        "memory_bucket_label": memory_bucket_label(float(request.memory_budget_mb)),
+        "compute_bucket_key": str(request.compute_budget),
+        "compute_bucket_label": next(
+            (str(bucket["label"]) for bucket in COMPUTE_BUCKETS if str(bucket["key"]) == str(request.compute_budget)),
+            str(request.compute_budget),
+        ),
+        "forgetting_bucket_key": forgetting_bucket_key(float(request.acceptable_forgetting or 25.0)),
+        "forgetting_bucket_label": forgetting_bucket_label(float(request.acceptable_forgetting or 25.0)),
+        "similarity_bucket_key": str(request.task_similarity),
+        "similarity_bucket_label": next(
+            (str(bucket["label"]) for bucket in SIMILARITY_BUCKETS if str(bucket["key"]) == str(request.task_similarity)),
+            str(request.task_similarity),
+        ),
+        "joint_bucket_key": "joint_on" if bool(request.joint_retraining_allowed) else "joint_off",
+        "joint_bucket_label": "Joint Retraining On" if bool(request.joint_retraining_allowed) else "Joint Retraining Off",
+    }
+
+
+def build_decision_tree_rows(profiles_df: pd.DataFrame, dataset: str) -> pd.DataFrame:
+    if profiles_df.empty:
+        return pd.DataFrame()
+    dataset_profiles = profiles_df[profiles_df["dataset"].astype(str) == str(dataset)].copy()
+    if dataset_profiles.empty:
+        return pd.DataFrame()
+
+    engine = RecommendationEngine(dataset_profiles)
+    rows: List[Dict[str, object]] = []
+    case_id = 0
+    for memory_bucket in MEMORY_BUCKETS:
+        for compute_bucket in COMPUTE_BUCKETS:
+            for retention_bucket in FORGETTING_BUCKETS:
+                for similarity_bucket in SIMILARITY_BUCKETS:
+                    for joint_bucket in JOINT_BUCKETS:
+                        request = RecommendationRequest(
+                            dataset=str(dataset),
+                            memory_budget_mb=float(memory_bucket["center"]),
+                            compute_budget=str(compute_bucket["key"]),
+                            acceptable_forgetting=float(retention_bucket["center"]),
+                            task_similarity=str(similarity_bucket["key"]),
+                            joint_retraining_allowed=bool(joint_bucket["value"]),
+                        )
+                        result = engine.recommend(request, top_k=3)
+                        best = result["shortlist"][0]
+                        case_id += 1
+                        rows.append(
+                            {
+                                "case_id": case_id,
+                                "dataset": str(dataset),
+                                "dataset_label": DATASET_LABELS.get(str(dataset), str(dataset)),
+                                "memory_bucket_key": str(memory_bucket["key"]),
+                                "memory_bucket_label": str(memory_bucket["label"]),
+                                "compute_bucket_key": str(compute_bucket["key"]),
+                                "compute_bucket_label": str(compute_bucket["label"]),
+                                "forgetting_bucket_key": str(retention_bucket["key"]),
+                                "forgetting_bucket_label": str(retention_bucket["label"]),
+                                "similarity_bucket_key": str(similarity_bucket["key"]),
+                                "similarity_bucket_label": str(similarity_bucket["label"]),
+                                "joint_bucket_key": str(joint_bucket["key"]),
+                                "joint_bucket_label": str(joint_bucket["label"]),
+                                "joint_retraining_allowed": bool(joint_bucket["value"]),
+                                "recommended_method": str(result["recommended_method"]),
+                                "method_label": METHOD_LABELS.get(str(result["recommended_method"]), str(result["recommended_method"])),
+                                "score": float(best["score"]),
+                                "avg_accuracy_mean": float(best["avg_accuracy_mean"]),
+                                "forgetting_mean": float(best["forgetting_mean"]),
+                                "runtime_hours_mean": float(best["runtime_hours_mean"]),
+                                "estimated_memory_mb": float(best["estimated_memory_mb"]),
+                                "leader_flag": bool(best["leader_flag"]),
+                                "top_cluster_flag": bool(best["top_cluster_flag"]),
+                                "rationale": str(result["rationale"]),
+                            }
+                        )
+    tree_df = pd.DataFrame(rows)
+    return tree_df.sort_values(
+        [
+            "memory_bucket_key",
+            "compute_bucket_key",
+            "forgetting_bucket_key",
+            "similarity_bucket_key",
+            "joint_bucket_key",
+            "recommended_method",
+        ]
+    ).reset_index(drop=True)
+
+
+def filter_decision_tree_rows(tree_df: pd.DataFrame, request: RecommendationRequest, focus_level: int) -> pd.DataFrame:
+    if tree_df.empty:
+        return tree_df.copy()
+    active = request_bucket_state(request)
+    filters = [
+        ("dataset", active["dataset"]),
+        ("memory_bucket_key", active["memory_bucket_key"]),
+        ("compute_bucket_key", active["compute_bucket_key"]),
+        ("forgetting_bucket_key", active["forgetting_bucket_key"]),
+        ("similarity_bucket_key", active["similarity_bucket_key"]),
+        ("joint_bucket_key", active["joint_bucket_key"]),
+    ]
+    subset = tree_df.copy()
+    for idx, (column, value) in enumerate(filters):
+        if idx >= int(focus_level):
+            break
+        subset = subset[subset[column].astype(str) == str(value)].copy()
+    return subset.reset_index(drop=True)
+
+
+def visible_tree_choices(tree_df: pd.DataFrame, request: RecommendationRequest, focus_level: int) -> pd.DataFrame:
+    subset = filter_decision_tree_rows(tree_df, request, focus_level)
+    if subset.empty:
+        return subset
+    next_level_columns = [
+        "memory_bucket_label",
+        "compute_bucket_label",
+        "forgetting_bucket_label",
+        "similarity_bucket_label",
+        "joint_bucket_label",
+        "method_label",
+    ]
+    next_key_columns = [
+        "memory_bucket_key",
+        "compute_bucket_key",
+        "forgetting_bucket_key",
+        "similarity_bucket_key",
+        "joint_bucket_key",
+        "recommended_method",
+    ]
+    if int(focus_level) >= len(next_level_columns):
+        return pd.DataFrame()
+    label_col = next_level_columns[int(focus_level)]
+    key_col = next_key_columns[int(focus_level)]
+    grouped = (
+        subset.groupby([key_col, label_col], dropna=False)
+        .agg(
+            cases=("case_id", "count"),
+            mean_score=("score", "mean"),
+            mean_accuracy=("avg_accuracy_mean", "mean"),
+            mean_forgetting=("forgetting_mean", "mean"),
+        )
+        .reset_index()
+        .sort_values(["mean_score", "mean_accuracy"], ascending=[False, False])
+        .reset_index(drop=True)
+    )
+    grouped = grouped.rename(columns={key_col: "choice_key", label_col: "choice_label"})
+    return grouped
 
 
 def strip_markdown_section(text: str, heading: str) -> str:
