@@ -424,6 +424,17 @@ Chart/report interpretation and deeper cross-tab awareness
 - Do prompt-template chips help users ask better questions?
 - Does the assistant feel useful without becoming a distraction?
 
+Track 9 implementation lock:
+- qualitative acceptance criteria are now recorded explicitly for clarity, grounding, and usefulness
+- manual prompt suites now exist for recommendation explanation, settings inference, and chart/report interpretation
+- local runtime/model-availability viability has been checked on the current machine and recorded as part of the evaluation artifact
+
+Track 10 implementation lock:
+- the first release is now gated on explicit confirmation before any dashboard-setting mutation
+- explanation release checks now treat the deterministic engine as the only recommendation authority
+- the right-side panel is accepted for first release as a Streamlit overlay approximation, with that caveat documented
+- known limitations are now recorded rather than left implicit
+
 ## Open Decisions
 - Whether the first release should include settings-application actions or explanation only
 - Whether internet access should be enabled in the first release or kept for a later stage

@@ -69,18 +69,18 @@ This track covers the conversational assistant that lives inside the dashboard a
 - [x] Add citation or evidence snippets for high-stakes explanations when practical
 
 ## Track 9 — Evaluation
-- [ ] Define qualitative acceptance criteria for clarity, grounding, and usefulness
-- [ ] Create test prompts for recommendation explanation quality
-- [ ] Create test prompts for natural-language-to-settings quality
-- [ ] Create test prompts for chart and report interpretation quality
-- [ ] Check latency, failure handling, and model-availability behavior on this machine
+- [x] Define qualitative acceptance criteria for clarity, grounding, and usefulness
+- [x] Create test prompts for recommendation explanation quality
+- [x] Create test prompts for natural-language-to-settings quality
+- [x] Create test prompts for chart and report interpretation quality
+- [x] Check latency, failure handling, and model-availability behavior on this machine
 
 ## Track 10 — Release Gate
-- [ ] Verify the copilot does not alter core recommendation results unless the user explicitly applies inferred settings
-- [ ] Verify explanations stay aligned with actual study artifacts
-- [ ] Verify the right-side panel works cleanly across the full dashboard
-- [ ] Verify local Ollama-only usage is viable before considering broader extensions
-- [ ] Document the copilot’s capabilities, boundaries, and known limitations
+- [x] Verify the copilot does not alter core recommendation results unless the user explicitly applies inferred settings
+- [x] Verify explanations stay aligned with actual study artifacts
+- [x] Verify the right-side panel works cleanly across the full dashboard
+- [x] Verify local Ollama-only usage is viable before considering broader extensions
+- [x] Document the copilot’s capabilities, boundaries, and known limitations
 
 ## Completion Rule
 This copilot track should be considered ready when:

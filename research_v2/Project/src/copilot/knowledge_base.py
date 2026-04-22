@@ -180,7 +180,7 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
         dominant = ", ".join(f"{name.replace('_', ' ')}={float(value):.2f}" for name, value in sorted_components[:4])
         return "\n\n".join(
             [
-                guide["reading"],
+                f"This {guide['title']} explains why the current winner scores highest for the active request.",
                 (
                     f"For {dataset_label}, the current winner is `{winner['method']}` with total score {winner['score']:.2f}. "
                     f"The biggest score drivers right now are {dominant}."
@@ -192,7 +192,7 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
     if facts.chart_focus == "accuracy_forgetting":
         return "\n\n".join(
             [
-                guide["reading"],
+                f"This {guide['title']} compares final performance against retention.",
                 (
                     f"For {dataset_label}, the highest-accuracy method is `{facts.best_accuracy['method']}` at "
                     f"{float(facts.best_accuracy['avg_accuracy_mean']):.2f}, while the lowest-forgetting method is "
@@ -208,7 +208,7 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
     if facts.chart_focus == "accuracy_runtime":
         return "\n\n".join(
             [
-                guide["reading"],
+                f"This {guide['title']} is about how much performance you buy with extra training time.",
                 (
                     f"For {dataset_label}, the accuracy leader is `{facts.best_accuracy['method']}` at "
                     f"{float(facts.best_accuracy['avg_accuracy_mean']):.2f}, while the fastest method is "
@@ -224,7 +224,7 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
     if facts.chart_focus == "accuracy_memory":
         return "\n\n".join(
             [
-                guide["reading"],
+                f"This {guide['title']} shows how much performance each method delivers for its proxy memory footprint.",
                 (
                     f"For {dataset_label}, the accuracy leader is `{facts.best_accuracy['method']}` at "
                     f"{float(facts.best_accuracy['avg_accuracy_mean']):.2f}, while the lightest method is "
@@ -239,7 +239,7 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
         )
     return "\n\n".join(
         [
-            guide["reading"],
+            f"This {guide['title']} should be read as a trade-off surface rather than as a single-metric ranking.",
             (
                 f"For {dataset_label}, the current recommendation is `{winner['method']}` with average accuracy "
                 f"{winner['avg_accuracy_mean']:.2f}, forgetting {winner['forgetting_mean']:.2f}, runtime "
