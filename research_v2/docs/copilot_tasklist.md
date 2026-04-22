@@ -7,25 +7,25 @@ This track covers the conversational assistant that lives inside the dashboard a
 - Build a local, grounded assistant that helps users understand recommendations, interpret results, translate natural-language constraints into dashboard settings, and navigate the evidence base without replacing the deterministic recommendation engine.
 
 ## Track 0 — Scope Lock And UX Definition
-- [ ] Lock the copilot scope as an assistant layer on top of the existing dashboard, not a replacement for the recommendation engine
-- [ ] Lock the interaction model for the hidden right-edge hover panel and slide-in chat experience
-- [ ] Lock the first-release modes: explain recommendation, natural-language-to-settings, chart/result interpretation
-- [ ] Decide whether the first release is chat-only or includes lightweight action buttons like “Apply inferred settings”
-- [ ] Define the trust policy: what the copilot may explain, infer, summarize, and what it must never claim without evidence
+- [x] Lock the copilot scope as an assistant layer on top of the existing dashboard, not a replacement for the recommendation engine
+- [x] Lock the interaction model for the hidden right-edge hover panel and slide-in chat experience
+- [x] Lock the first-release modes: explain recommendation, natural-language-to-settings, chart/result interpretation
+- [x] Decide whether the first release is chat-only or includes lightweight action buttons like “Apply inferred settings”
+- [x] Define the trust policy: what the copilot may explain, infer, summarize, and what it must never claim without evidence
 
 ## Track 1 — Local Model Integration
-- [ ] Choose the default local Ollama model for the first release
-- [ ] Keep model selection configurable so multiple local models can be tested
-- [ ] Build a small local inference wrapper for Ollama requests, timeouts, retries, and health checks
-- [ ] Add a clear offline / unavailable-model fallback state in the UI
-- [ ] Define prompt budget and context-size policy so the assistant stays responsive
+- [x] Choose the default local Ollama model for the first release
+- [x] Keep model selection configurable so multiple local models can be tested
+- [x] Build a small local inference wrapper for Ollama requests, timeouts, retries, and health checks
+- [x] Add a clear offline / unavailable-model fallback state in the UI
+- [x] Define prompt budget and context-size policy so the assistant stays responsive
 
 ## Track 2 — Knowledge Layer
-- [ ] Build a grounded retrieval layer over current study artifacts
-- [ ] Ingest recommendation summaries, study tables, reports, and ablation outputs from the current workspace
-- [ ] Add support for using literature-survey material and relevant markdown/doc files across both `v1_deadline_prototype` and `research_v2`
-- [ ] Define a controlled policy for optional internet-backed lookups when external literature or definitions are needed
-- [ ] Add metadata so retrieved evidence can be labeled as empirical result, design note, literature note, or external source
+- [x] Build a grounded retrieval layer over current study artifacts
+- [x] Ingest recommendation summaries, study tables, reports, and ablation outputs from the current workspace
+- [x] Add support for using literature-survey material and relevant markdown/doc files across both `v1_deadline_prototype` and `research_v2`
+- [x] Define a controlled policy for optional internet-backed lookups when external literature or definitions are needed
+- [x] Add metadata so retrieved evidence can be labeled as empirical result, design note, literature note, or external source
 
 ## Track 3 — Explain Recommendation Mode
 - [ ] Use current dashboard state plus retrieved evidence to explain why the recommended method fits the current constraints
@@ -89,3 +89,6 @@ This copilot track should be considered ready when:
 - natural-language constraint parsing can safely suggest or apply settings
 - prompt-template helpers improve user prompting quality
 - the assistant clearly distinguishes evidence, inference, and external knowledge
+
+**Track 0 output**
+- Scope and UX lock recorded in `docs/copilot_scope_lock.md`

@@ -11,6 +11,18 @@ This assistant should be:
 
 The copilot is not meant to replace the engine or the analytical views. It is meant to make them easier to understand and use.
 
+## Track 0 Decisions Already Locked
+The following decisions are now locked for the first implementation pass:
+- the copilot is an assistant layer, not a recommendation-engine replacement
+- the panel uses a right-edge hover or click reveal pattern
+- the first release includes three modes: explain recommendation, natural-language-to-settings, and chart/result interpretation
+- the first release is chat-first with lightweight optional actions only
+- inferred settings must be confirmed before they are applied
+- one shared conversation thread is used across the dashboard in the first release
+- the deterministic engine remains the sole recommendation authority
+
+See `docs/copilot_scope_lock.md` for the full Track 0 contract.
+
 ## Product Goals
 1. Explain why a recommendation makes sense conceptually, not just numerically.
 2. Translate natural-language user descriptions into structured dashboard settings.
@@ -87,6 +99,11 @@ These should be:
 - context-sensitive where possible
 - visible as suggestions, not mandatory workflows
 
+First-release approval:
+- prompt-template chips are in scope for the initial build
+- they should appear above the chat box as hoverable suggestions/examples
+- they may prefill or inject text, but should not auto-send prompts
+
 ## Knowledge Sources
 
 ### Local Structured Study Artifacts
@@ -130,6 +147,11 @@ Responsibilities:
 - expose optional “Apply inferred settings” actions
 - pass current dashboard context into the copilot backend
 
+First-release UI policy:
+- keep one shared thread across tabs
+- preserve panel state when the user changes tabs
+- keep apply-style actions explicit and confirmable
+
 ### 2. Copilot Orchestration Layer
 Responsibilities:
 - receive current dashboard context
@@ -168,6 +190,12 @@ Recommended strategy:
 - local text retrieval second
 - optional external retrieval last
 
+Track 2 implementation lock:
+- structured current-study artifacts are now treated as first-class empirical evidence
+- local markdown/text documents across both `research_v2` and `v1_deadline_prototype` are searchable as grounded context
+- retrieval results should carry evidence labels such as `empirical_result`, `design_note`, `literature_note`, and `external_source`
+- optional internet-backed retrieval remains policy-gated and off by default
+
 ### 4. Deterministic Action Layer
 Responsibilities:
 - convert inferred settings into structured dashboard state
@@ -178,6 +206,10 @@ This layer should remain separate from the LLM so that:
 - the LLM proposes
 - the app validates
 - the user confirms
+
+First-release lock:
+- settings application is allowed only as an explicit confirmed action
+- no autonomous multi-step mutations are allowed
 
 ### 5. Local Model Layer
 Use Ollama as the first backend.
@@ -195,6 +227,12 @@ Why:
 - appropriate size for this machine compared with larger alternatives
 
 Keep the selected model configurable in settings or environment config.
+
+Track 1 implementation lock:
+- default first-release model: `qwen2.5:7b-instruct`
+- configurable via environment instead of hard-coding a single model choice
+- local availability should be surfaced in the dashboard UI before the full chat panel is built
+- prompt budget and context-item limits should be enforced in the local client/config layer
 
 ## Suggested File/Module Structure
 
@@ -285,6 +323,9 @@ Prompt the model to:
   - empirical evidence from current study outputs
   - local project notes or literature surveys
   - internet-backed external sources
+
+Additional Track 0 lock:
+- if the evidence is insufficient, the assistant should say so instead of filling the gap with confident generic prose
 
 ## Suggested Delivery Order
 

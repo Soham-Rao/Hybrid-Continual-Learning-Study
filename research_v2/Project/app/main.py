@@ -12,6 +12,7 @@ PROJECT_ROOT = APP_DIR.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.dashboard_data import DATASET_LABELS, dataset_options, load_dashboard_bundle
+from app.copilot_runtime import get_copilot_settings, get_copilot_status
 from app.dashboard_views import (
     render_artifact_library_tab,
     render_decision_tree_tab,
@@ -56,6 +57,19 @@ def _sidebar(bundle) -> dict:
     with st.sidebar:
         st.title("Dashboard")
         st.caption("Research workbench powered by finalized study artifacts.")
+        copilot_status = get_copilot_status()
+        copilot_settings = get_copilot_settings()
+        with st.expander("Copilot Status", expanded=False):
+            if copilot_status.available and copilot_status.model_available:
+                st.success(copilot_status.message)
+            elif copilot_status.available:
+                st.warning(copilot_status.message)
+            else:
+                st.error(copilot_status.message)
+            st.caption(f"Default local model: `{copilot_settings.default_model}`")
+            st.caption(
+                "Track 1 foundation is wired: local model discovery, health checks, and safe offline fallback are ready."
+            )
         st.subheader("Study Lens")
         dataset = st.selectbox(
             "Dataset",

@@ -22,6 +22,7 @@ from app.dashboard_data import (
     load_dashboard_bundle,
     strip_markdown_section,
 )
+from app.copilot_runtime import get_copilot_settings
 from app.dashboard_charts import (
     build_cross_dataset_heatmap,
     build_decision_tree_chart,
@@ -97,6 +98,7 @@ def test_artifact_status_rows_and_main_entrypoint_import_cleanly() -> None:
     assert not status.empty
     assert {"primary", "secondary"} <= set(status["group"].astype(str).unique().tolist())
     assert callable(dashboard_main)
+    assert get_copilot_settings().default_model
 
 
 def test_chart_builders_return_plotly_figures_for_real_artifacts() -> None:
