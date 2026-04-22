@@ -52,7 +52,7 @@ def main() -> None:
     parser.add_argument(
         "--results-root",
         default=None,
-        help="Override results root (writes master_results.csv here).",
+        help="Override results root (writes/merges current_results.csv here).",
     )
     parser.add_argument(
         "--log-dir",
@@ -105,6 +105,7 @@ def main() -> None:
     task_times:  Dict[str, Dict[str, List[float]]] = defaultdict(dict)
     all_rows:    List[dict] = []
     disable_plots = False
+    has_ablation_batch = False
 
     seed_override = None
     results_root = None
@@ -128,12 +129,17 @@ def main() -> None:
         if args.cleanup_checkpoints:
             cfg["cleanup_checkpoints_on_success"] = True
         disable_plots = disable_plots or cfg.get("disable_plots", False)
+        is_ablation_cfg = bool(cfg.get("ablation_family")) or cfg.get("result_group") == "ablations"
+        has_ablation_batch = has_ablation_batch or is_ablation_cfg
         if results_root is None:
             results_root = resolve_results_root(cfg.get("results_root"))
         if epoch_dir is None:
             epoch_dir = epoch_label(cfg.get("n_epochs", 1))
         if figure_root is None:
-            figure_root = results_root / "figures" / "analysis" / epoch_dir
+            if is_ablation_cfg:
+                figure_root = results_root / "figures" / "analysis" / "ablations" / epoch_dir
+            else:
+                figure_root = results_root / "figures" / "analysis" / epoch_dir
         if dataset_filter and cfg.get("dataset") != dataset_filter:
             continue
         method_name = cfg.get("method")
@@ -165,26 +171,67 @@ def main() -> None:
 
             ds  = cfg["dataset"]
             met = cfg["method"]
+            if cfg.get("run_tag"):
+                met = f"{met}__{cfg['run_tag']}"
             aggregated[ds][met] = avg_metrics
 
             for row in method_results:
                 all_rows.append({
-                    "dataset": ds, "method": met,
-                    "seed": row["seed"], **row["metrics"],
+                    "dataset": ds,
+                    "method": cfg["method"],
+                    "seed": row["seed"],
+                    "run_tag": cfg.get("run_tag"),
+                    "result_group": cfg.get("result_group", "runs"),
+                    "ablation_family": cfg.get("ablation_family"),
+                    **row["metrics"],
                 })
 
-    # Save master CSV.
+    # Save the canonical aggregate CSV, merging with any existing rows so
+    # per-dataset invocations do not clobber earlier completed datasets.
     df = pd.DataFrame(all_rows)
-    master_path = Path(results_root or resolve_results_root(None)) / "analysis" / (epoch_dir or "epoch_1") / "master_results.csv"
-    master_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(master_path, index=False)
-    print(f"\nSaved -> {master_path}")
+    base_analysis_dir = Path(results_root or resolve_results_root(None)) / "analysis"
+    if has_ablation_batch:
+        analysis_dir = base_analysis_dir / "ablations" / (epoch_dir or "epoch_1")
+    else:
+        analysis_dir = base_analysis_dir / (epoch_dir or "epoch_1")
+    analysis_dir.mkdir(parents=True, exist_ok=True)
+    current_path = analysis_dir / "current_results.csv"
+    legacy_master_path = analysis_dir / "master_results.csv"
+
+    existing = None
+    if current_path.exists():
+        existing = pd.read_csv(current_path)
+    elif legacy_master_path.exists():
+        existing = pd.read_csv(legacy_master_path)
+
+    dedupe_cols = ["dataset", "method", "seed", "run_tag", "result_group", "ablation_family"]
+    for col in dedupe_cols:
+        if col not in df.columns:
+            df[col] = ""
+        if existing is not None and col not in existing.columns:
+            existing[col] = ""
+
+    if existing is not None and not existing.empty:
+        if df.empty:
+            df = existing
+        else:
+            df = pd.concat([existing, df], ignore_index=True)
+            df = df.drop_duplicates(subset=dedupe_cols, keep="last")
+
+    df = df.sort_values(dedupe_cols).reset_index(drop=True)
+    df.to_csv(current_path, index=False)
+    print(f"\nSaved -> {current_path}")
 
     # Generate multi-method comparison plots per dataset.
     if not disable_plots:
         for ds, methods_dict in aggregated.items():
             base_figure_root = Path(args.figure_dir) if args.figure_dir else Path(
-                figure_root or resolve_results_root(None) / "figures" / "analysis" / "epoch_1"
+                figure_root
+                or (
+                    resolve_results_root(None) / "figures" / "analysis" / "ablations" / "epoch_1"
+                    if has_ablation_batch
+                    else resolve_results_root(None) / "figures" / "analysis" / "epoch_1"
+                )
             )
             ds_figure_root = base_figure_root / ds
             plot_all_metric_bars(methods_dict, ds, fig_dir=str(ds_figure_root))

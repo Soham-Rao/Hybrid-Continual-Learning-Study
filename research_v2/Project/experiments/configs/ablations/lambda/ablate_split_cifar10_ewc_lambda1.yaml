@@ -14,4 +14,6 @@ seeds:
 - 789
 - 1024
 run_tag: lambda1
+result_group: ablations
+ablation_family: lambda
 disable_plots: true

@@ -43,7 +43,10 @@ class JointTraining(BaseCLMethod):
         self.model.train()
         self.optimizer.zero_grad(set_to_none=True)
 
-        with self.autocast():
+        # Joint replay is the heaviest and most checkpoint-sensitive path in v2.
+        # Keeping it in full precision avoids resumed AMP/cuDNN instability on
+        # large accumulated replay passes.
+        with self.autocast(enabled=False):
             logits = self.model(x)
             loss   = self._ce_loss(logits, y)
 
@@ -97,5 +100,11 @@ class JointTraining(BaseCLMethod):
         }
 
     def _load_method_state(self, state: Dict[str, Any]) -> None:
-        self._all_x = state.get("all_x", [])
-        self._all_y = state.get("all_y", [])
+        self._all_x = [
+            x.detach().cpu() if isinstance(x, torch.Tensor) else x
+            for x in state.get("all_x", [])
+        ]
+        self._all_y = [
+            y.detach().cpu() if isinstance(y, torch.Tensor) else y
+            for y in state.get("all_y", [])
+        ]

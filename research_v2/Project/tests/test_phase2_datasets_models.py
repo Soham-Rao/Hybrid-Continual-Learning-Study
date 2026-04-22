@@ -124,6 +124,27 @@ def test_slim_resnet18_forward_on_cifar_and_mini(mini_ds) -> None:
     assert mini_out.shape == (2, 10)
 
 
+def test_slim_resnet18_forward_on_resized_permuted_mnist() -> None:
+    device = cuda_device()
+    ds = get_dataset(
+        "permuted_mnist",
+        root=str(DATA_ROOT),
+        n_tasks=1,
+        batch_size=2,
+        num_workers=0,
+        image_size=32,
+    )
+    train_loader, _ = ds.get_task_loaders(0)
+    x, _ = next(iter(train_loader))
+    assert x.shape == (2, 1, 32, 32)
+
+    model = get_model("slim_resnet18", in_channels=1, pretrained=False).to(device)
+    model.expand(10)
+    with torch.no_grad():
+        out = model(x.to(device))
+    assert out.shape == (2, 10)
+
+
 def test_expandable_head_preserves_weights() -> None:
     device = cuda_device()
     model = get_model("slim_resnet18", in_channels=3, pretrained=False).to(device)

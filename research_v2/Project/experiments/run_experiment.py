@@ -64,6 +64,7 @@ def run(cfg: Dict[str, Any], seed: int, device: str) -> Dict[str, Any]:
         cfg["log_dir"],
         run_name,
         metrics_dir=cfg["metrics_dir"],
+        reset_log=not cfg.get("resume", False),
     )
     logger.print(f"Starting: {run_name}")
     logger.print(f"Config: {cfg}")
@@ -113,7 +114,21 @@ def run(cfg: Dict[str, Any], seed: int, device: str) -> Dict[str, Any]:
         start_task = trainer.resume_from_latest()
         if start_task >= dataset.n_tasks:
             logger.print("Checkpoint already contains a completed run.")
-    results = trainer.train(start_task=start_task)
+    results = trainer.train(
+        start_task=start_task,
+        stop_after_task=cfg.get("stop_after_task"),
+    )
+
+    if results.get("stopped_early"):
+        logger.print(
+            "Run stopped intentionally before completion; final metrics and plots "
+            "were skipped so this checkpoint can be resumed later."
+        )
+        return {
+            "run_name": run_name,
+            "stopped_early": True,
+            "stopped_after_task": results.get("stopped_after_task"),
+        }
 
     acc_matrix = results["acc_matrix"]
     metrics    = results["metrics"]
@@ -174,6 +189,8 @@ def main() -> None:
                         help="Resume from the latest completed task checkpoint, if present.")
     parser.add_argument("--cleanup-checkpoints", action="store_true",
                         help="Delete this run's task checkpoints after a successful completed run.")
+    parser.add_argument("--stop-after-task", type=int, default=None,
+                        help="Intentionally stop after saving the checkpoint for this task index.")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -181,6 +198,8 @@ def main() -> None:
         cfg["resume"] = True
     if args.cleanup_checkpoints:
         cfg["cleanup_checkpoints_on_success"] = True
+    if args.stop_after_task is not None:
+        cfg["stop_after_task"] = args.stop_after_task
     run(cfg, seed=args.seed, device=args.device)
 
 

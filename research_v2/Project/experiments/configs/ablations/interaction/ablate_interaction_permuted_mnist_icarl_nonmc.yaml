@@ -1,6 +1,8 @@
 dataset: permuted_mnist
-model: resnet8
+dataset_image_size: 32
+model: slim_resnet18
 method: icarl
+num_workers: 2
 run_tag: nonmc
 seeds:
 - 42

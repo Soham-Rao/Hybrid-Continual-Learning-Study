@@ -13,6 +13,7 @@ Loss:
 """
 
 import copy
+import gc
 from typing import Any, Dict, Optional
 
 import torch
@@ -47,6 +48,12 @@ class LwF(BaseCLMethod):
     ) -> None:
         """Snapshot current model BEFORE head expansion."""
         if task_id > 0:
+            if self._teacher is not None:
+                del self._teacher
+                self._teacher = None
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
             # Snapshot BEFORE expansion so it has old dims.
             self._teacher = copy.deepcopy(self.model)
             for p in self._teacher.parameters():
@@ -90,7 +97,10 @@ class LwF(BaseCLMethod):
         self.model.train()
         self.optimizer.zero_grad(set_to_none=True)
 
-        with self.autocast():
+        # The Mini-ImageNet LwF path is sensitive to AMP/runtime instability
+        # because both student and teacher forward passes run every step.
+        # Keep LwF in full precision for stability.
+        with self.autocast(enabled=False):
             logits  = self.model(x)
             ce_loss = self._ce_loss(logits, y)
             kd_loss = self._distillation_loss(logits, x)

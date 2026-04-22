@@ -1,9 +1,11 @@
 # Permuted MNIST — PROGRESS COMPRESS (Phase 3 hybrid)
 dataset: permuted_mnist
-model: resnet8
+dataset_image_size: 32
+model: slim_resnet18
 method: progress_compress
 n_epochs: 1
 batch_size: 32
+num_workers: 2
 lr: 0.03
 fp16: false
 pc_distill_w: 1.0

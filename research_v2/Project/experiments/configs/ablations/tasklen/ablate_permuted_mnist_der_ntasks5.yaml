@@ -1,10 +1,12 @@
 dataset: permuted_mnist
-model: resnet8
+dataset_image_size: 32
+model: slim_resnet18
 method: der
 buffer_size: 200
 der_alpha: 0.5
 n_epochs: 1
 batch_size: 32
+num_workers: 2
 fp16: false
 seeds:
 - 42
@@ -14,4 +16,6 @@ seeds:
 - 1024
 n_tasks: 5
 run_tag: ntasks5
+result_group: ablations
+ablation_family: tasklen
 disable_plots: true

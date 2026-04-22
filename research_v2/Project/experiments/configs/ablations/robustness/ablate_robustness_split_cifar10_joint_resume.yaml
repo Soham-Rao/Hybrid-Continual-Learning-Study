@@ -1,20 +1,16 @@
 dataset: split_cifar10
 model: slim_resnet18
-method: xder
+method: joint_training
 n_epochs: 1
 batch_size: 32
-lr: 0.03
 fp16: false
-buffer_size: 200
-der_alpha: 0.5
-xder_beta: 0.5
+joint_replay_epochs: 1
 seeds:
 - 42
 - 123
 - 456
-- 789
-- 1024
-run_tag: buf200
+run_tag: resumecheck
 result_group: ablations
-ablation_family: buffer
+ablation_family: robustness
+robustness_stop_task: 1
 disable_plots: true

@@ -86,32 +86,32 @@ This is the real study workspace. All baselines, hybrids, and planned ablations 
 - [x] Fix broken or unstable methods before primary runs begin
 - [x] Record final Phase 3 status in `docs/phase3_status.md`
 
-## Phase 4 — Primary Epoch-1 Study On All Four Datasets (`slim_resnet18` compulsory)
+## Phase 4 — Primary Epoch-1 Study On All Four Datasets (`slim_resnet18` compulsory) ✅ COMPLETE
 ### Permuted MNIST
-- [ ] Run all 5 baselines for 5 seeds at epoch 1
-- [ ] Run all 7 hybrids for 5 seeds at epoch 1
-- [ ] Aggregate and sanity-check results
+- [x] Run all 5 baselines for 5 seeds at epoch 1
+- [x] Run all 7 hybrids for 5 seeds at epoch 1
+- [x] Aggregate and sanity-check results
 
 ### Split CIFAR-10
-- [ ] Run all 5 baselines for 5 seeds at epoch 1
-- [ ] Run all 7 hybrids for 5 seeds at epoch 1
-- [ ] Aggregate and sanity-check results
+- [x] Run all 5 baselines for 5 seeds at epoch 1
+- [x] Run all 7 hybrids for 5 seeds at epoch 1
+- [x] Aggregate and sanity-check results
 
 ### Split CIFAR-100
-- [ ] Run all 5 baselines for 5 seeds at epoch 1
-- [ ] Run all 7 hybrids for 5 seeds at epoch 1
-- [ ] Aggregate and sanity-check results
+- [x] Run all 5 baselines for 5 seeds at epoch 1
+- [x] Run all 7 hybrids for 5 seeds at epoch 1
+- [x] Aggregate and sanity-check results
 
 ### Split Mini-ImageNet
-- [ ] Run all 5 baselines for 5 seeds at epoch 1
-- [ ] Run all 7 hybrids for 5 seeds at epoch 1
-- [ ] Aggregate and sanity-check results
+- [x] Run all 5 baselines for 5 seeds at epoch 1
+- [x] Run all 7 hybrids for 5 seeds at epoch 1
+- [x] Aggregate and sanity-check results
 
 ### Cross-cutting checks
-- [ ] Confirm all expected raw logs exist
-- [ ] Confirm all expected seeds completed for each run family
-- [ ] Confirm reruns are labeled clearly and stale runs are isolated
-- [ ] Confirm primary epoch-1 matrix is complete before ablations begin
+- [x] Confirm all expected raw logs exist
+- [x] Confirm all expected seeds completed for each run family
+- [x] Confirm reruns are labeled clearly and stale runs are isolated
+- [x] Confirm primary epoch-1 matrix is complete before ablations begin
 
 ## Phase 5 — Optional Backbone Attempts
 ### ViT-Small
@@ -126,19 +126,19 @@ This is the real study workspace. All baselines, hybrids, and planned ablations 
 
 ## Phase 6 — Ablation Studies v2
 ### Interaction ablations
-- [ ] Define the exact interaction ablation matrix for each hybrid
-- [ ] Run interaction ablations on the selected datasets under the final v2 policy
-- [ ] Aggregate component-level results and interpret mechanism contributions
+- [x] Define the exact interaction ablation matrix for each hybrid
+- [x] Run interaction ablations on the selected datasets under the final v2 policy
+- [x] Aggregate component-level results and interpret mechanism contributions
 
 ### Hyperparameter ablations
-- [ ] Buffer size sweeps
-- [ ] Regularization / distillation weight sweeps
-- [ ] Method-specific trade-off parameter sweeps
+- [x] Buffer size sweeps
+- [x] Regularization / distillation weight sweeps
+- [x] Method-specific trade-off parameter sweeps
 
 ### Stress / sensitivity ablations
-- [ ] Task-count or task-length variants where meaningful
-- [ ] Resume/restart robustness checks on representative methods
-- [ ] Runtime / memory sensitivity summaries
+- [x] Task-count or task-length variants where meaningful
+- [x] Resume/restart robustness checks on representative methods
+- [x] Runtime / memory sensitivity summaries
 
 ## Phase 7 — Statistical Analysis And Study Outputs (v2 version of old Phase 5)
 - [ ] Aggregate v2 raw results into a clean master results table

@@ -75,7 +75,11 @@ class CLTrainer:
     # ------------------------------------------------------------------
     # Main entry point
     # ------------------------------------------------------------------
-    def train(self, start_task: int = 0) -> Dict[str, Any]:
+    def train(
+        self,
+        start_task: int = 0,
+        stop_after_task: Optional[int] = None,
+    ) -> Dict[str, Any]:
         """Run the full continual learning sequence.
 
         Args:
@@ -156,6 +160,18 @@ class CLTrainer:
 
             # ── Checkpoint ────────────────────────────────────────────
             self._save_ckpt(task_id)
+
+            if stop_after_task is not None and task_id >= stop_after_task:
+                self.logger.print(
+                    f"Planned early stop after task {task_id}. "
+                    "Checkpoint saved for resume/restart robustness testing."
+                )
+                return {
+                    "acc_matrix": self.acc_matrix,
+                    "task_times": self.task_times,
+                    "stopped_early": True,
+                    "stopped_after_task": task_id,
+                }
 
         # ── Final metrics ──────────────────────────────────────────────
         results = self.current_results()

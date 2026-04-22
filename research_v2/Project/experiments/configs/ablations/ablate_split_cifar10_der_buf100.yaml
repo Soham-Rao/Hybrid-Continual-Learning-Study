@@ -15,3 +15,6 @@ seeds:
 - 1024
 run_tag: buf100
 disable_plots: true
+
+result_group: ablations
+ablation_family: buffer

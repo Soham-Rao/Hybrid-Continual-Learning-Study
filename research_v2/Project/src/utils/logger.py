@@ -20,6 +20,7 @@ class RunLogger:
         log_dir: str,
         run_name: str,
         metrics_dir: Optional[str] = None,
+        reset_log: bool = False,
     ) -> None:
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
@@ -28,6 +29,8 @@ class RunLogger:
         self.run_name = run_name
         self.csv_path = self.metrics_dir / f"{run_name}_metrics.csv"
         self.log_path = self.log_dir / f"{run_name}.log"
+        if reset_log:
+            self.log_path.write_text("", encoding="utf-8")
         self._header_written = False
         self._fieldnames: Optional[list] = None
 

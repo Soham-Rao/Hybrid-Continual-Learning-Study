@@ -103,6 +103,7 @@ def pmnist_ds():
         n_tasks=2,
         batch_size=8,
         num_workers=0,
+        image_size=32,
     )
 
 
@@ -168,7 +169,7 @@ def test_method_two_task_class_il_smoke(method_name, cfg_override, cifar10_ds):
 def test_method_domain_il_smoke(method_name, cfg_override, pmnist_ds, pmnist_task0_batch):
     x, y = pmnist_task0_batch
     device = cuda_device()
-    model = get_model("resnet8", in_channels=1).to(device)
+    model = get_model("slim_resnet18", in_channels=1).to(device)
     method = get_method(method_name, model, build_cfg(cfg_override), device)
 
     train0_full, _ = pmnist_ds.get_task_loaders(0)
@@ -211,6 +212,8 @@ def test_stateful_method_state_roundtrip(method_name, cfg_override, cifar10_ds):
 
     if method_name == "joint_training":
         assert len(clone_method._all_x) == len(method._all_x)
+        assert all(x.device.type == "cpu" for x in clone_method._all_x)
+        assert all(y.device.type == "cpu" for y in clone_method._all_y)
     if method_name == "ewc":
         assert len(clone_method._old_params) == len(method._old_params)
     if method_name == "er_ewc":
@@ -221,3 +224,40 @@ def test_stateful_method_state_roundtrip(method_name, cfg_override, cifar10_ds):
         assert clone_method.kb.n_classes == method.kb.n_classes
     if method_name == "si_der":
         assert set(clone_method._si_omega.keys()) == set(method._si_omega.keys())
+
+
+def test_joint_training_resume_state_can_continue(cifar10_ds):
+    device = cuda_device()
+    cfg = build_cfg({"joint_replay_epochs": 1})
+
+    model = get_model("slim_resnet18", in_channels=3).to(device)
+    method = get_method("joint_training", model, cfg, device)
+
+    train0_full, _ = cifar10_ds.get_task_loaders(0)
+    train0 = tiny_loader(train0_full)
+    method.before_task(0, train0, 2, n_classes_total=cifar10_ds.n_classes_total)
+    x0, y0 = next(iter(train0))
+    method.observe(x0.to(device), y0.to(device), task_id=0)
+    method.after_task(0, train0)
+
+    state = method.state_dict()
+
+    clone_model = get_model("slim_resnet18", in_channels=3).to(device)
+    clone_method = get_method("joint_training", clone_model, cfg, device)
+
+    train1_full, _ = cifar10_ds.get_task_loaders(1)
+    train1 = tiny_loader(train1_full)
+    clone_method.before_task(1, train1, 2, n_classes_total=cifar10_ds.n_classes_total)
+    clone_method.load_state_dict(state)
+
+    assert all(x.device.type == "cpu" for x in clone_method._all_x)
+    assert all(y.device.type == "cpu" for y in clone_method._all_y)
+
+    x1, y1 = next(iter(train1))
+    clone_method._all_x.append(x1.cpu())
+    clone_method._all_y.append(y1.cpu())
+
+    all_x = torch.cat(clone_method._all_x, dim=0)
+    all_y = torch.cat(clone_method._all_y, dim=0)
+    assert all_x.device.type == "cpu"
+    assert all_y.device.type == "cpu"

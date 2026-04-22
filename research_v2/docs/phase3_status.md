@@ -44,10 +44,11 @@ The v2 method gate now includes:
 
 ### Domain-IL smoke path
 - dataset: `permuted_mnist`
-- backbone: `resnet8`
+- backbone: `slim_resnet18`
 - device: `cuda`
 - procedure:
   - task 0 tiny observe pass only
+  - resized 32x32 PMNIST path
 
 ### Stateful method verification
 Checked for methods with replay buffers or extra consolidation state:
