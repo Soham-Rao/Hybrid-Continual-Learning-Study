@@ -84,7 +84,7 @@ def test_chart_explanation_draft_uses_chart_specific_template() -> None:
 
 def test_chart_explanation_draft_covers_decision_flow_specific_language() -> None:
     facts = ChartExplanationFacts(
-        chart_focus="decision_flow",
+        chart_focus="decision_flow_main",
         dataset="split_cifar10",
         winner={"method": "er_ewc", "avg_accuracy_mean": 62.1, "forgetting_mean": 15.2, "runtime_hours_mean": 0.3, "estimated_memory_mb": 64.0},
         best_accuracy={"method": "joint_training", "avg_accuracy_mean": 88.0},
@@ -94,6 +94,23 @@ def test_chart_explanation_draft_covers_decision_flow_specific_language() -> Non
         shortlist_summary="icarl, xder",
     )
     text = chart_explanation_draft(facts)
-    assert "decision-flow chart" in text
+    assert "Decision Flow Alluvial Chart" in text
     assert "Green flow" in text or "Green flows" in text
     assert "deterministic scorer" in text
+
+
+def test_chart_explanation_draft_uses_chart_instance_specific_context() -> None:
+    facts = ChartExplanationFacts(
+        chart_focus="comparison_acc_memory",
+        dataset="split_mini_imagenet",
+        winner={"method": "icarl", "avg_accuracy_mean": 3.16, "forgetting_mean": 7.81, "runtime_hours_mean": 0.11, "estimated_memory_mb": 48.45},
+        best_accuracy={"method": "joint_training", "avg_accuracy_mean": 45.19},
+        lowest_forgetting={"method": "joint_training", "forgetting_mean": 3.55},
+        fastest={"method": "lwf", "runtime_hours_mean": 0.08},
+        smallest_memory={"method": "agem", "estimated_memory_mb": 0.8},
+        shortlist_summary="er_ewc, xder",
+    )
+    text = chart_explanation_draft(facts)
+    assert "Method Comparison: Accuracy vs Memory Proxy" in text
+    assert "Method Comparison" in text
+    assert "proxy-estimated storage footprint" in text or "proxy-estimated" in text

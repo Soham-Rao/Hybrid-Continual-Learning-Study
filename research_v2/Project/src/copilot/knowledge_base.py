@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import Any
 
 from app.dashboard_data import DATASET_LABELS
 
+from .chart_library import CHART_LIBRARY, FAMILY_ALIASES, find_chart_entry
 from .context_builder import RecommendationExplanationContext
 
 
@@ -210,24 +210,8 @@ SETTINGS_QUERY_TERMS: tuple[str, ...] = (
 
 
 CHART_ALIASES: dict[str, tuple[str, ...]] = {
-    "score_breakdown": ("score breakdown", "score contribution", "breakdown"),
-    "shortlist": ("shortlist", "top-3 shortlist", "top 3 shortlist", "case study", "case-study"),
-    "decision_flow": ("decision tree", "decision flow", "alluvial", "green flows", "grey flows", "gray flows"),
-    "grouped_metrics": ("grouped metric", "metric bars", "grouped bar", "comparison bars", "bar chart"),
-    "accuracy_forgetting": ("accuracy vs forgetting", "accuracy-versus-forgetting", "retention frontier"),
-    "accuracy_runtime": ("accuracy vs runtime", "accuracy vs time", "accuracy-runtime", "compute time"),
-    "accuracy_memory": ("accuracy vs memory", "accuracy vs estimated memory", "accuracy vs memory proxy", "storage footprint"),
-    "significance": ("significance matrix", "pairwise p", "p-values", "holm-adjusted", "holm corrected", "significance heatmap"),
-    "effect": ("effect-size matrix", "effect size", "rank-biserial", "effect heatmap"),
-    "pareto": ("pareto", "non-joint pareto", "frontier"),
-    "heatmap_accuracy": ("accuracy heatmap", "average accuracy heatmap", "cross-dataset accuracy heatmap"),
-    "heatmap_forgetting": ("forgetting heatmap", "retention heatmap", "cross-dataset forgetting heatmap"),
-    "rank_slope": ("rank slope", "slope chart", "ranking shifts", "rank plot"),
-    "top_cluster": ("top cluster", "top-cluster", "cluster membership", "non-inferior cluster"),
-    "friedman_rank": ("friedman", "average rank", "cross-dataset ranking", "friedman ranking"),
-    "ablation_runtime": ("ablation runtime", "runtime sensitivity", "ablation compute"),
-    "ablation_memory": ("ablation memory", "memory sensitivity", "proxy memory ablation"),
-    "robustness": ("robustness", "resume", "restart", "resume robustness", "restart robustness"),
+    **{chart_id: entry.aliases for chart_id, entry in CHART_LIBRARY.items()},
+    **FAMILY_ALIASES,
 }
 
 
@@ -338,8 +322,11 @@ class ChartExplanationFacts:
 
 
 def chart_focus_from_text(text: str) -> str:
+    entry = find_chart_entry(text)
+    if entry is not None:
+        return entry.chart_id
     lowered = text.lower()
-    for chart_focus, aliases in CHART_ALIASES.items():
+    for chart_focus, aliases in FAMILY_ALIASES.items():
         if any(alias in lowered for alias in aliases):
             return chart_focus
     if "accuracy" in lowered and "forgetting" in lowered:
@@ -402,10 +389,26 @@ def recommendation_explanation_draft(ctx: RecommendationExplanationContext) -> t
 
 
 def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
-    guide = CHART_GUIDES.get(facts.chart_focus, CHART_GUIDES["generic"])
+    chart_entry = CHART_LIBRARY.get(facts.chart_focus)
+    guide = CHART_GUIDES.get(chart_entry.kind if chart_entry is not None else facts.chart_focus, CHART_GUIDES["generic"])
     dataset_label = DATASET_LABELS.get(facts.dataset, facts.dataset)
     winner = facts.winner
-    if facts.chart_focus == "score_breakdown":
+    if chart_entry is not None:
+        preface = (
+            f"This chart is **{chart_entry.title}** in the **{chart_entry.tab}** tab, under **{chart_entry.section}**."
+        )
+        detail_lines = [
+            preface,
+            chart_entry.what_it_shows,
+            chart_entry.why_it_matters,
+        ]
+    else:
+        detail_lines = [
+            f"This {guide['title']} should be read with the selected dataset and active request in mind.",
+            guide["reading"],
+        ]
+
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "score_breakdown":
         components = winner.get("score_components", {})
         sorted_components = sorted(
             ((name, value) for name, value in components.items()),
@@ -414,44 +417,46 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
         )
         dominant = ", ".join(f"{name.replace('_', ' ')}={float(value):.2f}" for name, value in sorted_components[:4])
         return "\n\n".join(
-            [
-                f"This {guide['title']} explains why the current winner scores highest for the active request.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, the current winner is `{winner['method']}` with total score {winner['score']:.2f}. "
                     f"The biggest score drivers right now are {dominant}."
                 ),
-                guide["focus"],
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else f"Nearby alternatives in the same request are {facts.shortlist_summary}.",
                 f"Nearby alternatives in the same request are {facts.shortlist_summary}.",
             ]
         )
-    if facts.chart_focus == "shortlist":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "shortlist":
         return "\n\n".join(
-            [
-                f"This {guide['title']} compares the current winner against the nearest saved alternatives for the same request.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, the top-ranked candidate here is `{winner['method']}` with score {winner.get('score', 0.0):.2f}, "
                     f"average accuracy {winner['avg_accuracy_mean']:.2f}, forgetting {winner['forgetting_mean']:.2f}, "
                     f"runtime {winner['runtime_hours_mean']:.2f} hours, and estimated memory {winner['estimated_memory_mb']:.2f} MB."
                 ),
-                guide["focus"],
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
                 f"The nearby alternatives in this saved case are {facts.shortlist_summary}.",
             ]
         )
-    if facts.chart_focus == "decision_flow":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "decision_flow":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is a bucketed visual explanation of the same recommendation logic used elsewhere in the dashboard.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, the current path ends at `{winner['method']}`, which is the method that best matches the active constraint bucket under the deterministic scorer."
                 ),
-                guide["focus"],
-                "Use this view to understand which constraint buckets steer the recommendation, not as a second independent recommender.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "Use this view to understand which constraint buckets steer the recommendation, not as a second independent recommender.",
             ]
         )
-    if facts.chart_focus == "grouped_metrics":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "grouped_metrics":
         return "\n\n".join(
-            [
-                f"This {guide['title']} compares multiple outcome dimensions side by side for the selected dataset.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, `{facts.best_accuracy['method']}` is the raw accuracy leader, "
                     f"`{facts.lowest_forgetting['method']}` retains best, `{facts.fastest['method']}` is the fastest, and "
@@ -461,13 +466,14 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
                     f"The current recommendation `{winner['method']}` is the dashboard's best compromise under the active request, "
                     f"which is why it may not lead every single bar."
                 ),
-                guide["focus"],
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "accuracy_forgetting":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "accuracy_forgetting":
         return "\n\n".join(
-            [
-                f"This {guide['title']} compares final performance against retention.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, the highest-accuracy method is `{facts.best_accuracy['method']}` at "
                     f"{float(facts.best_accuracy['avg_accuracy_mean']):.2f}, while the lowest-forgetting method is "
@@ -477,13 +483,15 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
                     f"The currently recommended method is `{winner['method']}` at accuracy {winner['avg_accuracy_mean']:.2f} "
                     f"and forgetting {winner['forgetting_mean']:.2f}, so the dashboard is favoring its balance under the active constraints."
                 ),
-                f"{guide['focus']} Nearby alternatives are {facts.shortlist_summary}.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
+                f"Nearby alternatives are {facts.shortlist_summary}.",
             ]
         )
-    if facts.chart_focus == "accuracy_runtime":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "accuracy_runtime":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is about how much performance you buy with extra training time.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, the accuracy leader is `{facts.best_accuracy['method']}` at "
                     f"{float(facts.best_accuracy['avg_accuracy_mean']):.2f}, while the fastest method is "
@@ -493,13 +501,15 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
                     f"The current recommendation `{winner['method']}` sits at accuracy {winner['avg_accuracy_mean']:.2f} "
                     f"and runtime {winner['runtime_hours_mean']:.2f} hours."
                 ),
-                f"{guide['focus']} Nearby alternatives are {facts.shortlist_summary}.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
+                f"Nearby alternatives are {facts.shortlist_summary}.",
             ]
         )
-    if facts.chart_focus == "accuracy_memory":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "accuracy_memory":
         return "\n\n".join(
-            [
-                f"This {guide['title']} shows how much performance each method delivers for its proxy memory footprint.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, the accuracy leader is `{facts.best_accuracy['method']}` at "
                     f"{float(facts.best_accuracy['avg_accuracy_mean']):.2f}, while the lightest method is "
@@ -509,132 +519,136 @@ def chart_explanation_draft(facts: ChartExplanationFacts) -> str:
                     f"The current recommendation `{winner['method']}` uses an estimated {winner['estimated_memory_mb']:.1f} MB "
                     f"for {winner['avg_accuracy_mean']:.2f} average accuracy."
                 ),
-                f"{guide['focus']} Nearby alternatives are {facts.shortlist_summary}.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
+                f"Nearby alternatives are {facts.shortlist_summary}.",
             ]
         )
-    if facts.chart_focus == "significance":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "significance":
         return "\n\n".join(
-            [
-                f"This {guide['title']} should be read as evidence-of-difference, not evidence-of-size.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, use this matrix to see which method pairs still look meaningfully separated after Holm correction in the current dataset."
                 ),
-                guide["focus"],
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
                 "Cells with lower adjusted p-values indicate stronger evidence that the row and column methods differ on the selected metric.",
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "effect":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "effect":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is the practical-strength companion to the significance matrix.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, positive values mean the row method tends to outperform the column method, while negative values mean the reverse."
                 ),
-                guide["focus"],
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
                 "Large-magnitude values indicate stronger practical separation even when significance alone is ambiguous.",
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "pareto":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "pareto":
         return "\n\n".join(
-            [
-                f"This {guide['title']} shows only non-joint methods that are not dominated on the study's trade-off dimensions.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, the displayed points are the non-joint candidates that survive a Pareto-style screen over accuracy, runtime, and proxy memory."
                 ),
-                guide["focus"],
-                "A point can disappear from this view even if it is good overall, as long as another non-joint method is at least as good on all included dimensions.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "heatmap_accuracy":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "heatmap_accuracy":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is a broad leaderboard-style overview of the full study matrix.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, it helps you see whether the selected dataset is one where strong methods clearly separate or where the whole field compresses."
                 ),
-                guide["focus"],
-                "Use it to spot cross-dataset consistency patterns before drilling back into one dataset.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "heatmap_forgetting":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "heatmap_forgetting":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is a cross-dataset retention map rather than a direct performance leaderboard.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, darker or worse cells indicate methods that struggle more to preserve earlier tasks on that dataset."
                 ),
-                guide["focus"],
-                "Compare it with the accuracy heatmap to see which methods trade retention for raw final performance.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "rank_slope":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "rank_slope":
         return "\n\n".join(
-            [
-                f"This {guide['title']} shows how sensitive method ordering is across datasets.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, a flatter line indicates a method that behaves more consistently as the benchmark changes."
                 ),
-                guide["focus"],
-                "It is especially useful for spotting methods that win in one dataset but drop sharply elsewhere.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "top_cluster":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "top_cluster":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is about consistency of statistical competitiveness, not about raw leaderboard position alone.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, it shows which methods most often stay in the non-inferior set around the dataset leader."
                 ),
-                guide["focus"],
-                "A method with a high count here is often a safe recommendation even if it is not the absolute best on every dataset.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "friedman_rank":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "friedman_rank":
         return "\n\n".join(
-            [
-                f"This {guide['title']} summarizes cross-dataset ranking behavior across the full benchmark set.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, it provides context about where the selected dataset fits relative to the broader ranking pattern."
                 ),
-                guide["focus"],
-                "Because only four datasets were used, treat this chart as a supporting pattern summary rather than the final decision rule.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "ablation_runtime":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "ablation_runtime":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is secondary evidence about engineering cost rather than about the main leaderboard.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, it shows how representative ablation variants changed total runtime relative to their baseline family."
                 ),
-                guide["focus"],
-                "Use it to understand mechanism cost, not to replace the primary-study comparison.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "ablation_memory":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "ablation_memory":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is a proxy-oriented view of memory-sensitive configuration changes.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, it highlights how settings like replay buffer and batch size shift the memory-related profile of ablation variants."
                 ),
-                guide["focus"],
-                "This is configuration-level context, not measured peak-device telemetry.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
-    if facts.chart_focus == "robustness":
+    if (chart_entry.kind if chart_entry is not None else facts.chart_focus) == "robustness":
         return "\n\n".join(
-            [
-                f"This {guide['title']} is about pipeline trustworthiness rather than about method quality alone.",
+            detail_lines
+            + [
                 (
                     f"For {dataset_label}, points closer to zero mean restart/resume behavior stayed close to the original primary-study result."
                 ),
-                guide["focus"],
-                "Large shifts suggest the run is more sensitive to interruption or checkpointing behavior than expected.",
+                chart_entry.reading_hint if chart_entry is not None else guide["focus"],
+                chart_entry.caveat if chart_entry is not None else "",
             ]
         )
     return "\n\n".join(
-        [
+        detail_lines + [
             f"This {guide['title']} should be read as a trade-off surface rather than as a single-metric ranking.",
             (
                 f"For {dataset_label}, the current recommendation is `{winner['method']}` with average accuracy "

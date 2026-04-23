@@ -22,15 +22,18 @@ def test_infer_copilot_intent_routes_settings_like_prompts() -> None:
 def test_chart_focus_detects_named_tradeoff_views() -> None:
     assert _chart_focus_from_text("explain accuracy vs forgetting chart") == "accuracy_forgetting"
     assert _chart_focus_from_text("explain accuracy vs estimated memory chart") == "accuracy_memory"
-    assert _chart_focus_from_text("show me the score breakdown") == "score_breakdown"
-    assert _chart_focus_from_text("explain the shortlist chart") == "shortlist"
-    assert _chart_focus_from_text("explain the decision tree alluvial flow") == "decision_flow"
-    assert _chart_focus_from_text("what does the Holm-adjusted significance matrix mean") == "significance"
-    assert _chart_focus_from_text("walk me through the rank-biserial effect-size matrix") == "effect"
-    assert _chart_focus_from_text("explain the pareto frontier") == "pareto"
+    assert _chart_focus_from_text("show me the score breakdown") == "recommendation_breakdown"
+    assert _chart_focus_from_text("explain the shortlist chart") == "case_shortlist_chart"
+    assert _chart_focus_from_text("explain the decision tree alluvial flow") == "decision_flow_main"
+    assert _chart_focus_from_text("what does the Holm-adjusted significance matrix mean") == "comparison_significance_matrix"
+    assert _chart_focus_from_text("walk me through the rank-biserial effect-size matrix") == "comparison_effect_matrix"
+    assert _chart_focus_from_text("explain the pareto frontier") == "comparison_pareto"
     assert _chart_focus_from_text("what is the friedman average-rank chart showing") == "friedman_rank"
     assert _chart_focus_from_text("explain the ablation runtime chart") == "ablation_runtime"
-    assert _chart_focus_from_text("explain the resume robustness chart") == "robustness"
+    assert _chart_focus_from_text("explain the resume robustness chart") == "ablation_robustness"
+    assert _chart_focus_from_text("explain the decision tree breakdown chart") == "decision_tree_breakdown"
+    assert _chart_focus_from_text("explain the dataset visuals accuracy vs runtime chart") == "visuals_acc_runtime"
+    assert _chart_focus_from_text("explain the report friedman chart") == "report_friedman"
 
 
 def test_format_inferred_settings_includes_assumptions_and_scope_notes() -> None:
